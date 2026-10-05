@@ -1,4 +1,4 @@
-import React from 'react'
+﻿import React from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 
 import Login from './pages/Auth/Login'
@@ -12,29 +12,37 @@ import ProtectedRoute from './components/ProtectedRoute'
 import Home from './pages/Home/Home'
 import Tournaments from './pages/Tournaments/Tournaments'
 import TournamentDetails from './pages/Tournaments/TournamentDetails'
+import Wallet from './pages/Wallet/Wallet'
 import Marketplace from './pages/Marketplace/Marketplace'
 import Inventory from './pages/Inventory/Inventory'
 
+import AdminDepositMethods from './pages/Admin/AdminDepositMethods'
+import AdminDeposits from './pages/Admin/AdminDeposits'
+
 function ComingSoon({ title }) {
   return (
-    <div className="coming-soon-page">
-      <div className="coming-soon-card">
-        <div className="coming-soon-icon">V</div>
-
+    <div
+      style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: '#070b14',
+        color: '#ffffff',
+        padding: '24px',
+      }}
+    >
+      <div
+        style={{
+          textAlign: 'center',
+          maxWidth: '500px',
+        }}
+      >
         <h1>{title}</h1>
 
-        <p>
-          This VERITAS section is being connected to Supabase.
+        <p style={{ color: '#9ca3af' }}>
+          This section is coming soon.
         </p>
-
-        <button
-          type="button"
-          onClick={() => {
-            window.location.href = '/'
-          }}
-        >
-          Back to Home
-        </button>
       </div>
     </div>
   )
@@ -43,47 +51,16 @@ function ComingSoon({ title }) {
 export default function App() {
   return (
     <Routes>
+      {/* AUTH */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/verify-email" element={<VerifyEmail />} />
 
-      {/* =========================
-          PUBLIC AUTH ROUTES
-      ========================== */}
-
-      <Route
-        path="/login"
-        element={<Login />}
-      />
-
-      <Route
-        path="/register"
-        element={<Register />}
-      />
-
-      <Route
-        path="/forgot-password"
-        element={<ForgotPassword />}
-      />
-
-      <Route
-        path="/reset-password"
-        element={<ResetPassword />}
-      />
-
-      <Route
-        path="/verify-email"
-        element={<VerifyEmail />}
-      />
-
-
-      {/* =========================
-          PROTECTED APP
-      ========================== */}
-
+      {/* PROTECTED APP */}
       <Route element={<ProtectedRoute />}>
-
-        <Route
-          path="/"
-          element={<Home />}
-        />
+        <Route path="/" element={<Home />} />
 
         <Route
           path="/tournaments"
@@ -97,23 +74,14 @@ export default function App() {
 
         <Route
           path="/matches"
-          element={
-            <ComingSoon title="My Matches" />
-          }
+          element={<ComingSoon title="Matches" />}
         />
 
-        <Route
-          path="/wallet"
-          element={
-            <ComingSoon title="Wallet" />
-          }
-        />
+        <Route path="/wallet" element={<Wallet />} />
 
         <Route
           path="/vcoins"
-          element={
-            <ComingSoon title="V Coins" />
-          }
+          element={<ComingSoon title="V Coins" />}
         />
 
         <Route
@@ -128,35 +96,31 @@ export default function App() {
 
         <Route
           path="/notifications"
-          element={
-            <ComingSoon title="Notifications" />
-          }
+          element={<ComingSoon title="Notifications" />}
         />
 
         <Route
           path="/settings"
-          element={
-            <ComingSoon title="Settings" />
-          }
+          element={<ComingSoon title="Settings" />}
         />
 
+        {/* ADMIN */}
+        <Route
+          path="/admin/deposit-methods"
+          element={<AdminDepositMethods />}
+        />
+
+        <Route
+          path="/admin/deposits"
+          element={<AdminDeposits />}
+        />
       </Route>
 
-
-      {/* =========================
-          FALLBACK
-      ========================== */}
-
+      {/* FALLBACK */}
       <Route
         path="*"
-        element={
-          <Navigate
-            to="/"
-            replace
-          />
-        }
+        element={<Navigate to="/" replace />}
       />
-
     </Routes>
   )
 }
