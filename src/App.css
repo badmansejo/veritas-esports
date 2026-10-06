@@ -5,3 +5,112 @@
    Main application styling lives in index.css.
 */
 
+
+/* VERITAS NOTIFICATION BADGES */
+.notification-icon-button {
+  position: relative;
+}
+
+.notification-count {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #ff1744;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 20px;
+  text-align: center;
+  border: 2px solid #070b14;
+  box-sizing: border-box;
+  z-index: 10;
+}
+
+.sidebar-link {
+  position: relative;
+}
+
+.sidebar-notification-count {
+  margin-left: auto;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #ff1744;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 20px;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+/* FORCE VERITAS NOTIFICATION BADGE */
+button.notification-icon-button {
+  position: relative !important;
+}
+
+button.notification-icon-button .notification-count {
+  position: absolute !important;
+  top: -8px !important;
+  right: -8px !important;
+  z-index: 9999 !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  min-width: 21px !important;
+  width: auto !important;
+  height: 21px !important;
+  padding: 0 5px !important;
+
+  border-radius: 999px !important;
+  background: #ff1744 !important;
+  color: #ffffff !important;
+
+  font-family: Arial, sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+
+  border: 2px solid #070b14 !important;
+  box-sizing: border-box !important;
+  pointer-events: none !important;
+}
+
+button.notification-icon-button .notification-count::before {
+  content: '' !important;
+}
+
+.veritas-sidebar button.sidebar-link {
+  position: relative !important;
+}
+
+.veritas-sidebar button.sidebar-link .sidebar-notification-count {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  min-width: 21px !important;
+  height: 21px !important;
+  padding: 0 5px !important;
+
+  margin-left: auto !important;
+
+  border-radius: 999px !important;
+  background: #ff1744 !important;
+  color: #ffffff !important;
+
+  font-family: Arial, sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+
+  box-sizing: border-box !important;
+}

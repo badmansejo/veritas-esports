@@ -1,7 +1,8 @@
-﻿import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabaseClient'
+import { registerPushNotifications } from '../../lib/pushNotifications'
 
 export default function Home() {
   const navigate = useNavigate()
@@ -24,9 +25,137 @@ export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [equippedItems, setEquippedItems] = useState([])
 
+  const [unreadNotifications, setUnreadNotifications] = useState(0)
+  const [pushStatus, setPushStatus] = useState(typeof Notification !== 'undefined' ? Notification.permission : 'unsupported')
+  const [notificationToast, setNotificationToast] = useState(null)
+
   useEffect(() => {
     loadHomeData()
   }, [user])
+
+  useEffect(() => {
+    if (!user?.id) return
+
+    registerPushNotifications(user.id).catch((error) => {
+      console.error('Push registration error:', error)
+    })
+
+    loadUnreadNotifications()
+
+    const channel = supabase
+      .channel(`home-notifications-${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          const notification = payload.new
+
+          setUnreadNotifications((count) => count + 1)
+
+          setNotificationToast({
+            id: notification.id,
+            title: notification.title || 'VERITAS',
+            message:
+              notification.message ||
+              'You have a new notification.',
+          })
+
+          playNotificationSound()
+
+          setTimeout(() => {
+            setNotificationToast((current) =>
+              current?.id === notification.id
+                ? null
+                : current
+            )
+          }, 6000)
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [user?.id])
+
+  async function loadUnreadNotifications() {
+    if (!user?.id) return
+
+    const { count, error } = await supabase
+      .from('notifications')
+      .select('id', {
+        count: 'exact',
+        head: true,
+      })
+      .eq('user_id', user.id)
+      .eq('is_read', false)
+
+    if (!error) {
+      setUnreadNotifications(count || 0)
+    }
+  }
+
+  function playNotificationSound() {
+    try {
+      const AudioContext =
+        window.AudioContext ||
+        window.webkitAudioContext
+
+      if (!AudioContext) return
+
+      const audioContext = new AudioContext()
+
+      const oscillator =
+        audioContext.createOscillator()
+
+      const gain =
+        audioContext.createGain()
+
+      oscillator.type = 'sine'
+      oscillator.frequency.setValueAtTime(
+        880,
+        audioContext.currentTime
+      )
+
+      oscillator.frequency.exponentialRampToValueAtTime(
+        1320,
+        audioContext.currentTime + 0.12
+      )
+
+      gain.gain.setValueAtTime(
+        0.0001,
+        audioContext.currentTime
+      )
+
+      gain.gain.exponentialRampToValueAtTime(
+        0.18,
+        audioContext.currentTime + 0.02
+      )
+
+      gain.gain.exponentialRampToValueAtTime(
+        0.0001,
+        audioContext.currentTime + 0.35
+      )
+
+      oscillator.connect(gain)
+      gain.connect(audioContext.destination)
+
+      oscillator.start()
+      oscillator.stop(
+        audioContext.currentTime + 0.35
+      )
+    } catch (error) {
+      console.error(
+        'Notification sound error:',
+        error
+      )
+    }
+  }
 
   async function loadHomeData() {
     if (!user) return
@@ -58,7 +187,10 @@ export default function Home() {
         .eq('user_id', user.id)
 
       if (equippedError) {
-        console.error('Equipped items loading error:', equippedError)
+        console.error(
+          'Equipped items loading error:',
+          equippedError
+        )
         setEquippedItems([])
       } else {
         setEquippedItems(equippedData || [])
@@ -102,7 +234,10 @@ export default function Home() {
       if (!error) {
         setTournaments(data || [])
       } else {
-        console.error('Tournament loading error:', error)
+        console.error(
+          'Tournament loading error:',
+          error
+        )
         setTournaments([])
       }
 
@@ -154,7 +289,6 @@ export default function Home() {
           'My tournaments loading error:',
           participantError
         )
-
         setMyTournaments([])
       } else {
         setMyTournaments(
@@ -168,7 +302,10 @@ export default function Home() {
         )
       }
     } catch (error) {
-      console.error('Home loading error:', error)
+      console.error(
+        'Home loading error:',
+        error
+      )
     } finally {
       setLoadingTournaments(false)
       setLoadingMyTournaments(false)
@@ -190,10 +327,12 @@ export default function Home() {
     return 'Upcoming'
   }
 
-  const filteredMyTournaments = myTournaments.filter(
-    (tournament) =>
-      getMyTournamentStatus(tournament) === myTournamentTab
-  )
+  const filteredMyTournaments =
+    myTournaments.filter(
+      (tournament) =>
+        getMyTournamentStatus(tournament) ===
+        myTournamentTab
+    )
 
   async function handleLogout() {
     const { error } = await signOut()
@@ -258,7 +397,10 @@ export default function Home() {
   let usernameFontWeight = 700
   let usernameLetterSpacing = 'normal'
 
-  if (hasFont && fontName === 'Titan Font') {
+  if (
+    hasFont &&
+    fontName === 'Titan Font'
+  ) {
     usernameFontFamily =
       'Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif'
 
@@ -302,9 +444,28 @@ export default function Home() {
   }
 
   return (
-    <div className="veritas-app">
+    
+<div className="veritas-app">
 
-      {/* TOP BAR */}
+      {notificationToast && (
+        <button
+          type="button"
+          className="notification-toast"
+          onClick={() => {
+            setNotificationToast(null)
+            navigate('/notifications')
+          }}
+        >
+          <strong>
+            {notificationToast.title}
+          </strong>
+
+          <span>
+            {notificationToast.message}
+          </span>
+        </button>
+      )}
+
       <header className="veritas-topbar">
 
         <div
@@ -321,12 +482,20 @@ export default function Home() {
 
           <button
             type="button"
-            className="icon-button"
+            className="icon-button notification-icon-button"
             onClick={() => navigate('/notifications')}
             title="Notifications"
             aria-label="Notifications"
           >
             &#x1F514;
+
+            {unreadNotifications > 0 && (
+              <span className="notification-count">
+                {unreadNotifications > 99
+                  ? '99+'
+                  : unreadNotifications}
+              </span>
+            )}
           </button>
 
           <button
@@ -338,7 +507,9 @@ export default function Home() {
             aria-label="Open profile menu"
           >
             <div className="mini-avatar">
-              {displayName.charAt(0).toUpperCase()}
+              {displayName
+                .charAt(0)
+                .toUpperCase()}
             </div>
 
             <span style={usernameStyle}>
@@ -353,7 +524,9 @@ export default function Home() {
 
               <button
                 type="button"
-                onClick={() => navigate('/settings')}
+                onClick={() =>
+                  navigate('/settings')
+                }
               >
                 Settings
               </button>
@@ -372,10 +545,8 @@ export default function Home() {
         </div>
       </header>
 
-      {/* MAIN LAYOUT */}
       <div className="veritas-layout">
 
-        {/* SIDEBAR */}
         <aside className="veritas-sidebar">
 
           <button
@@ -390,7 +561,9 @@ export default function Home() {
           <button
             type="button"
             className="sidebar-link"
-            onClick={() => navigate('/tournaments')}
+            onClick={() =>
+              navigate('/tournaments')
+            }
           >
             <span>&#x1F3C6;</span>
             <span>Tournaments</span>
@@ -399,7 +572,9 @@ export default function Home() {
           <button
             type="button"
             className="sidebar-link"
-            onClick={() => navigate('/matches')}
+            onClick={() =>
+              navigate('/matches')
+            }
           >
             <span>&#x2694;&#xFE0F;</span>
             <span>My Matches</span>
@@ -408,7 +583,9 @@ export default function Home() {
           <button
             type="button"
             className="sidebar-link"
-            onClick={() => navigate('/wallet')}
+            onClick={() =>
+              navigate('/wallet')
+            }
           >
             <span>&#x1F4B5;</span>
             <span>Wallet</span>
@@ -417,7 +594,9 @@ export default function Home() {
           <button
             type="button"
             className="sidebar-link"
-            onClick={() => navigate('/vcoins')}
+            onClick={() =>
+              navigate('/vcoins')
+            }
           >
             <span>&#x1FA99;</span>
             <span>V Coins</span>
@@ -426,7 +605,9 @@ export default function Home() {
           <button
             type="button"
             className="sidebar-link"
-            onClick={() => navigate('/marketplace')}
+            onClick={() =>
+              navigate('/marketplace')
+            }
           >
             <span>&#x1F6D2;</span>
             <span>Marketplace</span>
@@ -435,7 +616,9 @@ export default function Home() {
           <button
             type="button"
             className="sidebar-link"
-            onClick={() => navigate('/inventory')}
+            onClick={() =>
+              navigate('/inventory')
+            }
           >
             <span>&#x1F392;</span>
             <span>Inventory</span>
@@ -444,10 +627,20 @@ export default function Home() {
           <button
             type="button"
             className="sidebar-link"
-            onClick={() => navigate('/notifications')}
+            onClick={() =>
+              navigate('/notifications')
+            }
           >
             <span>&#x1F514;</span>
             <span>Notifications</span>
+
+            {unreadNotifications > 0 && (
+              <span className="sidebar-notification-count">
+                {unreadNotifications > 99
+                  ? '99+'
+                  : unreadNotifications}
+              </span>
+            )}
           </button>
 
           <div className="sidebar-divider" />
@@ -456,7 +649,9 @@ export default function Home() {
             <button
               type="button"
               className="sidebar-link"
-              onClick={() => navigate('/admin')}
+              onClick={() =>
+                navigate('/admin')
+              }
             >
               <span>&#x2699;&#xFE0F;</span>
               <span>Admin</span>
@@ -466,7 +661,9 @@ export default function Home() {
           <button
             type="button"
             className="sidebar-link"
-            onClick={() => navigate('/settings')}
+            onClick={() =>
+              navigate('/settings')
+            }
           >
             <span>&#x1F48E;</span>
             <span>Settings</span>
@@ -483,10 +680,8 @@ export default function Home() {
 
         </aside>
 
-        {/* CONTENT */}
         <main className="veritas-content">
 
-          {/* WELCOME */}
           <section className="welcome-section">
 
             <div>
@@ -513,7 +708,6 @@ export default function Home() {
 
           </section>
 
-          {/* BALANCES */}
           <section className="balance-grid">
 
             <div className="balance-card kes-card">
@@ -530,7 +724,9 @@ export default function Home() {
 
               <button
                 type="button"
-                onClick={() => navigate('/wallet')}
+                onClick={() =>
+                  navigate('/wallet')
+                }
                 aria-label="Open wallet"
               >
                 +
@@ -552,7 +748,9 @@ export default function Home() {
 
               <button
                 type="button"
-                onClick={() => navigate('/vcoins')}
+                onClick={() =>
+                  navigate('/vcoins')
+                }
                 aria-label="Open V Coins"
               >
                 +
@@ -562,7 +760,6 @@ export default function Home() {
 
           </section>
 
-          {/* STATS */}
           <section className="stats-grid">
 
             <div className="stat-card">
@@ -573,9 +770,7 @@ export default function Home() {
                   Tournament Wins
                 </small>
 
-                <strong>
-                  {wins}
-                </strong>
+                <strong>{wins}</strong>
               </div>
             </div>
 
@@ -583,13 +778,9 @@ export default function Home() {
               <span>&#x1F3C5;</span>
 
               <div>
-                <small>
-                  Badges
-                </small>
+                <small>Badges</small>
 
-                <strong>
-                  {badges}
-                </strong>
+                <strong>{badges}</strong>
               </div>
             </div>
 
@@ -597,9 +788,7 @@ export default function Home() {
               <span>&#x1F48E;</span>
 
               <div>
-                <small>
-                  Sponsored
-                </small>
+                <small>Sponsored</small>
 
                 <strong>
                   {sponsorBadge}
@@ -609,7 +798,6 @@ export default function Home() {
 
           </section>
 
-          {/* QUICK ACTIONS */}
           <section className="home-section">
 
             <div className="section-heading">
@@ -619,9 +807,7 @@ export default function Home() {
                   PLAY
                 </p>
 
-                <h2>
-                  Quick Actions
-                </h2>
+                <h2>Quick Actions</h2>
               </div>
 
             </div>
@@ -630,7 +816,9 @@ export default function Home() {
 
               <button
                 type="button"
-                onClick={() => navigate('/tournaments')}
+                onClick={() =>
+                  navigate('/tournaments')
+                }
                 className="action-card"
               >
                 <span>&#x1F3C6;</span>
@@ -646,7 +834,9 @@ export default function Home() {
 
               <button
                 type="button"
-                onClick={() => navigate('/tournaments')}
+                onClick={() =>
+                  navigate('/tournaments')
+                }
                 className="action-card"
               >
                 <span>&#x1F3AE;</span>
@@ -662,7 +852,9 @@ export default function Home() {
 
               <button
                 type="button"
-                onClick={() => navigate('/tournaments')}
+                onClick={() =>
+                  navigate('/tournaments')
+                }
                 className="action-card"
               >
                 <span>&#x1F4B0;</span>
@@ -678,7 +870,9 @@ export default function Home() {
 
               <button
                 type="button"
-                onClick={() => navigate('/matches')}
+                onClick={() =>
+                  navigate('/matches')
+                }
                 className="action-card"
               >
                 <span>&#x26BD;</span>
@@ -695,7 +889,6 @@ export default function Home() {
             </div>
           </section>
 
-          {/* MY TOURNAMENTS */}
           <section className="home-section">
 
             <div className="section-heading">
@@ -705,15 +898,15 @@ export default function Home() {
                   YOUR ACTIVITY
                 </p>
 
-                <h2>
-                  My Tournaments
-                </h2>
+                <h2>My Tournaments</h2>
               </div>
 
               <button
                 type="button"
                 className="text-button"
-                onClick={() => navigate('/tournaments')}
+                onClick={() =>
+                  navigate('/tournaments')
+                }
               >
                 View All &#x2192;
               </button>
@@ -755,7 +948,9 @@ export default function Home() {
                 <div>&#x1F3C6;</div>
 
                 <h3>
-                  No {myTournamentTab.toLowerCase()} tournaments
+                  No{' '}
+                  {myTournamentTab.toLowerCase()}{' '}
+                  tournaments
                 </h3>
 
                 <p>
@@ -765,7 +960,9 @@ export default function Home() {
 
                 <button
                   type="button"
-                  onClick={() => navigate('/tournaments')}
+                  onClick={() =>
+                    navigate('/tournaments')
+                  }
                 >
                   Explore Tournaments
                 </button>
@@ -800,7 +997,8 @@ export default function Home() {
                       <div className="tournament-info">
 
                         <span>
-                          P {tournament.players} players
+                          P {tournament.players}{' '}
+                          players
                         </span>
 
                         <span>
@@ -814,7 +1012,7 @@ export default function Home() {
                         onClick={() =>
                           navigate(
                             '/tournaments/' +
-                            tournament.id
+                              tournament.id
                           )
                         }
                       >
@@ -830,7 +1028,6 @@ export default function Home() {
 
           </section>
 
-          {/* FEATURED TOURNAMENTS */}
           <section className="home-section">
 
             <div className="section-heading">
@@ -848,7 +1045,9 @@ export default function Home() {
               <button
                 type="button"
                 className="text-button"
-                onClick={() => navigate('/tournaments')}
+                onClick={() =>
+                  navigate('/tournaments')
+                }
               >
                 See All &#x2192;
               </button>
@@ -887,7 +1086,8 @@ export default function Home() {
                       <div className="tournament-card-top">
 
                         <span>
-                          {tournament.game || 'Football'}
+                          {tournament.game ||
+                            'Football'}
                         </span>
 
                         {tournament.is_sponsored && (
@@ -905,7 +1105,8 @@ export default function Home() {
                       <div className="tournament-info">
 
                         <span>
-                          P {tournament.players || 0} players
+                          P {tournament.players || 0}{' '}
+                          players
                         </span>
 
                         <span>
@@ -919,7 +1120,7 @@ export default function Home() {
                         onClick={() =>
                           navigate(
                             '/tournaments/' +
-                            tournament.id
+                              tournament.id
                           )
                         }
                       >
@@ -935,7 +1136,6 @@ export default function Home() {
 
           </section>
 
-          {/* BOTTOM FEATURE AREA */}
           <section className="feature-grid">
 
             <div className="feature-panel">
@@ -971,9 +1171,7 @@ export default function Home() {
                   VERITAS NEWS
                 </p>
 
-                <h3>
-                  Announcements
-                </h3>
+                <h3>Announcements</h3>
 
                 <p>
                   Important announcements and
@@ -991,3 +1189,5 @@ export default function Home() {
     </div>
   )
 }
+
+

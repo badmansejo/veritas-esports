@@ -16,10 +16,16 @@ import TournamentDetails from './pages/Tournaments/TournamentDetails'
 import Wallet from './pages/Wallet/Wallet'
 import Marketplace from './pages/Marketplace/Marketplace'
 import Inventory from './pages/Inventory/Inventory'
+import Settings from './pages/Settings/Settings'
+import Account from './pages/Settings/Account/Account'
+import Profile from './pages/Settings/Profile/Profile'
+import Security from './pages/Settings/Security/Security'
+import Notifications from './pages/Notifications/Notifications'
 
 import AdminDepositMethods from './pages/Admin/AdminDepositMethods'
 import AdminDeposits from './pages/Admin/AdminDeposits'
 import AdminDashboard from './pages/Admin/AdminDashboard'
+import AdminNotifications from './pages/Admin/AdminNotifications'
 
 function ComingSoon({ title }) {
   return (
@@ -53,7 +59,7 @@ function ComingSoon({ title }) {
 export default function App() {
   return (
     <Routes>
-      {/* AUTH */}
+
       <Route
         path="/login"
         element={<Login />}
@@ -79,8 +85,8 @@ export default function App() {
         element={<VerifyEmail />}
       />
 
-      {/* PROTECTED APP */}
       <Route element={<ProtectedRoute />}>
+
         <Route
           path="/"
           element={<Home />}
@@ -98,7 +104,9 @@ export default function App() {
 
         <Route
           path="/matches"
-          element={<ComingSoon title="Matches" />}
+          element={
+            <ComingSoon title="Matches" />
+          }
         />
 
         <Route
@@ -108,7 +116,9 @@ export default function App() {
 
         <Route
           path="/vcoins"
-          element={<ComingSoon title="V Coins" />}
+          element={
+            <ComingSoon title="V Coins" />
+          }
         />
 
         <Route
@@ -123,17 +133,33 @@ export default function App() {
 
         <Route
           path="/notifications"
-          element={<ComingSoon title="Notifications" />}
+          element={<Notifications />}
         />
 
         <Route
           path="/settings"
-          element={<ComingSoon title="Settings" />}
+          element={<Settings />}
         />
+
+        <Route
+          path="/settings/account"
+          element={<Account />}
+        />
+
+        <Route
+          path="/settings/profile"
+          element={<Profile />}
+        />
+
+        <Route
+          path="/settings/security"
+          element={<Security />}
+        />
+
       </Route>
 
-      {/* ADMIN ONLY */}
       <Route element={<AdminRoute />}>
+
         <Route
           path="/admin"
           element={<AdminDashboard />}
@@ -148,16 +174,19 @@ export default function App() {
           path="/admin/deposits"
           element={<AdminDeposits />}
         />
+
+        <Route
+          path="/admin/notifications"
+          element={<AdminNotifications />}
+        />
+
       </Route>
 
-      {/* FALLBACK */}
       <Route
         path="*"
         element={<Navigate to="/" replace />}
       />
+
     </Routes>
   )
 }
-
-
-

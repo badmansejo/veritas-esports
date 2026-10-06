@@ -1,0 +1,255 @@
+﻿.notifications-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top, #182235 0%, #070b14 42%, #050810 100%);
+  color: #ffffff;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.notifications-container {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.notifications-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.notifications-back {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid #263248;
+  background: #101827;
+  color: #ffffff;
+  font-size: 24px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.notifications-header h1 {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 900;
+}
+
+.notifications-header p {
+  margin: 5px 0 0;
+  color: #8995aa;
+  font-size: 14px;
+}
+
+.notifications-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.notifications-actions button {
+  padding: 10px 14px;
+  border-radius: 9px;
+  border: 1px solid #263248;
+  background: #101827;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.notifications-actions button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.notifications-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+}
+
+.notifications-tabs button {
+  white-space: nowrap;
+  padding: 10px 13px;
+  border-radius: 9px;
+  border: 1px solid #263248;
+  background: #101827;
+  color: #8995aa;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.notifications-tabs button.active {
+  background: #ffffff;
+  color: #070b14;
+  border-color: #ffffff;
+}
+
+.notifications-tabs span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 17px;
+  height: 17px;
+  margin-left: 6px;
+  padding: 0 4px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  background: #070b14;
+  color: #ffffff;
+  font-size: 10px;
+}
+
+.notifications-list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.notification-item {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  text-align: left;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid #202b3f;
+  background: #0d1422;
+  color: #ffffff;
+  cursor: pointer;
+  position: relative;
+  box-sizing: border-box;
+}
+
+.notification-item:hover {
+  border-color: #334155;
+}
+
+.notification-item.unread {
+  background: #101827;
+  border-color: #334155;
+}
+
+.notification-icon {
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  border-radius: 11px;
+  background: #182235;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 19px;
+}
+
+.notification-content {
+  min-width: 0;
+  flex: 1;
+}
+
+.notification-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.notification-top strong {
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.notification-top span {
+  color: #68758b;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.notification-content p {
+  margin: 6px 0;
+  color: #a5afbf;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.notification-content small {
+  color: #68758b;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.notification-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ffffff;
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+
+.notifications-empty {
+  padding: 55px 20px;
+  text-align: center;
+  background: #0d1422;
+  border: 1px solid #202b3f;
+  border-radius: 16px;
+}
+
+.notifications-empty-icon {
+  font-size: 40px;
+  margin-bottom: 12px;
+  opacity: 0.7;
+}
+
+.notifications-empty h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.notifications-empty p {
+  color: #68758b;
+  margin: 7px 0 0;
+  font-size: 13px;
+}
+
+.notifications-error {
+  margin-bottom: 12px;
+  padding: 13px;
+  border-radius: 10px;
+  background: #35151b;
+  border: 1px solid #6b2737;
+  color: #ff8fa3;
+  font-size: 13px;
+}
+
+@media (max-width: 600px) {
+  .notifications-page {
+    padding: 16px;
+  }
+
+  .notifications-actions {
+    justify-content: stretch;
+  }
+
+  .notifications-actions button {
+    flex: 1;
+  }
+
+  .notification-top {
+    display: block;
+  }
+
+  .notification-top span {
+    display: block;
+    margin-top: 4px;
+  }
+}

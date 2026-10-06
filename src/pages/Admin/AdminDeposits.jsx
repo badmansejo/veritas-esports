@@ -1,565 +1,568 @@
-﻿import React, { useEffect, useState } from 'react'
+﻿import React, { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../../lib/supabaseClient'
+import './AdminDeposits.css'
 
 export default function AdminDeposits() {
   const [deposits, setDeposits] = useState([])
+  const [users, setUsers] = useState({})
+  const [filter, setFilter] = useState('Pending')
   const [loading, setLoading] = useState(true)
   const [processingId, setProcessingId] = useState(null)
-  const [message, setMessage] = useState('')
   const [error, setError] = useState('')
-  const [filter, setFilter] = useState('Pending')
+  const [success, setSuccess] = useState('')
 
-  const loadDeposits = async () => {
+  useEffect(() => {
+    loadDeposits()
+  }, [])
+
+  async function loadDeposits() {
     setLoading(true)
     setError('')
 
     try {
-      let query = supabase
+      const { data, error } = await supabase
         .from('deposits')
-        .select(`
-          id,
-          user_id,
-          amount,
-          method,
-          reference,
-          status,
-          bonus_amount,
-          proof_url,
-          admin_note,
-          processed_by,
-          processed_at,
-          created_at,
-          updated_at,
-          manual_deposit_method_id
-        `)
+        .select('*')
         .order('created_at', { ascending: false })
 
-      if (filter !== 'All') {
-        query = query.eq('status', filter)
+      if (error) throw error
+
+      const rows = data || []
+      setDeposits(rows)
+
+      const userIds = [
+        ...new Set(
+          rows
+            .map(row => row.user_id)
+            .filter(Boolean)
+        )
+      ]
+
+      if (userIds.length > 0) {
+        const { data: profileRows, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .in('id', userIds)
+
+        if (!profileError && profileRows) {
+          const userMap = {}
+
+          profileRows.forEach(profile => {
+            userMap[profile.id] = profile
+          })
+
+          setUsers(userMap)
+        }
       }
-
-      const { data, error: fetchError } = await query
-
-      if (fetchError) {
-        throw fetchError
-      }
-
-      setDeposits(data || [])
     } catch (err) {
-      setError(err.message || 'Failed to load deposits.')
+      setError(err.message || 'Failed to load manual deposits.')
     } finally {
       setLoading(false)
     }
   }
 
-  useEffect(() => {
-    loadDeposits()
-  }, [filter])
+  function getUser(deposit) {
+    return users[deposit.user_id] || null
+  }
 
-  const approveDeposit = async (depositId) => {
-    const confirmed = window.confirm(
-      'Approve this manual deposit? The amount will be added to the user wallet.'
+  function getUserCode(deposit) {
+    const profile = getUser(deposit)
+
+    return (
+      deposit.user_code ||
+      profile?.user_code ||
+      '—'
     )
+  }
 
-    if (!confirmed) return
+  function getUsername(deposit) {
+    const profile = getUser(deposit)
 
-    setProcessingId(depositId)
-    setMessage('')
+    return (
+      profile?.username ||
+      deposit.username ||
+      'Unknown'
+    )
+  }
+
+  function getDisplayAmount(deposit) {
+    return Number(deposit.amount || 0).toFixed(2)
+  }
+
+  function getReference(deposit) {
+    return (
+      deposit.reference ||
+      deposit.transaction_code ||
+      deposit.transaction_reference ||
+      '—'
+    )
+  }
+
+  function getMethod(deposit) {
+    return (
+      deposit.method ||
+      deposit.payment_method ||
+      'Manual Deposit'
+    )
+  }
+
+  function getProof(deposit) {
+    return (
+      deposit.proof_url ||
+      deposit.proof_image_url ||
+      deposit.screenshot_url ||
+      deposit.payment_proof ||
+      null
+    )
+  }
+
+  function normaliseStatus(status) {
+    return String(status || 'Pending').toLowerCase()
+  }
+
+  const filteredDeposits = useMemo(() => {
+    if (filter === 'All') return deposits
+
+    return deposits.filter(
+      deposit =>
+        normaliseStatus(deposit.status) ===
+        filter.toLowerCase()
+    )
+  }, [deposits, filter])
+
+  const counts = useMemo(() => {
+    return {
+      Pending: deposits.filter(
+        d => normaliseStatus(d.status) === 'pending'
+      ).length,
+
+      Confirmed: deposits.filter(
+        d =>
+          normaliseStatus(d.status) === 'confirmed' ||
+          normaliseStatus(d.status) === 'approved'
+      ).length,
+
+      Rejected: deposits.filter(
+        d => normaliseStatus(d.status) === 'rejected'
+      ).length,
+
+      Cancelled: deposits.filter(
+        d => normaliseStatus(d.status) === 'cancelled'
+      ).length,
+
+      All: deposits.length
+    }
+  }, [deposits])
+
+  async function updateDepositStatus(deposit, newStatus) {
+    if (!deposit?.id) return
+
+    setProcessingId(deposit.id)
     setError('')
+    setSuccess('')
 
     try {
-      const { data, error: rpcError } = await supabase.rpc(
-        'approve_manual_deposit',
-        {
-          p_deposit_id: depositId,
+      /*
+       * Approval is handled by the database RPC when available.
+       * This prevents the same deposit from being credited twice.
+       */
+
+      if (
+        newStatus === 'Confirmed' ||
+        newStatus === 'Approved'
+      ) {
+        const { data, error } = await supabase.rpc(
+          'approve_manual_deposit',
+          {
+            p_deposit_id: deposit.id
+          }
+        )
+
+        if (error) {
+          /*
+           * If the RPC does not exist yet, stop instead of
+           * blindly updating the status and risking a duplicate credit.
+           */
+          throw new Error(
+            `Approval function is not available: ${error.message}`
+          )
         }
-      )
 
-      if (rpcError) {
-        throw rpcError
+        setSuccess(
+          data?.message ||
+          `Deposit for ${getUsername(deposit)} approved successfully.`
+        )
+      } else {
+        const { error } = await supabase
+          .from('deposits')
+          .update({
+            status: newStatus
+          })
+          .eq('id', deposit.id)
+
+        if (error) throw error
+
+        setSuccess(
+          `Deposit marked ${newStatus.toLowerCase()}.`
+        )
       }
-
-      if (!data?.success) {
-        throw new Error(data?.message || 'Deposit approval failed.')
-      }
-
-      setMessage(
-        `Deposit approved successfully. KES ${Number(
-          data.total_credit || data.amount || 0
-        ).toFixed(2)} has been credited.`
-      )
 
       await loadDeposits()
     } catch (err) {
-      setError(err.message || 'Failed to approve deposit.')
+      setError(err.message || 'Unable to update deposit.')
     } finally {
       setProcessingId(null)
     }
   }
 
-  const rejectDeposit = async (depositId) => {
-    const reason = window.prompt(
-      'Enter the reason for rejecting this deposit:',
-      'Payment could not be verified'
-    )
+  function formatDate(value) {
+    if (!value) return '—'
 
-    if (reason === null) return
+    const date = new Date(value)
 
-    setProcessingId(depositId)
-    setMessage('')
-    setError('')
-
-    try {
-      const { data, error: rpcError } = await supabase.rpc(
-        'reject_manual_deposit',
-        {
-          p_deposit_id: depositId,
-          p_admin_note: reason.trim() || null,
-        }
-      )
-
-      if (rpcError) {
-        throw rpcError
-      }
-
-      if (!data?.success) {
-        throw new Error(data?.message || 'Deposit rejection failed.')
-      }
-
-      setMessage('Manual deposit rejected successfully.')
-
-      await loadDeposits()
-    } catch (err) {
-      setError(err.message || 'Failed to reject deposit.')
-    } finally {
-      setProcessingId(null)
+    if (Number.isNaN(date.getTime())) {
+      return String(value)
     }
+
+    return date.toLocaleString('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    })
   }
 
-  const formatDate = (date) => {
-    if (!date) return '-'
-    return new Date(date).toLocaleString()
-  }
+  function statusClass(status) {
+    const value = normaliseStatus(status)
 
-  const statusClass = (status) => {
-    if (status === 'Confirmed') return 'status confirmed'
-    if (status === 'Rejected') return 'status rejected'
-    if (status === 'Cancelled') return 'status cancelled'
-    return 'status pending'
+    if (
+      value === 'confirmed' ||
+      value === 'approved'
+    ) {
+      return 'admin-deposit-status confirmed'
+    }
+
+    if (value === 'rejected') {
+      return 'admin-deposit-status rejected'
+    }
+
+    if (value === 'cancelled') {
+      return 'admin-deposit-status cancelled'
+    }
+
+    return 'admin-deposit-status pending'
   }
 
   return (
     <div className="admin-deposits-page">
       <div className="admin-deposits-header">
         <div>
+          <span className="admin-deposits-eyebrow">
+            WALLET
+          </span>
+
           <h1>Manual Deposits</h1>
+
           <p>
             Review manual deposit requests and credit verified payments.
           </p>
         </div>
 
         <button
-          type="button"
-          className="refresh-button"
+          className="admin-deposits-refresh"
           onClick={loadDeposits}
           disabled={loading}
         >
-          {loading ? 'Loading...' : 'Refresh'}
+          {loading ? 'Refreshing...' : 'Refresh'}
         </button>
       </div>
 
-      <div className="deposit-filters">
-        {['Pending', 'Confirmed', 'Rejected', 'Cancelled', 'All'].map(
-          (item) => (
-            <button
-              key={item}
-              type="button"
-              className={filter === item ? 'filter active' : 'filter'}
-              onClick={() => setFilter(item)}
-            >
-              {item}
-            </button>
-          )
-        )}
-      </div>
-
-      {message && (
-        <div className="admin-message success-message">
-          {message}
-        </div>
-      )}
-
       {error && (
-        <div className="admin-message error-message">
+        <div className="admin-deposits-alert error">
           {error}
         </div>
       )}
 
-      {loading ? (
-        <div className="empty-state">
-          Loading manual deposits...
+      {success && (
+        <div className="admin-deposits-alert success">
+          {success}
         </div>
-      ) : deposits.length === 0 ? (
-        <div className="empty-state">
-          <h3>No {filter.toLowerCase()} deposits</h3>
-          <p>
-            Manual deposit requests matching this filter will appear here.
-          </p>
-        </div>
-      ) : (
-        <div className="deposits-table-wrapper">
-          <table className="deposits-table">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>User ID</th>
-                <th>Amount</th>
-                <th>Method</th>
-                <th>Transaction Code</th>
-                <th>Status</th>
-                <th>Proof</th>
-                <th>Action</th>
-              </tr>
-            </thead>
+      )}
 
-            <tbody>
-              {deposits.map((deposit) => (
+      <div className="admin-deposits-tabs">
+        {[
+          'Pending',
+          'Confirmed',
+          'Rejected',
+          'Cancelled',
+          'All'
+        ].map(tab => (
+          <button
+            key={tab}
+            className={filter === tab ? 'active' : ''}
+            onClick={() => setFilter(tab)}
+          >
+            {tab}
+
+            <span>
+              {counts[tab]}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      <div className="admin-deposits-table-wrap">
+        <table className="admin-deposits-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>User ID</th>
+              <th>Username</th>
+              <th>Amount</th>
+              <th>Method</th>
+              <th>Transaction Code</th>
+              <th>Status</th>
+              <th>Proof</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {!loading && filteredDeposits.length === 0 && (
+              <tr>
+                <td
+                  colSpan="9"
+                  className="admin-deposits-empty"
+                >
+                  No {filter.toLowerCase()} deposits found.
+                </td>
+              </tr>
+            )}
+
+            {filteredDeposits.map(deposit => {
+              const proof = getProof(deposit)
+              const isProcessing =
+                processingId === deposit.id
+
+              return (
                 <tr key={deposit.id}>
                   <td>
-                    <div className="date-cell">
-                      <strong>{formatDate(deposit.created_at)}</strong>
-                    </div>
+                    <strong>
+                      {formatDate(
+                        deposit.created_at ||
+                        deposit.inserted_at
+                      )}
+                    </strong>
                   </td>
 
                   <td>
-                    <span className="user-id">
-                      {deposit.user_id}
+                    <span className="admin-deposits-user-code">
+                      {getUserCode(deposit)}
                     </span>
                   </td>
 
                   <td>
-                    <strong className="amount">
-                      KES {Number(deposit.amount || 0).toFixed(2)}
+                    <strong>
+                      {getUsername(deposit)}
                     </strong>
-
-                    {Number(deposit.bonus_amount || 0) > 0 && (
-                      <small className="bonus">
-                        + KES{' '}
-                        {Number(deposit.bonus_amount).toFixed(2)} bonus
-                      </small>
-                    )}
                   </td>
 
                   <td>
-                    <span>{deposit.method || 'Manual Deposit'}</span>
+                    <strong className="admin-deposits-amount">
+                      KES {getDisplayAmount(deposit)}
+                    </strong>
                   </td>
 
                   <td>
-                    <span className="reference">
-                      {deposit.reference || '-'}
+                    {getMethod(deposit)}
+                  </td>
+
+                  <td>
+                    <span className="admin-deposits-reference">
+                      {getReference(deposit)}
                     </span>
                   </td>
 
                   <td>
                     <span className={statusClass(deposit.status)}>
-                      {deposit.status}
+                      {deposit.status || 'Pending'}
                     </span>
                   </td>
 
                   <td>
-                    {deposit.proof_url ? (
+                    {proof ? (
                       <a
-                        href={deposit.proof_url}
+                        href={proof}
                         target="_blank"
-                        rel="noopener noreferrer"
-                        className="proof-link"
+                        rel="noreferrer"
+                        className="admin-deposits-proof"
                       >
                         View Proof
                       </a>
                     ) : (
-                      <span className="muted">No proof</span>
+                      <span className="admin-deposits-no-proof">
+                        No proof
+                      </span>
                     )}
                   </td>
 
                   <td>
-                    {deposit.status === 'Pending' ? (
-                      <div className="action-buttons">
-                        <button
-                          type="button"
-                          className="approve-button"
-                          onClick={() => approveDeposit(deposit.id)}
-                          disabled={processingId === deposit.id}
-                        >
-                          {processingId === deposit.id
-                            ? 'Processing...'
-                            : 'Approve'}
-                        </button>
+                    <div className="admin-deposits-actions">
+                      {normaliseStatus(deposit.status) === 'pending' && (
+                        <>
+                          <button
+                            className="approve"
+                            disabled={isProcessing}
+                            onClick={() =>
+                              updateDepositStatus(
+                                deposit,
+                                'Confirmed'
+                              )
+                            }
+                          >
+                            {isProcessing
+                              ? 'Processing...'
+                              : 'Approve'}
+                          </button>
 
-                        <button
-                          type="button"
-                          className="reject-button"
-                          onClick={() => rejectDeposit(deposit.id)}
-                          disabled={processingId === deposit.id}
-                        >
-                          Reject
-                        </button>
-                      </div>
-                    ) : (
-                      <span className="muted">
-                        {deposit.admin_note || 'Processed'}
-                      </span>
-                    )}
+                          <button
+                            className="reject"
+                            disabled={isProcessing}
+                            onClick={() =>
+                              updateDepositStatus(
+                                deposit,
+                                'Rejected'
+                              )
+                            }
+                          >
+                            Reject
+                          </button>
+                        </>
+                      )}
+
+                      {normaliseStatus(deposit.status) !== 'pending' && (
+                        <span className="admin-deposits-dash">
+                          —
+                        </span>
+                      )}
+                    </div>
                   </td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
 
-      <style>{`
-        .admin-deposits-page {
-          padding: 24px;
-          color: #ffffff;
-          min-height: 100%;
-        }
+      <div className="admin-deposits-mobile-list">
+        {filteredDeposits.map(deposit => {
+          const proof = getProof(deposit)
+          const isProcessing =
+            processingId === deposit.id
 
-        .admin-deposits-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          gap: 20px;
-          margin-bottom: 24px;
-        }
+          return (
+            <div
+              className="admin-deposit-mobile-card"
+              key={deposit.id}
+            >
+              <div className="admin-deposit-mobile-top">
+                <div>
+                  <span>USER ID</span>
+                  <strong>
+                    {getUserCode(deposit)}
+                  </strong>
+                </div>
 
-        .admin-deposits-header h1 {
-          margin: 0 0 6px;
-          font-size: 30px;
-          font-weight: 900;
-        }
+                <span className={statusClass(deposit.status)}>
+                  {deposit.status || 'Pending'}
+                </span>
+              </div>
 
-        .admin-deposits-header p {
-          margin: 0;
-          color: #9ca3af;
-        }
+              <div className="admin-deposit-mobile-user">
+                {getUsername(deposit)}
+              </div>
 
-        .refresh-button {
-          border: 0;
-          border-radius: 10px;
-          padding: 11px 18px;
-          background: #ffffff;
-          color: #000000;
-          font-weight: 800;
-          cursor: pointer;
-        }
+              <div className="admin-deposit-mobile-amount">
+                KES {getDisplayAmount(deposit)}
+              </div>
 
-        .refresh-button:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
+              <div className="admin-deposit-mobile-grid">
+                <div>
+                  <span>METHOD</span>
+                  <strong>{getMethod(deposit)}</strong>
+                </div>
 
-        .deposit-filters {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 8px;
-          margin-bottom: 18px;
-        }
+                <div>
+                  <span>TRANSACTION</span>
+                  <strong>{getReference(deposit)}</strong>
+                </div>
 
-        .filter {
-          border: 1px solid #303030;
-          background: #111111;
-          color: #aaaaaa;
-          padding: 9px 15px;
-          border-radius: 9px;
-          font-weight: 700;
-          cursor: pointer;
-        }
+                <div>
+                  <span>DATE</span>
+                  <strong>
+                    {formatDate(
+                      deposit.created_at ||
+                      deposit.inserted_at
+                    )}
+                  </strong>
+                </div>
 
-        .filter.active {
-          background: #ffffff;
-          color: #000000;
-          border-color: #ffffff;
-        }
+                <div>
+                  <span>PROOF</span>
+                  <strong>
+                    {proof ? 'Available' : 'No proof'}
+                  </strong>
+                </div>
+              </div>
 
-        .admin-message {
-          padding: 13px 16px;
-          border-radius: 10px;
-          margin-bottom: 18px;
-          font-weight: 700;
-        }
+              {proof && (
+                <a
+                  href={proof}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="admin-deposits-mobile-proof"
+                >
+                  View Payment Proof
+                </a>
+              )}
 
-        .success-message {
-          background: rgba(34, 197, 94, 0.12);
-          border: 1px solid rgba(34, 197, 94, 0.35);
-          color: #86efac;
-        }
+              {normaliseStatus(deposit.status) === 'pending' && (
+                <div className="admin-deposits-mobile-actions">
+                  <button
+                    className="approve"
+                    disabled={isProcessing}
+                    onClick={() =>
+                      updateDepositStatus(
+                        deposit,
+                        'Confirmed'
+                      )
+                    }
+                  >
+                    {isProcessing
+                      ? 'Processing...'
+                      : 'Approve'}
+                  </button>
 
-        .error-message {
-          background: rgba(239, 68, 68, 0.12);
-          border: 1px solid rgba(239, 68, 68, 0.35);
-          color: #fca5a5;
-        }
-
-        .empty-state {
-          padding: 60px 20px;
-          text-align: center;
-          border: 1px solid #252525;
-          border-radius: 14px;
-          background: #0d0d0d;
-          color: #9ca3af;
-        }
-
-        .empty-state h3 {
-          color: #ffffff;
-          margin: 0 0 8px;
-        }
-
-        .empty-state p {
-          margin: 0;
-        }
-
-        .deposits-table-wrapper {
-          overflow-x: auto;
-          border: 1px solid #252525;
-          border-radius: 14px;
-          background: #0d0d0d;
-        }
-
-        .deposits-table {
-          width: 100%;
-          min-width: 1100px;
-          border-collapse: collapse;
-        }
-
-        .deposits-table th,
-        .deposits-table td {
-          padding: 14px;
-          text-align: left;
-          border-bottom: 1px solid #222222;
-          vertical-align: middle;
-        }
-
-        .deposits-table th {
-          color: #8f8f8f;
-          font-size: 12px;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          background: #111111;
-        }
-
-        .deposits-table td {
-          color: #dddddd;
-        }
-
-        .date-cell strong {
-          font-size: 12px;
-          font-weight: 600;
-        }
-
-        .user-id {
-          display: inline-block;
-          max-width: 120px;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-          color: #a3a3a3;
-          font-size: 11px;
-        }
-
-        .amount {
-          display: block;
-          color: #ffffff;
-        }
-
-        .bonus {
-          display: block;
-          color: #86efac;
-          margin-top: 3px;
-        }
-
-        .reference {
-          font-family: monospace;
-          color: #ffffff;
-        }
-
-        .status {
-          display: inline-block;
-          padding: 5px 9px;
-          border-radius: 999px;
-          font-size: 11px;
-          font-weight: 800;
-        }
-
-        .status.pending {
-          background: rgba(234, 179, 8, 0.14);
-          color: #fde047;
-        }
-
-        .status.confirmed {
-          background: rgba(34, 197, 94, 0.14);
-          color: #86efac;
-        }
-
-        .status.rejected,
-        .status.cancelled {
-          background: rgba(239, 68, 68, 0.14);
-          color: #fca5a5;
-        }
-
-        .proof-link {
-          color: #ffffff;
-          font-weight: 700;
-          text-decoration: underline;
-        }
-
-        .muted {
-          color: #666666;
-          font-size: 12px;
-        }
-
-        .action-buttons {
-          display: flex;
-          gap: 7px;
-        }
-
-        .approve-button,
-        .reject-button {
-          border: 0;
-          border-radius: 8px;
-          padding: 8px 11px;
-          font-weight: 800;
-          cursor: pointer;
-        }
-
-        .approve-button {
-          background: #22c55e;
-          color: #031208;
-        }
-
-        .reject-button {
-          background: #ef4444;
-          color: #ffffff;
-        }
-
-        .approve-button:disabled,
-        .reject-button:disabled {
-          opacity: 0.45;
-          cursor: not-allowed;
-        }
-
-        @media (max-width: 700px) {
-          .admin-deposits-page {
-            padding: 14px;
-          }
-
-          .admin-deposits-header {
-            align-items: flex-start;
-            flex-direction: column;
-          }
-        }
-      `}</style>
+                  <button
+                    className="reject"
+                    disabled={isProcessing}
+                    onClick={() =>
+                      updateDepositStatus(
+                        deposit,
+                        'Rejected'
+                      )
+                    }
+                  >
+                    Reject
+                  </button>
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
-
-

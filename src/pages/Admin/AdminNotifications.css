@@ -1,0 +1,111 @@
+﻿.admin-notifications-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top, #182235 0%, #070b14 45%, #050810 100%);
+  color: #ffffff;
+  padding: 30px 20px;
+  box-sizing: border-box;
+}
+
+.admin-notifications-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.admin-notifications-header {
+  margin-bottom: 22px;
+}
+
+.admin-notifications-header h1 {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 900;
+}
+
+.admin-notifications-header p {
+  margin: 7px 0 0;
+  color: #8995aa;
+}
+
+.admin-notifications-card {
+  background: #0d1422;
+  border: 1px solid #202b3f;
+  border-radius: 16px;
+  padding: 22px;
+}
+
+.admin-field {
+  margin-bottom: 17px;
+}
+
+.admin-field label {
+  display: block;
+  margin-bottom: 7px;
+  color: #aeb8c8;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.admin-field input,
+.admin-field select,
+.admin-field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #263248;
+  border-radius: 10px;
+  background: #080e19;
+  color: #ffffff;
+  padding: 13px;
+  outline: none;
+  font: inherit;
+}
+
+.admin-field textarea {
+  resize: vertical;
+}
+
+.admin-field input:focus,
+.admin-field select:focus,
+.admin-field textarea:focus {
+  border-color: #64748b;
+}
+
+.admin-notification-message {
+  margin-bottom: 16px;
+  padding: 12px;
+  border-radius: 9px;
+  background: #121c2c;
+  border: 1px solid #263248;
+  color: #cbd5e1;
+  font-size: 13px;
+}
+
+.admin-send-notification {
+  width: 100%;
+  border: 0;
+  border-radius: 10px;
+  padding: 14px;
+  background: #ffffff;
+  color: #070b14;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.admin-send-notification:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.admin-recipient-info {
+  margin-bottom: 17px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #121c2c;
+  border: 1px solid #263248;
+  color: #aeb8c8;
+  font-size: 13px;
+}
+
+.admin-recipient-info strong {
+  color: #ffffff;
+}

@@ -1,0 +1,360 @@
+﻿.admin-deposits-page {
+  min-height: 100%;
+  padding: 28px;
+  color: #f4f6f8;
+}
+
+.admin-deposits-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.admin-deposits-eyebrow {
+  display: block;
+  color: #8b949f;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 2px;
+}
+
+.admin-deposits-header h1 {
+  margin: 5px 0 6px;
+  font-size: 30px;
+  font-weight: 900;
+}
+
+.admin-deposits-header p {
+  margin: 0;
+  color: #8d96a1;
+}
+
+.admin-deposits-refresh {
+  border: 1px solid #303640;
+  background: #171a1f;
+  color: #fff;
+  border-radius: 10px;
+  padding: 11px 17px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.admin-deposits-refresh:hover:not(:disabled) {
+  background: #22262d;
+}
+
+.admin-deposits-refresh:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+.admin-deposits-alert {
+  margin-bottom: 18px;
+  padding: 13px 16px;
+  border-radius: 11px;
+  font-weight: 700;
+}
+
+.admin-deposits-alert.error {
+  color: #ff8c8c;
+  background: rgba(255, 70, 70, .08);
+  border: 1px solid rgba(255, 70, 70, .22);
+}
+
+.admin-deposits-alert.success {
+  color: #64e0a0;
+  background: rgba(55, 210, 130, .08);
+  border: 1px solid rgba(55, 210, 130, .22);
+}
+
+.admin-deposits-tabs {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.admin-deposits-tabs button {
+  border: 1px solid #2d333b;
+  background: #12151a;
+  color: #929ba6;
+  border-radius: 9px;
+  padding: 9px 13px;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.admin-deposits-tabs button span {
+  margin-left: 7px;
+  opacity: .65;
+}
+
+.admin-deposits-tabs button.active {
+  background: #252a31;
+  color: #fff;
+  border-color: #4a515c;
+}
+
+.admin-deposits-table-wrap {
+  overflow-x: auto;
+  border: 1px solid #292f37;
+  border-radius: 16px;
+  background: #101318;
+}
+
+.admin-deposits-table {
+  width: 100%;
+  min-width: 1120px;
+  border-collapse: collapse;
+}
+
+.admin-deposits-table th {
+  padding: 14px 13px;
+  text-align: left;
+  white-space: nowrap;
+  color: #747e89;
+  font-size: 10px;
+  letter-spacing: 1px;
+  font-weight: 900;
+  border-bottom: 1px solid #292f37;
+}
+
+.admin-deposits-table td {
+  padding: 15px 13px;
+  border-bottom: 1px solid #20252c;
+  color: #b4bcc6;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.admin-deposits-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.admin-deposits-table tbody tr:hover {
+  background: rgba(255,255,255,.018);
+}
+
+.admin-deposits-table strong {
+  color: #e9edf1;
+}
+
+.admin-deposits-user-code {
+  display: inline-block;
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: rgba(255,255,255,.06);
+  color: #fff;
+  font-family: monospace;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.admin-deposits-amount {
+  color: #fff !important;
+}
+
+.admin-deposits-reference {
+  color: #929ba6;
+  font-family: monospace;
+}
+
+.admin-deposit-status {
+  display: inline-flex;
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.admin-deposit-status.pending {
+  color: #e4bd68;
+  background: rgba(228,189,104,.1);
+}
+
+.admin-deposit-status.confirmed {
+  color: #53d997;
+  background: rgba(83,217,151,.1);
+}
+
+.admin-deposit-status.rejected {
+  color: #ff7777;
+  background: rgba(255,119,119,.1);
+}
+
+.admin-deposit-status.cancelled {
+  color: #a2aab4;
+  background: rgba(162,170,180,.08);
+}
+
+.admin-deposits-proof {
+  color: #71aaff;
+  text-decoration: none;
+  font-weight: 800;
+}
+
+.admin-deposits-proof:hover {
+  text-decoration: underline;
+}
+
+.admin-deposits-no-proof {
+  color: #69727d;
+}
+
+.admin-deposits-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.admin-deposits-actions button,
+.admin-deposits-mobile-actions button {
+  border: 0;
+  border-radius: 7px;
+  padding: 7px 10px;
+  font-size: 11px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.admin-deposits-actions button:disabled,
+.admin-deposits-mobile-actions button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.admin-deposits-actions .approve,
+.admin-deposits-mobile-actions .approve {
+  color: #07150e;
+  background: #4bda91;
+}
+
+.admin-deposits-actions .reject,
+.admin-deposits-mobile-actions .reject {
+  color: #fff;
+  background: #9e4141;
+}
+
+.admin-deposits-dash {
+  color: #555e69;
+}
+
+.admin-deposits-empty {
+  text-align: center !important;
+  padding: 50px !important;
+  color: #69727d !important;
+}
+
+.admin-deposits-mobile-list {
+  display: none;
+}
+
+@media (max-width: 800px) {
+  .admin-deposits-page {
+    padding: 16px;
+  }
+
+  .admin-deposits-header {
+    flex-direction: column;
+  }
+
+  .admin-deposits-refresh {
+    width: 100%;
+  }
+
+  .admin-deposits-table-wrap {
+    display: none;
+  }
+
+  .admin-deposits-mobile-list {
+    display: grid;
+    gap: 12px;
+  }
+
+  .admin-deposit-mobile-card {
+    padding: 16px;
+    border: 1px solid #292f37;
+    border-radius: 15px;
+    background: #101318;
+  }
+
+  .admin-deposit-mobile-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .admin-deposit-mobile-top span:first-child {
+    display: block;
+  }
+
+  .admin-deposit-mobile-top > div > span {
+    display: block;
+    margin-bottom: 4px;
+    color: #69727d;
+    font-size: 9px;
+    letter-spacing: 1px;
+    font-weight: 900;
+  }
+
+  .admin-deposit-mobile-top strong {
+    color: #fff;
+    font-family: monospace;
+    letter-spacing: 1px;
+  }
+
+  .admin-deposit-mobile-user {
+    margin-top: 13px;
+    color: #cbd1d8;
+    font-weight: 900;
+  }
+
+  .admin-deposit-mobile-amount {
+    margin-top: 7px;
+    font-size: 23px;
+    font-weight: 900;
+  }
+
+  .admin-deposit-mobile-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .admin-deposit-mobile-grid span {
+    display: block;
+    margin-bottom: 4px;
+    color: #69727d;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 1px;
+  }
+
+  .admin-deposit-mobile-grid strong {
+    color: #c8ced5;
+    font-size: 11px;
+    word-break: break-word;
+  }
+
+  .admin-deposits-mobile-proof {
+    display: block;
+    margin-top: 15px;
+    color: #71aaff;
+    font-size: 12px;
+    font-weight: 900;
+  }
+
+  .admin-deposits-mobile-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 16px;
+  }
+
+  .admin-deposits-mobile-actions button {
+    padding: 11px;
+  }
+}

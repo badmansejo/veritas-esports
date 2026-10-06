@@ -1,0 +1,186 @@
+﻿.security-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top, #182235 0%, #070b14 42%, #050810 100%);
+  color: #ffffff;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.security-container {
+  width: 100%;
+  max-width: 850px;
+  margin: 0 auto;
+}
+
+.security-back {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid #263248;
+  background: #101827;
+  color: #ffffff;
+  font-size: 24px;
+  cursor: pointer;
+  margin-bottom: 24px;
+}
+
+.security-heading h1 {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 900;
+}
+
+.security-heading p {
+  margin: 6px 0 28px;
+  color: #8995aa;
+}
+
+.security-card {
+  background: rgba(13, 20, 34, 0.96);
+  border: 1px solid #202b3f;
+  border-radius: 18px;
+  padding: 24px;
+  margin-bottom: 16px;
+  box-sizing: border-box;
+}
+
+.security-section-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.security-icon {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  border-radius: 13px;
+  background: #182235;
+  border: 1px solid #263248;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+}
+
+.security-section-title h2 {
+  margin: 0 0 5px;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.security-section-title p {
+  margin: 0;
+  color: #8995aa;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.security-field {
+  margin-bottom: 17px;
+}
+
+.security-field label {
+  display: block;
+  color: #8995aa;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.security-field input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px;
+  background: #101827;
+  border: 1px solid #263248;
+  border-radius: 10px;
+  color: #ffffff;
+  font-size: 15px;
+  outline: none;
+}
+
+.security-field input:focus {
+  border-color: #64748b;
+}
+
+.security-primary,
+.security-secondary,
+.security-danger {
+  width: 100%;
+  padding: 14px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.security-primary {
+  border: 0;
+  background: #ffffff;
+  color: #070b14;
+}
+
+.security-secondary {
+  border: 1px solid #334155;
+  background: #182235;
+  color: #ffffff;
+}
+
+.security-danger {
+  border: 1px solid #6b2737;
+  background: #35151b;
+  color: #ff8fa3;
+}
+
+.security-primary:disabled,
+.security-secondary:disabled,
+.security-danger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.security-message {
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.security-error {
+  background: #35151b;
+  border: 1px solid #6b2737;
+  color: #ff8fa3;
+}
+
+.security-success {
+  background: #102b20;
+  border: 1px solid #1f6b4b;
+  color: #6ee7b7;
+}
+
+.security-email {
+  padding: 13px 14px;
+  margin-bottom: 12px;
+  background: #101827;
+  border: 1px solid #202b3f;
+  border-radius: 10px;
+  color: #8995aa;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.security-danger-card {
+  border-color: #3b2029;
+}
+
+@media (max-width: 600px) {
+  .security-page {
+    padding: 16px;
+  }
+
+  .security-card {
+    padding: 18px;
+  }
+}

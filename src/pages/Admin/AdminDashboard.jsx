@@ -571,6 +571,8 @@ export default function AdminDashboard() {
             <AdminCard
               title="📢 Send Notification"
               description="Send announcements to users."
+              path="/admin/notifications"
+              live
             />
 
             <AdminCard
@@ -751,4 +753,5 @@ export default function AdminDashboard() {
     </div>
   )
 }
+
 
