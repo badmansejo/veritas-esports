@@ -451,6 +451,21 @@ export default function Home() {
         <button
           type="button"
           className="notification-toast"
+          style={{
+            position: 'fixed',
+            top: '80px',
+            right: '24px',
+            zIndex: 99999,
+            width: '320px',
+            padding: '16px',
+            borderRadius: '12px',
+            border: '1px solid rgba(255,255,255,0.15)',
+            background: '#111827',
+            color: '#ffffff',
+            boxShadow: '0 12px 35px rgba(0,0,0,0.5)',
+            cursor: 'pointer',
+            textAlign: 'left',
+          }}
           onClick={() => {
             setNotificationToast(null)
             navigate('/notifications')
@@ -1189,5 +1204,9 @@ export default function Home() {
     </div>
   )
 }
+
+
+
+
 
 

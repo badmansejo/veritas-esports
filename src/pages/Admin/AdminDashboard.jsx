@@ -4,13 +4,9 @@ import { useNavigate } from 'react-router-dom'
 export default function AdminDashboard() {
   const navigate = useNavigate()
 
-  const go = (path) => {
-    navigate(path)
-  }
+  const go = (path) => navigate(path)
 
-  const sectionStyle = {
-    marginBottom: '28px',
-  }
+  const sectionStyle = { marginBottom: '28px' }
 
   const sectionTitleStyle = {
     fontSize: '13px',
@@ -23,16 +19,13 @@ export default function AdminDashboard() {
 
   const gridStyle = {
     display: 'grid',
-    gridTemplateColumns:
-      'repeat(auto-fit, minmax(220px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
     gap: '12px',
   }
 
   const cardStyle = {
-    background:
-      'linear-gradient(145deg, #111111, #080808)',
-    border:
-      '1px solid rgba(255,255,255,0.09)',
+    background: 'linear-gradient(145deg, #111111, #080808)',
+    border: '1px solid rgba(255,255,255,0.09)',
     borderRadius: '16px',
     padding: '18px',
     minHeight: '105px',
@@ -84,12 +77,7 @@ export default function AdminDashboard() {
     color: '#ffffff',
   }
 
-  function AdminCard({
-    title,
-    description,
-    path,
-    live = false,
-  }) {
+  function AdminCard({ title, description, path, live = false }) {
     if (path) {
       return (
         <button
@@ -97,13 +85,8 @@ export default function AdminDashboard() {
           onClick={() => go(path)}
           style={buttonCardStyle}
         >
-          <div style={titleStyle}>
-            {title}
-          </div>
-
-          <div style={descriptionStyle}>
-            {description}
-          </div>
+          <div style={titleStyle}>{title}</div>
+          <div style={descriptionStyle}>{description}</div>
 
           <span style={liveBadgeStyle}>
             {live ? 'Available' : 'Open'}
@@ -114,13 +97,8 @@ export default function AdminDashboard() {
 
     return (
       <div style={disabledCardStyle}>
-        <div style={titleStyle}>
-          {title}
-        </div>
-
-        <div style={descriptionStyle}>
-          {description}
-        </div>
+        <div style={titleStyle}>{title}</div>
+        <div style={descriptionStyle}>{description}</div>
 
         <span style={badgeStyle}>
           Coming next
@@ -183,8 +161,7 @@ export default function AdminDashboard() {
 
             <p
               style={{
-                margin:
-                  '8px 0 0',
+                margin: '8px 0 0',
                 color: '#888888',
                 fontSize: '13px',
               }}
@@ -213,29 +190,27 @@ export default function AdminDashboard() {
         {/* OVERVIEW */}
 
         <section style={sectionStyle}>
-          <div style={sectionTitleStyle}>
-            Overview
-          </div>
+          <div style={sectionTitleStyle}>Overview</div>
 
           <div style={gridStyle}>
             <AdminCard
-              title="📊 Dashboard"
+              title={'\uD83D\uDCCA Dashboard'}
               description="Platform overview, activity and system alerts."
               live
             />
 
             <AdminCard
-              title="👥 Users"
+              title={'\uD83D\uDC65 Users'}
               description="Manage users, accounts, wallets and V Coins."
             />
 
             <AdminCard
-              title="🏆 Tournaments"
+              title={'\uD83C\uDFC6 Tournaments'}
               description="Control tournaments, games, formats and rules."
             />
 
             <AdminCard
-              title="⚽ Matches"
+              title={'\u26BD Matches'}
               description="Monitor matches, results, screenshots and disputes."
             />
           </div>
@@ -244,42 +219,40 @@ export default function AdminDashboard() {
         {/* FINANCE */}
 
         <section style={sectionStyle}>
-          <div style={sectionTitleStyle}>
-            Finance
-          </div>
+          <div style={sectionTitleStyle}>Finance</div>
 
           <div style={gridStyle}>
             <AdminCard
-              title="💰 Deposits"
+              title={'\uD83D\uDCB0 Deposits'}
               description="Review and manage manual deposit requests."
               path="/admin/deposits"
               live
             />
 
             <AdminCard
-              title="🏦 Deposit Methods"
+              title={'\uD83C\uDFE6 Deposit Methods'}
               description="Create and manage manual deposit methods, instructions and QR codes."
               path="/admin/deposit-methods"
               live
             />
 
             <AdminCard
-              title="💸 Withdrawals"
+              title={'\uD83D\uDCB8 Withdrawals'}
               description="Manage withdrawal requests and disbursement batches."
             />
 
             <AdminCard
-              title="📒 Transactions"
+              title={'\uD83D\uDCD2 Transactions'}
               description="View the complete wallet transaction ledger."
             />
 
             <AdminCard
-              title="⚙️ Finance Settings"
+              title={'\u2699\uFE0F Finance Settings'}
               description="Control fees, limits, bonuses and payment settings."
             />
 
             <AdminCard
-              title="📈 Finance Reports"
+              title={'\uD83D\uDCC8 Finance Reports'}
               description="Review and export financial reports."
             />
           </div>
@@ -288,48 +261,46 @@ export default function AdminDashboard() {
         {/* APP CUSTOMIZATION */}
 
         <section style={sectionStyle}>
-          <div style={sectionTitleStyle}>
-            App Customization
-          </div>
+          <div style={sectionTitleStyle}>App Customization</div>
 
           <div style={gridStyle}>
             <AdminCard
-              title="🔤 App Font"
+              title={'\uD83D\uDD24 App Font'}
               description="Change the main VERITAS app font while preserving the existing visual style."
             />
 
             <AdminCard
-              title="🖼️ App Logo"
+              title={'\uD83D\uDDBC\uFE0F App Logo'}
               description="Upload, replace and control the main VERITAS logo."
             />
 
             <AdminCard
-              title="🌐 Favicon"
+              title={'\uD83C\uDF10 Favicon'}
               description="Control the browser tab icon."
             />
 
             <AdminCard
-              title="📱 App Icon"
+              title={'\uD83D\uDCF1 App Icon'}
               description="Control the application icon for future app packaging."
             />
 
             <AdminCard
-              title="🎨 Themes"
+              title={'\uD83C\uDFA8 Themes'}
               description="Manage visual themes and appearance presets."
             />
 
             <AdminCard
-              title="🌓 Colors"
+              title={'\uD83C\uDF97\uFE0F Colors'}
               description="Control the platform colour system."
             />
 
             <AdminCard
-              title="🧱 Backgrounds"
+              title={'\uD83E\uDDF1 Backgrounds'}
               description="Manage backgrounds and visual surfaces."
             />
 
             <AdminCard
-              title="🏷️ Branding"
+              title={'\uD83C\uDFF7\uFE0F Branding'}
               description="Control VERITAS branding across the platform."
             />
           </div>
@@ -338,88 +309,86 @@ export default function AdminDashboard() {
         {/* APP CONTENT */}
 
         <section style={sectionStyle}>
-          <div style={sectionTitleStyle}>
-            App Content
-          </div>
+          <div style={sectionTitleStyle}>App Content</div>
 
           <div style={gridStyle}>
             <AdminCard
-              title="🏠 Home Page"
+              title={'\uD83C\uDFE0 Home Page'}
               description="Control dashboard wording, sections and promotional content."
             />
 
             <AdminCard
-              title="✏️ Words & Labels"
+              title={'\u270F\uFE0F Words & Labels'}
               description="Change buttons, labels, headings and other app wording."
             />
 
             <AdminCard
-              title="🏆 Tournament Instructions"
+              title={'\uD83C\uDFC6 Tournament Instructions'}
               description="Control tournament instructions and player guidance."
             />
 
             <AdminCard
-              title="📜 Tournament Rules"
+              title={'\uD83D\uDCDC Tournament Rules'}
               description="Manage tournament rules and displayed requirements."
             />
 
             <AdminCard
-              title="⚽ Match Instructions"
+              title={'\u26BD Match Instructions'}
               description="Control match instructions and result guidance."
             />
 
             <AdminCard
-              title="💰 Wallet Content"
+              title={'\uD83D\uDCB0 Wallet Content'}
               description="Control wallet explanations and messages."
             />
 
             <AdminCard
-              title="🏦 Deposit Instructions"
+              title={'\uD83C\uDFE6 Deposit Instructions'}
               description="Control deposit instructions shown to users."
             />
 
             <AdminCard
-              title="💸 Withdrawal Instructions"
+              title={'\uD83D\uDCB8 Withdrawal Instructions'}
               description="Control withdrawal guidance and information."
             />
 
             <AdminCard
-              title="🪙 V Coins Content"
+              title={'\uD83E\uDE99 V Coins Content'}
               description="Control V Coins explanations and reward information."
             />
 
             <AdminCard
-              title="🛒 Marketplace Content"
+              title={'\uD83D\uDED2 Marketplace Content'}
               description="Control marketplace descriptions and information."
             />
 
             <AdminCard
-              title="🤝 Referral Content"
+              title={'\uD83E\uDD1D Referral Content'}
               description="Control referral instructions and reward explanations."
             />
 
             <AdminCard
-              title="📢 Notifications"
+              title={'\uD83D\uDCE2 Notifications'}
               description="Manage notification wording and templates."
             />
 
             <AdminCard
-              title="📄 Terms & Conditions"
+              title={'\uD83D\uDCC4 Terms & Conditions'}
               description="Edit the terms displayed in the app."
             />
 
             <AdminCard
-              title="🔒 Privacy Policy"
+              title={'\uD83D\uDD12 Privacy Policy'}
               description="Edit the privacy policy displayed in the app."
             />
 
             <AdminCard
-              title="❓ Help / FAQ"
+              title={'\u2753 Help / FAQ'}
               description="Manage help articles and frequently asked questions."
             />
 
             <AdminCard
-              title="📞 Contact Information"
+              title={'\uD83D\uDCDE Contact Information'}
               description="Control support and contact details."
             />
           </div>
@@ -428,58 +397,56 @@ export default function AdminDashboard() {
         {/* MARKETPLACE */}
 
         <section style={sectionStyle}>
-          <div style={sectionTitleStyle}>
-            Marketplace
-          </div>
+          <div style={sectionTitleStyle}>Marketplace</div>
 
           <div style={gridStyle}>
             <AdminCard
-              title="🛒 All Items"
+              title={'\uD83D\uDED2 All Items'}
               description="View and manage every marketplace item."
             />
 
             <AdminCard
-              title="➕ Create Item"
+              title={'\u2795 Create Item'}
               description="Create new marketplace products and rewards."
             />
 
             <AdminCard
-              title="✏️ Edit Items"
+              title={'\u270F\uFE0F Edit Items'}
               description="Change item names, descriptions, prices, images and settings."
             />
 
             <AdminCard
-              title="⏸️ Paused Items"
+              title={'\u23F8\uFE0F Paused Items'}
               description="Temporarily hide items without destroying their history."
             />
 
             <AdminCard
-              title="📦 Archived Items"
+              title={'\uD83D\uDCE6 Archived Items'}
               description="Keep old items for historical records."
             />
 
             <AdminCard
-              title="🏷️ Categories"
+              title={'\uD83C\uDFF7\uFE0F Categories'}
               description="Create and manage marketplace categories."
             />
 
             <AdminCard
-              title="⭐ Featured Items"
+              title={'\u2B50 Featured Items'}
               description="Choose which marketplace items receive featured placement."
             />
 
             <AdminCard
-              title="🔥 Promotions"
+              title={'\uD83D\uDD25 Promotions'}
               description="Create limited offers, first-N-user promotions and special pricing."
             />
 
             <AdminCard
-              title="📦 Stock / Limits"
+              title={'\uD83D\uDCE6 Stock / Limits'}
               description="Control quantities, purchase limits and availability."
             />
 
             <AdminCard
-              title="⚙️ Marketplace Settings"
+              title={'\u2699\uFE0F Marketplace Settings'}
               description="Control marketplace-wide rules and behaviour."
             />
           </div>
@@ -488,38 +455,36 @@ export default function AdminDashboard() {
         {/* V COINS */}
 
         <section style={sectionStyle}>
-          <div style={sectionTitleStyle}>
-            V Coins & Rewards
-          </div>
+          <div style={sectionTitleStyle}>V Coins & Rewards</div>
 
           <div style={gridStyle}>
             <AdminCard
-              title="🪙 V Coin Packages"
+              title={'\uD83E\uDE99 V Coin Packages'}
               description="Create and manage V Coin purchase packages."
             />
 
             <AdminCard
-              title="🎁 Welcome Rewards"
+              title={'\uD83C\uDF81 Welcome Rewards'}
               description="Control rewards given to new users."
             />
 
             <AdminCard
-              title="🤝 Referral Rewards"
+              title={'\uD83E\uDD1D Referral Rewards'}
               description="Control referral reward amounts and rules."
             />
 
             <AdminCard
-              title="🏆 Tournament Rewards"
+              title={'\uD83C\uDFC6 Tournament Rewards'}
               description="Manage reward configurations."
             />
 
             <AdminCard
-              title="🎉 Promotional Bonuses"
+              title={'\uD83C\uDF89 Promotional Bonuses'}
               description="Create promotional V Coin and reward bonuses."
             />
 
             <AdminCard
-              title="⚙️ V Coin Settings"
+              title={'\u2699\uFE0F V Coin Settings'}
               description="Control V Coin system settings."
             />
           </div>
@@ -528,33 +493,31 @@ export default function AdminDashboard() {
         {/* REFERRALS */}
 
         <section style={sectionStyle}>
-          <div style={sectionTitleStyle}>
-            Referrals
-          </div>
+          <div style={sectionTitleStyle}>Referrals</div>
 
           <div style={gridStyle}>
             <AdminCard
-              title="🤝 Referral Settings"
+              title={'\uD83E\uDD1D Referral Settings'}
               description="Enable, disable and configure referrals."
             />
 
             <AdminCard
-              title="🎁 Rewards"
+              title={'\uD83C\uDF81 Rewards'}
               description="Manage referral reward values."
             />
 
             <AdminCard
-              title="📋 Referral History"
+              title={'\uD83D\uDCCB Referral History'}
               description="View referral activity and rewards."
             />
 
             <AdminCard
-              title="🏅 Top Referrers"
+              title={'\uD83C\uDFC5 Top Referrers'}
               description="View the most successful referrers."
             />
 
             <AdminCard
-              title="🛡️ Fraud / Abuse"
+              title={'\uD83D\uDEE1\uFE0F Fraud / Abuse'}
               description="Review suspicious referral activity."
             />
           </div>
@@ -563,36 +526,41 @@ export default function AdminDashboard() {
         {/* NOTIFICATIONS */}
 
         <section style={sectionStyle}>
-          <div style={sectionTitleStyle}>
-            Notifications
-          </div>
+          <div style={sectionTitleStyle}>Notifications</div>
 
           <div style={gridStyle}>
             <AdminCard
-              title="📢 Send Notification"
+              title={'\uD83D\uDCE2 Send Notification'}
               description="Send announcements to users."
               path="/admin/notifications"
               live
             />
 
             <AdminCard
-              title="📋 Templates"
+              title={'\uD83D\uDCCB Templates'}
               description="Manage notification templates."
             />
 
             <AdminCard
-              title="🕐 Scheduled Notifications"
+              title={'\uD83D\uDD50 Scheduled Notifications'}
               description="Schedule future notifications."
             />
 
             <AdminCard
-              title="📧 Email Broadcasts"
+              title={'\uD83D\uDCE7 Email Broadcasts'}
               description="Send email announcements and campaigns."
             />
 
             <AdminCard
-              title="✈️ Telegram Notifications"
+              title={'\u2708\uFE0F Telegram Notifications'}
               description="Manage Telegram notification broadcasts."
+            />
+
+            <AdminCard
+              title={'\uD83E\uDD16 Telegram Bot Settings'}
+              description="Edit the Telegram bot welcome, connection, help and other messages."
+              path="/admin/telegram"
+              live
             />
           </div>
         </section>
@@ -600,38 +568,36 @@ export default function AdminDashboard() {
         {/* SECURITY */}
 
         <section style={sectionStyle}>
-          <div style={sectionTitleStyle}>
-            Security
-          </div>
+          <div style={sectionTitleStyle}>Security</div>
 
           <div style={gridStyle}>
             <AdminCard
-              title="🔐 Admin Accounts"
+              title={'\uD83D\uDD10 Admin Accounts'}
               description="Manage administrator accounts."
             />
 
             <AdminCard
-              title="👮 Admin Roles"
+              title={'\uD83D\uDC6E Admin Roles'}
               description="Create role-based administrative permissions."
             />
 
             <AdminCard
-              title="🔑 Login Activity"
+              title={'\uD83D\uDD11 Login Activity'}
               description="Review account and administrative login activity."
             />
 
             <AdminCard
-              title="🚫 Suspended Accounts"
+              title={'\uD83D\uDEAB Suspended Accounts'}
               description="Manage suspended users and restrictions."
             />
 
             <AdminCard
-              title="⚠️ Security Events"
+              title={'\u26A0\uFE0F Security Events'}
               description="Review important security events."
             />
 
             <AdminCard
-              title="🛡️ Security Settings"
+              title={'\uD83D\uDEE1\uFE0F Security Settings'}
               description="Control platform security settings."
             />
           </div>
@@ -640,68 +606,66 @@ export default function AdminDashboard() {
         {/* SYSTEM SETTINGS */}
 
         <section style={sectionStyle}>
-          <div style={sectionTitleStyle}>
-            System Settings
-          </div>
+          <div style={sectionTitleStyle}>System Settings</div>
 
           <div style={gridStyle}>
             <AdminCard
-              title="🟢 App Active / Inactive"
+              title={'\uD83D\uDFE2 App Active / Inactive'}
               description="Control whether the platform is available."
             />
 
             <AdminCard
-              title="🔧 Maintenance Mode"
+              title={'\uD83D\uDD27 Maintenance Mode'}
               description="Temporarily lock the user app while keeping Admin access."
             />
 
             <AdminCard
-              title="👤 Registrations"
+              title={'\uD83D\uDC64 Registrations'}
               description="Enable or disable new account registration."
             />
 
             <AdminCard
-              title="🏆 Tournament Creation"
+              title={'\uD83C\uDFC6 Tournament Creation'}
               description="Control whether users can create tournaments."
             />
 
             <AdminCard
-              title="🎮 Tournament Joining"
+              title={'\uD83C\uDFAE Tournament Joining'}
               description="Control tournament joining."
             />
 
             <AdminCard
-              title="💰 Deposits"
+              title={'\uD83D\uDCB0 Deposits'}
               description="Enable or disable deposits."
             />
 
             <AdminCard
-              title="💸 Withdrawals"
+              title={'\uD83D\uDCB8 Withdrawals'}
               description="Enable or disable withdrawals."
             />
 
             <AdminCard
-              title="💳 Paystack"
+              title={'\uD83D\uDCB3 Paystack'}
               description="Control Paystack availability."
             />
 
             <AdminCard
-              title="🏦 Manual Deposits"
+              title={'\uD83C\uDFE6 Manual Deposits'}
               description="Control manual deposit availability."
             />
 
             <AdminCard
-              title="🪙 V Coins"
+              title={'\uD83E\uDE99 V Coins'}
               description="Enable or disable the V Coins system."
             />
 
             <AdminCard
-              title="🛒 Marketplace"
+              title={'\uD83D\uDED2 Marketplace'}
               description="Enable or disable marketplace purchases."
             />
 
             <AdminCard
-              title="🤝 Referrals"
+              title={'\uD83E\uDD1D Referrals'}
               description="Enable or disable referrals."
             />
           </div>
@@ -710,23 +674,21 @@ export default function AdminDashboard() {
         {/* AUDIT */}
 
         <section style={sectionStyle}>
-          <div style={sectionTitleStyle}>
-            Audit & Reports
-          </div>
+          <div style={sectionTitleStyle}>Audit & Reports</div>
 
           <div style={gridStyle}>
             <AdminCard
-              title="📝 Audit Log"
+              title={'\uD83D\uDCDD Audit Log'}
               description="Record important administrator actions and changes."
             />
 
             <AdminCard
-              title="📦 Exports / Reports"
+              title={'\uD83D\uDCE6 Exports / Reports'}
               description="Export users, finance, tournaments, matches and marketplace data."
             />
 
             <AdminCard
-              title="🔄 Version History"
+              title={'\uD83D\uDD04 Version History'}
               description="Preview, publish and restore previous configurations."
             />
           </div>
@@ -738,8 +700,7 @@ export default function AdminDashboard() {
           style={{
             marginTop: '35px',
             paddingTop: '20px',
-            borderTop:
-              '1px solid rgba(255,255,255,0.08)',
+            borderTop: '1px solid rgba(255,255,255,0.08)',
             color: '#666666',
             fontSize: '11px',
             lineHeight: 1.6,
@@ -753,5 +714,3 @@ export default function AdminDashboard() {
     </div>
   )
 }
-
-

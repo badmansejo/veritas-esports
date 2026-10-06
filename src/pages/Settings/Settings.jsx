@@ -73,7 +73,7 @@ export default function Settings() {
 
         <button
           className="settings-row"
-          onClick={() => alert('Telegram coming soon')}
+          onClick={() => navigate('/settings/telegram')}
         >
           <div className="settings-row-icon">✈️</div>
           <div className="settings-row-content">

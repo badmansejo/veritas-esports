@@ -20,12 +20,14 @@ import Settings from './pages/Settings/Settings'
 import Account from './pages/Settings/Account/Account'
 import Profile from './pages/Settings/Profile/Profile'
 import Security from './pages/Settings/Security/Security'
+import Telegram from './pages/Settings/Telegram/Telegram'
 import Notifications from './pages/Notifications/Notifications'
 
 import AdminDepositMethods from './pages/Admin/AdminDepositMethods'
 import AdminDeposits from './pages/Admin/AdminDeposits'
 import AdminDashboard from './pages/Admin/AdminDashboard'
 import AdminNotifications from './pages/Admin/AdminNotifications'
+import AdminTelegram from './pages/Admin/AdminTelegram'
 
 function ComingSoon({ title }) {
   return (
@@ -47,7 +49,6 @@ function ComingSoon({ title }) {
         }}
       >
         <h1>{title}</h1>
-
         <p style={{ color: '#9ca3af' }}>
           This section is coming soon.
         </p>
@@ -59,38 +60,27 @@ function ComingSoon({ title }) {
 export default function App() {
   return (
     <Routes>
+      {/* AUTH */}
 
-      <Route
-        path="/login"
-        element={<Login />}
-      />
-
-      <Route
-        path="/register"
-        element={<Register />}
-      />
-
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
       <Route
         path="/forgot-password"
         element={<ForgotPassword />}
       />
-
       <Route
         path="/reset-password"
         element={<ResetPassword />}
       />
-
       <Route
         path="/verify-email"
         element={<VerifyEmail />}
       />
 
-      <Route element={<ProtectedRoute />}>
+      {/* USER APP */}
 
-        <Route
-          path="/"
-          element={<Home />}
-        />
+      <Route element={<ProtectedRoute />}>
+        <Route path="/" element={<Home />} />
 
         <Route
           path="/tournaments"
@@ -104,21 +94,14 @@ export default function App() {
 
         <Route
           path="/matches"
-          element={
-            <ComingSoon title="Matches" />
-          }
+          element={<ComingSoon title="Matches" />}
         />
 
-        <Route
-          path="/wallet"
-          element={<Wallet />}
-        />
+        <Route path="/wallet" element={<Wallet />} />
 
         <Route
           path="/vcoins"
-          element={
-            <ComingSoon title="V Coins" />
-          }
+          element={<ComingSoon title="V Coins" />}
         />
 
         <Route
@@ -156,10 +139,15 @@ export default function App() {
           element={<Security />}
         />
 
+        <Route
+          path="/settings/telegram"
+          element={<Telegram />}
+        />
       </Route>
 
-      <Route element={<AdminRoute />}>
+      {/* ADMIN */}
 
+      <Route element={<AdminRoute />}>
         <Route
           path="/admin"
           element={<AdminDashboard />}
@@ -180,13 +168,18 @@ export default function App() {
           element={<AdminNotifications />}
         />
 
+        <Route
+          path="/admin/telegram"
+          element={<AdminTelegram />}
+        />
       </Route>
+
+      {/* FALLBACK */}
 
       <Route
         path="*"
         element={<Navigate to="/" replace />}
       />
-
     </Routes>
   )
 }

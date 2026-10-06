@@ -1,423 +1,304 @@
-import React, { useEffect, useState } from 'react'
+﻿import React, { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabaseClient'
-import './AdminNotifications.css'
-
-const CATEGORIES = [
-  'Announcements',
-  'Matches',
-  'Tournaments',
-  'Wallet',
-  'Rewards',
-  'Security',
-]
 
 export default function AdminNotifications() {
   const [users, setUsers] = useState([])
-  const [loadingUsers, setLoadingUsers] = useState(true)
-  const [sending, setSending] = useState(false)
-  const [message, setMessage] = useState('')
-
-  const [sendMode, setSendMode] = useState('one')
-  const [userId, setUserId] = useState('')
-  const [category, setCategory] = useState('Announcements')
+  const [selectedUser, setSelectedUser] = useState('ALL')
   const [title, setTitle] = useState('')
-  const [body, setBody] = useState('')
-  const [link, setLink] = useState('')
+  const [message, setMessage] = useState('')
+  const [link, setLink] = useState('/notifications')
+  const [sending, setSending] = useState(false)
+  const [result, setResult] = useState('')
 
   useEffect(() => {
     loadUsers()
   }, [])
 
   async function loadUsers() {
-    setLoadingUsers(true)
-    setMessage('')
-
-    const {
-      data,
-      error,
-    } = await supabase
+    const { data, error } = await supabase
       .from('profiles')
-      .select(
-        'id, username, email, veritas_user_id'
-      )
-      .order('username', {
-        ascending: true,
+      .select('id, username, veritas_user_id, email')
+      .order('username', { ascending: true })
+
+    if (error) {
+      console.error(error)
+      setResult(error.message)
+      return
+    }
+
+    setUsers(data || [])
+  }
+
+  async function sendToUser(userId) {
+    const notificationResult = await supabase
+      .from('notifications')
+      .insert({
+        user_id: userId,
+        title: title.trim(),
+        message: message.trim(),
+        category: 'Announcements',
+        is_read: false,
+        link: link.trim() || '/notifications',
       })
 
-    if (error) {
-      console.error(
-        'Admin users error:',
-        error
-      )
-
-      setMessage(error.message)
-    } else {
-      setUsers(data || [])
+    if (notificationResult.error) {
+      throw notificationResult.error
     }
 
-    setLoadingUsers(false)
-  }
-
-  async function sendPushToUser(
-    targetUserId,
-    notification
-  ) {
-    const {
-      data: subscriptions,
-      error,
-    } = await supabase
-      .from('push_subscriptions')
-      .select(
-        'endpoint, p256dh, auth'
-      )
-      .eq('user_id', targetUserId)
-
-    if (error) {
-      console.error(
-        'Push subscription lookup error:',
-        error
-      )
-      return
-    }
-
-    if (!subscriptions?.length) {
-      return
-    }
-
-    for (const subscription of subscriptions) {
-      try {
-        const {
-          error: pushError,
-        } = await supabase.functions.invoke(
-          'send-push-notification',
-          {
-            body: {
-              endpoint:
-                subscription.endpoint,
-              p256dh:
-                subscription.p256dh,
-              auth:
-                subscription.auth,
-              title:
-                notification.title,
-              message:
-                notification.message,
-              link:
-                notification.link ||
-                '/notifications',
-            },
-          }
-        )
-
-        if (pushError) {
-          console.error(
-            'Push function error:',
-            pushError
-          )
-        }
-      } catch (error) {
-        console.error(
-          'Push send error:',
-          error
-        )
+    const pushResult = await supabase.functions.invoke(
+      'send-push-notification',
+      {
+        body: {
+          user_id: userId,
+          title: title.trim(),
+          message: message.trim(),
+          link: link.trim() || '/notifications',
+        },
       }
+    )
+
+    if (pushResult.error) {
+      console.error('Push error:', pushResult.error)
+    }
+
+    const telegramResult = await supabase.functions.invoke(
+      'send-telegram-notification',
+      {
+        body: {
+          user_id: userId,
+          title: title.trim(),
+          message: message.trim(),
+        },
+      }
+    )
+
+    if (telegramResult.error) {
+      console.error(
+        'Telegram error:',
+        telegramResult.error
+      )
+    }
+
+    return {
+      pushSent:
+        pushResult.data?.sent || 0,
+      telegramSent:
+        telegramResult.data?.sent || 0,
     }
   }
 
-  async function sendNotification(event) {
-    event.preventDefault()
-
-    setMessage('')
-
-    if (sendMode === 'one' && !userId) {
-      setMessage('Select a user.')
-      return
-    }
-
-    if (!title.trim()) {
-      setMessage(
-        'Enter a notification title.'
-      )
-      return
-    }
-
-    if (!body.trim()) {
-      setMessage(
-        'Enter a notification message.'
-      )
+  async function sendNotification() {
+    if (!title.trim() || !message.trim()) {
+      setResult('Enter a title and message.')
       return
     }
 
     if (
-      sendMode === 'all' &&
-      users.length === 0
+      selectedUser !== 'ALL' &&
+      !selectedUser
     ) {
-      setMessage(
-        'There are no users to notify.'
-      )
+      setResult('Select a user.')
       return
     }
 
     setSending(true)
+    setResult('Sending...')
 
-    const notificationData = {
-      category,
-      type: category,
-      title: title.trim(),
-      message: body.trim(),
-      is_read: false,
-      link: link.trim() || null,
-    }
+    try {
+      let targetUsers = []
 
-    let targetUsers = []
-
-    if (sendMode === 'all') {
-      targetUsers = users
-    } else {
-      const selectedUser =
-        users.find(
-          (user) =>
-            user.id === userId
+      if (selectedUser === 'ALL') {
+        targetUsers = users
+      } else {
+        const selected = users.find(
+          (user) => user.id === selectedUser
         )
 
-      if (selectedUser) {
-        targetUsers = [
-          selectedUser,
-        ]
+        if (selected) {
+          targetUsers = [selected]
+        }
       }
-    }
 
-    const insertData =
-      targetUsers.map((user) => ({
-        ...notificationData,
-        user_id: user.id,
-      }))
+      if (targetUsers.length === 0) {
+        throw new Error('No users found.')
+      }
 
-    const {
-      error,
-    } = await supabase
-      .from('notifications')
-      .insert(insertData)
+      let pushSent = 0
+      let telegramSent = 0
+      let saved = 0
 
-    if (error) {
-      console.error(
-        'Admin notification error:',
-        error
+      for (const user of targetUsers) {
+        const resultData =
+          await sendToUser(user.id)
+
+        saved++
+        pushSent += resultData.pushSent
+        telegramSent += resultData.telegramSent
+      }
+
+      if (selectedUser === 'ALL') {
+        setResult(
+          `Successfully sent to ${saved} users. Chrome push: ${pushSent}. Telegram: ${telegramSent}.`
+        )
+      } else {
+        setResult(
+          `Notification sent successfully. Chrome push: ${pushSent}. Telegram: ${telegramSent}.`
+        )
+      }
+
+      setTitle('')
+      setMessage('')
+    } catch (error) {
+      console.error(error)
+      setResult(
+        error?.message ||
+          'Failed to send notification.'
       )
-
-      setMessage(error.message)
+    } finally {
       setSending(false)
-      return
     }
-
-    for (const user of targetUsers) {
-      await sendPushToUser(
-        user.id,
-        notificationData
-      )
-    }
-
-    setMessage(
-      sendMode === 'all'
-        ? `Notification sent to ${targetUsers.length} users successfully.`
-        : 'Notification sent successfully.'
-    )
-
-    setTitle('')
-    setBody('')
-    setLink('')
-    setUserId('')
-    setSending(false)
   }
 
   return (
-    <div className="admin-notifications-page">
-      <div className="admin-notifications-container">
+    <div
+      style={{
+        minHeight: '100vh',
+        padding: '32px',
+        background: '#070b14',
+        color: '#fff',
+      }}
+    >
+      <div
+        style={{
+          maxWidth: '700px',
+          margin: '0 auto',
+        }}
+      >
+        <h1>Admin Notifications</h1>
 
-        <div className="admin-notifications-header">
-          <div>
-            <h1>Notifications</h1>
+        <p style={{ color: '#9ca3af' }}>
+          Send VERITAS notifications by Chrome push,
+          in-app notification and Telegram.
+        </p>
 
-            <p>
-              Send notifications to VERITAS users.
-            </p>
-          </div>
-        </div>
-
-        <form
-          className="admin-notifications-card"
-          onSubmit={sendNotification}
+        <div
+          style={{
+            display: 'grid',
+            gap: '16px',
+            marginTop: '30px',
+          }}
         >
+          <select
+            value={selectedUser}
+            onChange={(e) =>
+              setSelectedUser(e.target.value)
+            }
+            style={{
+              padding: '14px',
+              borderRadius: '8px',
+              background: '#111827',
+              color: '#fff',
+              border: '1px solid #374151',
+            }}
+          >
+            <option value="ALL">
+              📢 ALL USERS
+            </option>
 
-          <div className="admin-field">
-            <label>
-              Send To
-            </label>
-
-            <select
-              value={sendMode}
-              onChange={(event) => {
-                setSendMode(
-                  event.target.value
-                )
-                setUserId('')
-                setMessage('')
-              }}
-            >
-              <option value="one">
-                One User
-              </option>
-
-              <option value="all">
-                All Users
-              </option>
-            </select>
-          </div>
-
-          {sendMode === 'one' && (
-            <div className="admin-field">
-              <label>
-                User
-              </label>
-
-              <select
-                value={userId}
-                onChange={(event) =>
-                  setUserId(
-                    event.target.value
-                  )
-                }
-                disabled={loadingUsers}
+            {users.map((user) => (
+              <option
+                key={user.id}
+                value={user.id}
               >
-                <option value="">
-                  {loadingUsers
-                    ? 'Loading users...'
-                    : 'Select user'}
-                </option>
+                {user.username || 'No username'} —{' '}
+                {user.veritas_user_id || user.id}
+              </option>
+            ))}
+          </select>
 
-                {users.map((user) => (
-                  <option
-                    key={user.id}
-                    value={user.id}
-                  >
-                    {user.username ||
-                      'No username'}
-                    {' — '}
-                    {user.veritas_user_id ||
-                      ''}
-                    {' — '}
-                    {user.email || ''}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
+          <input
+            value={title}
+            onChange={(e) =>
+              setTitle(e.target.value)
+            }
+            placeholder="Notification title"
+            style={{
+              padding: '14px',
+              borderRadius: '8px',
+              background: '#111827',
+              color: '#fff',
+              border: '1px solid #374151',
+            }}
+          />
 
-          {sendMode === 'all' && (
-            <div className="admin-recipient-info">
-              This notification will be sent to all{' '}
-              <strong>
-                {users.length}
-              </strong>{' '}
-              users.
-            </div>
-          )}
+          <textarea
+            value={message}
+            onChange={(e) =>
+              setMessage(e.target.value)
+            }
+            placeholder="Notification message"
+            rows={5}
+            style={{
+              padding: '14px',
+              borderRadius: '8px',
+              background: '#111827',
+              color: '#fff',
+              border: '1px solid #374151',
+              resize: 'vertical',
+            }}
+          />
 
-          <div className="admin-field">
-            <label>
-              Category
-            </label>
-
-            <select
-              value={category}
-              onChange={(event) =>
-                setCategory(
-                  event.target.value
-                )
-              }
-            >
-              {CATEGORIES.map((item) => (
-                <option
-                  key={item}
-                  value={item}
-                >
-                  {item}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="admin-field">
-            <label>
-              Title
-            </label>
-
-            <input
-              type="text"
-              value={title}
-              onChange={(event) =>
-                setTitle(
-                  event.target.value
-                )
-              }
-              placeholder="Notification title"
-            />
-          </div>
-
-          <div className="admin-field">
-            <label>
-              Message
-            </label>
-
-            <textarea
-              value={body}
-              onChange={(event) =>
-                setBody(
-                  event.target.value
-                )
-              }
-              placeholder="Notification message"
-              rows="5"
-            />
-          </div>
-
-          <div className="admin-field">
-            <label>
-              App Link
-            </label>
-
-            <input
-              type="text"
-              value={link}
-              onChange={(event) =>
-                setLink(
-                  event.target.value
-                )
-              }
-              placeholder="/notifications"
-            />
-          </div>
-
-          {message && (
-            <div className="admin-notification-message">
-              {message}
-            </div>
-          )}
+          <input
+            value={link}
+            onChange={(e) =>
+              setLink(e.target.value)
+            }
+            placeholder="/notifications"
+            style={{
+              padding: '14px',
+              borderRadius: '8px',
+              background: '#111827',
+              color: '#fff',
+              border: '1px solid #374151',
+            }}
+          />
 
           <button
-            className="admin-send-notification"
-            type="submit"
+            type="button"
+            onClick={sendNotification}
             disabled={sending}
+            style={{
+              padding: '15px',
+              borderRadius: '8px',
+              border: 'none',
+              background: '#2563eb',
+              color: '#fff',
+              fontWeight: 800,
+              cursor: sending
+                ? 'not-allowed'
+                : 'pointer',
+            }}
           >
             {sending
-              ? 'Sending...'
-              : sendMode === 'all'
-                ? 'Send To All Users'
-                : 'Send Notification'}
+              ? 'SENDING...'
+              : selectedUser === 'ALL'
+                ? 'SEND TO ALL USERS'
+                : 'SEND NOTIFICATION'}
           </button>
 
-        </form>
-
+          {result && (
+            <div
+              style={{
+                padding: '14px',
+                borderRadius: '8px',
+                background: '#111827',
+                color: '#d1d5db',
+              }}
+            >
+              {result}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
