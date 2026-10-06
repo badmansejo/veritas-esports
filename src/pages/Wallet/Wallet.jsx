@@ -1,0 +1,2241 @@
+﻿import React, { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
+import { supabase } from '../../lib/supabaseClient'
+import './Wallet.css'
+
+const MIN_WITHDRAWAL = 60
+const DEFAULT_WITHDRAWAL_FEE = 11
+const PAYSTACK_API =
+  'https://veritas-esportss.veritasesports.workers.dev'
+
+const money = (value) => {
+  const number = Number(value || 0)
+
+  return number.toLocaleString('en-KE', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })
+}
+
+const shortMoney = (value) => {
+  const number = Number(value || 0)
+
+  return number.toLocaleString('en-KE', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2
+  })
+}
+
+const getProfileId = (profile, user) => {
+  return profile?.id || user?.id || null
+}
+
+const getMethodAmounts = (method) => {
+  if (!method) return []
+
+  let amounts = method.available_amounts
+
+  if (typeof amounts === 'string') {
+    try {
+      amounts = JSON.parse(amounts)
+    } catch {
+      amounts = []
+    }
+  }
+
+  if (!Array.isArray(amounts)) {
+    return []
+  }
+
+  return amounts
+    .map((value) => Number(value))
+    .filter((value) => Number.isFinite(value) && value > 0)
+    .sort((a, b) => a - b)
+}
+
+function Wallet() {
+  const navigate = useNavigate()
+  const { user, profile, refreshProfile } = useAuth()
+
+  const [activeTab, setActiveTab] = useState('overview')
+
+  const [loading, setLoading] = useState(true)
+  const [savingDeposit, setSavingDeposit] = useState(false)
+  const [requestingWithdrawal, setRequestingWithdrawal] = useState(false)
+
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
+
+  const [deposits, setDeposits] = useState([])
+  const [withdrawals, setWithdrawals] = useState([])
+  const [transactions, setTransactions] = useState([])
+  const [payoutMethods, setPayoutMethods] = useState([])
+  const [manualDepositMethods, setManualDepositMethods] = useState([])
+
+  const [withdrawalFee, setWithdrawalFee] = useState(
+    DEFAULT_WITHDRAWAL_FEE
+  )
+
+  const [showDepositModal, setShowDepositModal] = useState(false)
+  const [showWithdrawalModal, setShowWithdrawalModal] = useState(false)
+
+  const [depositStep, setDepositStep] = useState('choose')
+  const [depositMethod, setDepositMethod] = useState('')
+  const [selectedManualDepositMethodId, setSelectedManualDepositMethodId] =
+    useState('')
+
+  const [depositAmount, setDepositAmount] = useState('')
+  const [depositReference, setDepositReference] = useState('')
+
+  const [withdrawalAmount, setWithdrawalAmount] = useState('')
+  const [selectedPayoutMethod, setSelectedPayoutMethod] = useState('')
+
+  const profileBalance = useMemo(() => {
+    if (
+      profile?.kes_balance !== undefined &&
+      profile?.kes_balance !== null
+    ) {
+      return Number(profile.kes_balance || 0)
+    }
+
+    return Number(profile?.wallet_balance || 0)
+  }, [profile])
+
+  const vcoins = Number(profile?.vcoins || 0)
+
+  const withdrawalNumber = Number(withdrawalAmount || 0)
+
+  const withdrawalFeeAmount = useMemo(() => {
+    if (!withdrawalNumber || withdrawalNumber <= 0) {
+      return 0
+    }
+
+    return withdrawalNumber * (Number(withdrawalFee) / 100)
+  }, [withdrawalNumber, withdrawalFee])
+
+  const withdrawalNetAmount = useMemo(() => {
+    if (!withdrawalNumber || withdrawalNumber <= 0) {
+      return 0
+    }
+
+    return Math.max(
+      0,
+      withdrawalNumber - withdrawalFeeAmount
+    )
+  }, [withdrawalNumber, withdrawalFeeAmount])
+
+  const pendingDeposits = useMemo(() => {
+    return deposits.filter(
+      (item) =>
+        String(item.status || '').toLowerCase() === 'pending'
+    )
+  }, [deposits])
+
+  const pendingWithdrawals = useMemo(() => {
+    return withdrawals.filter(
+      (item) =>
+        String(item.status || '').toLowerCase() === 'pending'
+    )
+  }, [withdrawals])
+
+  const selectedManualDepositMethod = useMemo(() => {
+    return manualDepositMethods.find(
+      (method) =>
+        String(method.id) ===
+        String(selectedManualDepositMethodId)
+    ) || null
+  }, [
+    manualDepositMethods,
+    selectedManualDepositMethodId
+  ])
+
+  const selectedManualAmounts = useMemo(() => {
+    return getMethodAmounts(selectedManualDepositMethod)
+  }, [selectedManualDepositMethod])
+
+  const loadWallet = async () => {
+    if (!user) {
+      setLoading(false)
+      return
+    }
+
+    const profileId = getProfileId(profile, user)
+
+    if (!profileId) {
+      setLoading(false)
+      return
+    }
+
+    setLoading(true)
+    setError('')
+
+    try {
+      const [
+        depositsResult,
+        withdrawalsResult,
+        transactionsResult,
+        payoutMethodsResult,
+        manualMethodsResult,
+        settingsResult
+      ] = await Promise.all([
+        supabase
+          .from('deposits')
+          .select('*')
+          .eq('user_id', profileId)
+          .order('created_at', { ascending: false }),
+
+        supabase
+          .from('withdrawals')
+          .select('*')
+          .eq('user_id', profileId)
+          .order('created_at', { ascending: false }),
+
+        supabase
+          .from('wallet_transactions')
+          .select('*')
+          .eq('user_id', profileId)
+          .order('created_at', { ascending: false })
+          .limit(50),
+
+        supabase
+          .from('payout_methods')
+          .select('*')
+          .eq('user_id', profileId)
+          .order('created_at', { ascending: false }),
+
+        supabase
+          .from('manual_deposit_methods')
+          .select('*')
+          .eq('is_active', true)
+          .order('sort_order', { ascending: true })
+          .order('created_at', { ascending: true }),
+
+        supabase
+          .from('app_settings')
+          .select('*')
+          .eq('setting_key', 'withdrawal_fee_percent')
+          .maybeSingle()
+      ])
+
+      if (depositsResult.error) {
+        console.error(
+          'Deposits error:',
+          depositsResult.error
+        )
+      }
+
+      if (withdrawalsResult.error) {
+        console.error(
+          'Withdrawals error:',
+          withdrawalsResult.error
+        )
+      }
+
+      if (transactionsResult.error) {
+        console.error(
+          'Transactions error:',
+          transactionsResult.error
+        )
+      }
+
+      if (payoutMethodsResult.error) {
+        console.error(
+          'Payout methods error:',
+          payoutMethodsResult.error
+        )
+      }
+
+      if (manualMethodsResult.error) {
+        console.error(
+          'Manual deposit methods error:',
+          manualMethodsResult.error
+        )
+      }
+
+      setDeposits(depositsResult.data || [])
+      setWithdrawals(withdrawalsResult.data || [])
+      setTransactions(transactionsResult.data || [])
+      setPayoutMethods(payoutMethodsResult.data || [])
+      setManualDepositMethods(
+        manualMethodsResult.data || []
+      )
+
+      if (
+        !manualMethodsResult.error &&
+        manualMethodsResult.data?.length > 0 &&
+        !selectedManualDepositMethodId
+      ) {
+        setSelectedManualDepositMethodId(
+          manualMethodsResult.data[0].id
+        )
+      }
+
+      if (!settingsResult.error && settingsResult.data) {
+        let settingValue =
+          settingsResult.data.setting_value
+
+        if (
+          typeof settingValue === 'object' &&
+          settingValue !== null
+        ) {
+          settingValue =
+            settingValue.value ||
+            settingValue.percent ||
+            settingValue.default ||
+            null
+        }
+
+        const parsedFee = Number(settingValue)
+
+        if (
+          !Number.isNaN(parsedFee) &&
+          parsedFee >= 0
+        ) {
+          setWithdrawalFee(parsedFee)
+        }
+      }
+    } catch (walletError) {
+      console.error(
+        'Wallet loading error:',
+        walletError
+      )
+
+      setError(
+        walletError?.message ||
+          'Unable to load wallet information.'
+      )
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadWallet()
+  }, [user?.id, profile?.id])
+
+  useEffect(() => {
+    const params = new URLSearchParams(
+      window.location.search
+    )
+
+    const reference =
+      params.get('reference') ||
+      params.get('trxref')
+
+    const paymentStatus =
+      params.get('paystack')
+
+    if (reference || paymentStatus) {
+      setActiveTab('deposit')
+      setSuccess(
+        'Paystack payment returned successfully. VERITAS is verifying the payment automatically. Your KES balance will update after server verification.'
+      )
+
+      window.history.replaceState(
+        {},
+        document.title,
+        window.location.pathname
+      )
+
+      loadWallet()
+    }
+  }, [user?.id])
+
+  const clearMessages = () => {
+    setError('')
+    setSuccess('')
+  }
+
+  const openDeposit = () => {
+    clearMessages()
+    setActiveTab('deposit')
+  }
+
+  const resetDepositModal = () => {
+    setDepositStep('choose')
+    setDepositMethod('')
+    setSelectedManualDepositMethodId(
+      manualDepositMethods[0]?.id || ''
+    )
+    setDepositAmount('')
+    setDepositReference('')
+  }
+
+  const openManualDeposit = () => {
+    clearMessages()
+
+    if (manualDepositMethods.length === 0) {
+      setError(
+        'No manual payment methods are currently available. Please try Paystack or contact VERITAS.'
+      )
+      return
+    }
+
+    setDepositMethod('Manual Deposit')
+    setDepositStep('choose')
+    setSelectedManualDepositMethodId(
+      manualDepositMethods[0]?.id || ''
+    )
+    setDepositAmount('')
+    setDepositReference('')
+    setShowDepositModal(true)
+  }
+
+  const openPaystackDeposit = () => {
+    clearMessages()
+
+    setDepositMethod('Paystack')
+    setDepositStep('paystack')
+    setDepositAmount('')
+    setDepositReference('')
+    setShowDepositModal(true)
+  }
+
+  const closeDeposit = () => {
+    if (savingDeposit) {
+      return
+    }
+
+    setShowDepositModal(false)
+    resetDepositModal()
+  }
+
+  const chooseManualMethod = (methodId) => {
+    clearMessages()
+
+    setSelectedManualDepositMethodId(methodId)
+    setDepositAmount('')
+    setDepositReference('')
+    setDepositStep('manual-details')
+  }
+
+  const backToManualMethods = () => {
+    if (savingDeposit) {
+      return
+    }
+
+    clearMessages()
+    setDepositStep('choose')
+    setDepositAmount('')
+    setDepositReference('')
+  }
+
+  const handleManualAmount = (amount) => {
+    setDepositAmount(String(amount))
+    clearMessages()
+  }
+
+  const handlePaystackInitialize = async (event) => {
+    event.preventDefault()
+
+    clearMessages()
+
+    if (!user) {
+      setError(
+        'Please log in before making a Paystack deposit.'
+      )
+      return
+    }
+
+    const amount = Number(depositAmount)
+
+    if (!amount || amount <= 0) {
+      setError('Enter a valid deposit amount.')
+      return
+    }
+
+    if (amount < 1) {
+      setError(
+        'Deposit amount must be at least KES 1.'
+      )
+      return
+    }
+
+    setSavingDeposit(true)
+
+    try {
+      const {
+        data: sessionData,
+        error: sessionError
+      } = await supabase.auth.getSession()
+
+      if (sessionError) {
+        throw sessionError
+      }
+
+      const accessToken =
+        sessionData?.session?.access_token
+
+      if (!accessToken) {
+        throw new Error(
+          'Your login session has expired. Please log in again.'
+        )
+      }
+
+      const callbackUrl =
+        window.location.origin + '/wallet'
+
+      const response = await fetch(
+        PAYSTACK_API +
+          '/api/paystack/initialize',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization:
+              'Bearer ' + accessToken
+          },
+          body: JSON.stringify({
+            amount,
+            callback_url: callbackUrl
+          })
+        }
+      )
+
+      const result = await response.json()
+
+      if (!response.ok || !result?.success) {
+        throw new Error(
+          result?.error ||
+            result?.message ||
+            'Unable to initialize Paystack payment.'
+        )
+      }
+
+      const authorizationUrl =
+        result.authorization_url ||
+        result.data?.authorization_url
+
+      if (!authorizationUrl) {
+        throw new Error(
+          'Paystack did not return a checkout URL.'
+        )
+      }
+
+      window.location.href = authorizationUrl
+    } catch (paystackError) {
+      console.error(
+        'Paystack initialization error:',
+        paystackError
+      )
+
+      setError(
+        paystackError?.message ||
+          'Unable to start Paystack checkout.'
+      )
+
+      setSavingDeposit(false)
+    }
+  }
+
+  const handleManualDeposit = async (event) => {
+    event.preventDefault()
+
+    clearMessages()
+
+    if (!user) {
+      setError(
+        'Please log in before making a deposit.'
+      )
+      return
+    }
+
+    if (!selectedManualDepositMethod) {
+      setError(
+        'Please choose a payment method.'
+      )
+      return
+    }
+
+    const amount = Number(depositAmount)
+
+    if (!amount || amount <= 0) {
+      setError('Enter a valid deposit amount.')
+      return
+    }
+
+    if (amount < 1) {
+      setError(
+        'Deposit amount must be at least KES 1.'
+      )
+      return
+    }
+
+    if (
+      selectedManualAmounts.length > 0 &&
+      !selectedManualAmounts.some(
+        (availableAmount) =>
+          Number(availableAmount) === amount
+      )
+    ) {
+      setError(
+        'Please choose one of the available deposit amounts.'
+      )
+      return
+    }
+
+    const reference =
+      depositReference.trim()
+
+    if (!reference) {
+      setError(
+        'Enter the transaction code after making the payment.'
+      )
+      return
+    }
+
+    setSavingDeposit(true)
+
+    try {
+      const profileId = getProfileId(
+        profile,
+        user
+      )
+
+      const {
+        data,
+        error: insertError
+      } = await supabase
+        .from('deposits')
+        .insert({
+          user_id: profileId,
+          amount,
+          method: 'Manual Deposit',
+          manual_deposit_method_id:
+            selectedManualDepositMethod.id,
+          reference,
+          status: 'Pending'
+        })
+        .select('*')
+        .single()
+
+      if (insertError) {
+        throw insertError
+      }
+
+      setDeposits((current) => [
+        data,
+        ...current
+      ])
+
+      setShowDepositModal(false)
+      resetDepositModal()
+
+      setSuccess(
+        'Manual deposit submitted successfully. It is now Pending verification.'
+      )
+
+      await loadWallet()
+    } catch (depositError) {
+      console.error(
+        'Manual deposit error:',
+        depositError
+      )
+
+      setError(
+        depositError?.message ||
+          'Unable to create the deposit request.'
+      )
+    } finally {
+      setSavingDeposit(false)
+    }
+  }
+
+  const openWithdrawal = () => {
+    clearMessages()
+    setWithdrawalAmount('')
+    setSelectedPayoutMethod('')
+    setShowWithdrawalModal(true)
+  }
+
+  const closeWithdrawal = () => {
+    if (requestingWithdrawal) {
+      return
+    }
+
+    setShowWithdrawalModal(false)
+  }
+
+  const handleWithdrawal = async (event) => {
+    event.preventDefault()
+
+    clearMessages()
+
+    if (!user) {
+      setError(
+        'Please log in before requesting a withdrawal.'
+      )
+      return
+    }
+
+    const amount = Number(withdrawalAmount)
+
+    if (!amount || amount <= 0) {
+      setError(
+        'Enter a valid withdrawal amount.'
+      )
+      return
+    }
+
+    if (amount < MIN_WITHDRAWAL) {
+      setError(
+        'The minimum withdrawal amount is KES ' +
+          shortMoney(MIN_WITHDRAWAL) +
+          '.'
+      )
+      return
+    }
+
+    if (amount > profileBalance) {
+      setError(
+        'You do not have enough KES balance for this withdrawal.'
+      )
+      return
+    }
+
+    if (!selectedPayoutMethod) {
+      setError(
+        'Please select a payout method.'
+      )
+      return
+    }
+
+    setRequestingWithdrawal(true)
+
+    try {
+      const {
+        data,
+        error: withdrawalError
+      } = await supabase.rpc(
+        'request_withdrawal',
+        {
+          p_amount: amount,
+          p_payout_method_id:
+            selectedPayoutMethod
+        }
+      )
+
+      if (withdrawalError) {
+        throw withdrawalError
+      }
+
+      const createdWithdrawal =
+        Array.isArray(data)
+          ? data[0]
+          : data
+
+      setShowWithdrawalModal(false)
+
+      setWithdrawalAmount('')
+      setSelectedPayoutMethod('')
+
+      setSuccess(
+        'Withdrawal request submitted successfully. Net amount: KES ' +
+          money(
+            createdWithdrawal?.net_amount ||
+              withdrawalNetAmount
+          ) +
+          '.'
+      )
+
+      await loadWallet()
+
+      if (
+        typeof refreshProfile === 'function'
+      ) {
+        await refreshProfile()
+      }
+    } catch (withdrawalError) {
+      console.error(
+        'Withdrawal request error:',
+        withdrawalError
+      )
+
+      setError(
+        withdrawalError?.message ||
+          'Unable to submit the withdrawal request.'
+      )
+    } finally {
+      setRequestingWithdrawal(false)
+    }
+  }
+
+  const switchTab = (tab) => {
+    clearMessages()
+    setActiveTab(tab)
+  }
+
+  const formatDate = (value) => {
+    if (!value) {
+      return '-'
+    }
+
+    const date = new Date(value)
+
+    if (Number.isNaN(date.getTime())) {
+      return '-'
+    }
+
+    return date.toLocaleString('en-KE', {
+      dateStyle: 'medium',
+      timeStyle: 'short'
+    })
+  }
+
+  const statusClass = (status) => {
+    const value = String(status || '')
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+
+    return 'status status-' + value
+  }
+
+  const getTransactionLabel = (
+    transaction
+  ) => {
+    return (
+      transaction.description ||
+      transaction.transaction_type ||
+      transaction.source_type ||
+      'Wallet transaction'
+    )
+  }
+
+  const getTransactionAmount = (
+    transaction
+  ) => {
+    return Number(
+      transaction.amount ||
+        transaction.transaction_amount ||
+        0
+    )
+  }
+
+  return (
+    <div className="wallet-page">
+      <div className="wallet-container">
+
+        <div className="wallet-header">
+          <div>
+            <span className="wallet-eyebrow">
+              VERITAS WALLET
+            </span>
+
+            <h1>Wallet</h1>
+
+            <p>
+              Manage your KES balance, deposits,
+              withdrawals and V Coins.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            className="wallet-back-button"
+            onClick={() => navigate('/')}
+          >
+            Back Home
+          </button>
+        </div>
+
+        {error ? (
+          <div className="wallet-alert wallet-alert-error">
+            {error}
+          </div>
+        ) : null}
+
+        {success ? (
+          <div className="wallet-alert wallet-alert-success">
+            {success}
+          </div>
+        ) : null}
+
+        <section className="wallet-balance-grid">
+
+          <div className="wallet-balance-card kes-card">
+            <div className="wallet-card-top">
+              <span>KES BALANCE</span>
+              <span className="wallet-card-icon">
+                KSh
+              </span>
+            </div>
+
+            <strong>
+              KES {money(profileBalance)}
+            </strong>
+
+            <div className="wallet-card-actions">
+              <button
+                type="button"
+                onClick={openDeposit}
+              >
+                + Deposit
+              </button>
+
+              <button
+                type="button"
+                onClick={openWithdrawal}
+              >
+                Withdraw
+              </button>
+            </div>
+          </div>
+
+          <div className="wallet-balance-card vcoin-card">
+            <div className="wallet-card-top">
+              <span>V COINS</span>
+              <span className="wallet-card-icon">
+                VC
+              </span>
+            </div>
+
+            <strong>
+              {shortMoney(vcoins)}
+            </strong>
+
+            <div className="wallet-card-actions">
+              <button
+                type="button"
+                onClick={() =>
+                  navigate('/marketplace')
+                }
+              >
+                + Buy V Coins
+              </button>
+            </div>
+          </div>
+
+        </section>
+
+        <nav className="wallet-tabs">
+
+          <button
+            type="button"
+            className={
+              activeTab === 'overview'
+                ? 'wallet-tab active'
+                : 'wallet-tab'
+            }
+            onClick={() =>
+              switchTab('overview')
+            }
+          >
+            Overview
+          </button>
+
+          <button
+            type="button"
+            className={
+              activeTab === 'deposit'
+                ? 'wallet-tab active'
+                : 'wallet-tab'
+            }
+            onClick={() =>
+              switchTab('deposit')
+            }
+          >
+            Deposits
+          </button>
+
+          <button
+            type="button"
+            className={
+              activeTab === 'withdraw'
+                ? 'wallet-tab active'
+                : 'wallet-tab'
+            }
+            onClick={() =>
+              switchTab('withdraw')
+            }
+          >
+            Withdrawals
+          </button>
+
+          <button
+            type="button"
+            className={
+              activeTab === 'transactions'
+                ? 'wallet-tab active'
+                : 'wallet-tab'
+            }
+            onClick={() =>
+              switchTab('transactions')
+            }
+          >
+            Transactions
+          </button>
+
+        </nav>
+
+        {loading ? (
+          <div className="wallet-loading">
+            Loading wallet...
+          </div>
+        ) : null}
+
+        {!loading &&
+        activeTab === 'overview' ? (
+          <section className="wallet-content">
+
+            <div className="wallet-section-heading">
+              <div>
+                <h2>Wallet Overview</h2>
+
+                <p>
+                  Your current wallet activity
+                  and quick actions.
+                </p>
+              </div>
+            </div>
+
+            <div className="wallet-summary-grid">
+
+              <div className="wallet-summary-card">
+                <span>Available KES</span>
+                <strong>
+                  KES {money(profileBalance)}
+                </strong>
+              </div>
+
+              <div className="wallet-summary-card">
+                <span>V Coins</span>
+                <strong>
+                  {shortMoney(vcoins)}
+                </strong>
+              </div>
+
+              <div className="wallet-summary-card">
+                <span>Pending Deposits</span>
+                <strong>
+                  {pendingDeposits.length}
+                </strong>
+              </div>
+
+              <div className="wallet-summary-card">
+                <span>Pending Withdrawals</span>
+                <strong>
+                  {pendingWithdrawals.length}
+                </strong>
+              </div>
+
+            </div>
+
+            <div className="wallet-quick-actions">
+
+              <button
+                type="button"
+                onClick={openDeposit}
+              >
+                <strong>
+                  Deposit Funds
+                </strong>
+
+                <span>
+                  Add money to your VERITAS wallet.
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={openWithdrawal}
+              >
+                <strong>
+                  Withdraw Funds
+                </strong>
+
+                <span>
+                  Request a payout from your KES
+                  balance.
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  navigate('/marketplace')
+                }
+              >
+                <strong>
+                  Buy V Coins
+                </strong>
+
+                <span>
+                  Use V Coins for marketplace
+                  items.
+                </span>
+              </button>
+
+            </div>
+
+            <div className="wallet-recent-section">
+
+              <div className="wallet-section-heading">
+                <div>
+                  <h2>Recent Activity</h2>
+                </div>
+
+                <button
+                  type="button"
+                  className="wallet-link-button"
+                  onClick={() =>
+                    switchTab('transactions')
+                  }
+                >
+                  View All
+                </button>
+              </div>
+
+              {transactions.length === 0 ? (
+                <div className="wallet-empty">
+                  No wallet transactions yet.
+                </div>
+              ) : (
+                <div className="wallet-list">
+
+                  {transactions
+                    .slice(0, 8)
+                    .map((transaction) => {
+                      const amount =
+                        getTransactionAmount(
+                          transaction
+                        )
+
+                      return (
+                        <div
+                          className="wallet-list-row"
+                          key={transaction.id}
+                        >
+                          <div>
+                            <strong>
+                              {getTransactionLabel(
+                                transaction
+                              )}
+                            </strong>
+
+                            <small>
+                              {formatDate(
+                                transaction.created_at
+                              )}
+                            </small>
+                          </div>
+
+                          <strong
+                            className={
+                              amount >= 0
+                                ? 'wallet-positive'
+                                : 'wallet-negative'
+                            }
+                          >
+                            {amount >= 0
+                              ? '+'
+                              : ''}
+                            KES{' '}
+                            {money(
+                              Math.abs(amount)
+                            )}
+                          </strong>
+                        </div>
+                      )
+                    })}
+
+                </div>
+              )}
+
+            </div>
+
+          </section>
+        ) : null}
+
+        {!loading &&
+        activeTab === 'deposit' ? (
+          <section className="wallet-content wallet-deposit-page">
+
+            <div className="wallet-section-heading">
+              <div>
+                <h2>Deposit Funds</h2>
+
+                <p>
+                  Choose how you want to add
+                  money to your VERITAS wallet.
+                </p>
+              </div>
+            </div>
+
+            <div className="wallet-deposit-simple-grid">
+
+              <div className="wallet-deposit-option">
+
+                <div className="wallet-deposit-option-top">
+                  <span className="wallet-deposit-badge online">
+                    ONLINE
+                  </span>
+
+                  <span className="wallet-deposit-option-icon">
+                    P
+                  </span>
+                </div>
+
+                <h3>Paystack</h3>
+
+                <p>
+                  Pay securely online using
+                  the VERITAS Paystack payment
+                  option.
+                </p>
+
+                <button
+                  type="button"
+                  className="wallet-primary-button wallet-full-button"
+                  onClick={
+                    openPaystackDeposit
+                  }
+                >
+                  Pay with Paystack
+                </button>
+
+                <small className="wallet-deposit-note">
+                  Secure Paystack checkout.
+                  Your wallet is credited
+                  automatically after payment
+                  verification.
+                </small>
+
+              </div>
+
+              <div className="wallet-deposit-option">
+
+                <div className="wallet-deposit-option-top">
+                  <span className="wallet-deposit-badge manual">
+                    MANUAL
+                  </span>
+
+                  <span className="wallet-deposit-option-icon">
+                    M
+                  </span>
+                </div>
+
+                <h3>Manual Deposit</h3>
+
+                <p>
+                  Choose your preferred payment
+                  method, view its payment
+                  details and submit your
+                  transaction code.
+                </p>
+
+                <button
+                  type="button"
+                  className="wallet-primary-button wallet-full-button"
+                  onClick={
+                    openManualDeposit
+                  }
+                >
+                  Manual Deposit
+                </button>
+
+                <small className="wallet-deposit-note">
+                  {manualDepositMethods.length}
+                  {' '}
+                  payment method
+                  {manualDepositMethods.length === 1
+                    ? ''
+                    : 's'} available.
+                </small>
+
+              </div>
+
+            </div>
+
+            <div className="wallet-deposit-admin-note">
+
+              <strong>
+                Manual payment options
+              </strong>
+
+              <p>
+                VERITAS displays payment methods,
+                account details, QR codes,
+                instructions and available
+                amounts configured by the Admin.
+              </p>
+
+            </div>
+
+            <div className="wallet-section-heading wallet-history-heading">
+
+              <div>
+                <h2>Deposit History</h2>
+
+                <p>
+                  Your submitted deposit requests
+                  appear here.
+                </p>
+              </div>
+
+            </div>
+
+            {deposits.length === 0 ? (
+              <div className="wallet-empty">
+                No deposits have been submitted yet.
+              </div>
+            ) : (
+              <div className="wallet-list">
+
+                {deposits.map((deposit) => (
+                  <div
+                    className="wallet-list-row"
+                    key={deposit.id}
+                  >
+
+                    <div>
+                      <strong>
+                        {deposit.method ||
+                          'Deposit'}
+                      </strong>
+
+                      <small>
+                        Reference:{' '}
+                        {deposit.reference ||
+                          '-'}
+                      </small>
+
+                      <small>
+                        {formatDate(
+                          deposit.created_at
+                        )}
+                      </small>
+                    </div>
+
+                    <div className="wallet-row-right">
+
+                      <strong>
+                        KES{' '}
+                        {money(
+                          deposit.amount
+                        )}
+                      </strong>
+
+                      <span
+                        className={statusClass(
+                          deposit.status
+                        )}
+                      >
+                        {deposit.status ||
+                          'Pending'}
+                      </span>
+
+                    </div>
+
+                  </div>
+                ))}
+
+              </div>
+            )}
+
+          </section>
+        ) : null}
+
+        {!loading &&
+        activeTab === 'withdraw' ? (
+          <section className="wallet-content">
+
+            <div className="wallet-section-heading">
+
+              <div>
+                <h2>Withdrawals</h2>
+
+                <p>
+                  Minimum withdrawal: KES{' '}
+                  {shortMoney(
+                    MIN_WITHDRAWAL
+                  )}
+                  . Current platform fee:{' '}
+                  {withdrawalFee}%.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                className="wallet-primary-button"
+                onClick={openWithdrawal}
+              >
+                New Withdrawal
+              </button>
+
+            </div>
+
+            <div className="wallet-withdrawal-info">
+
+              <div>
+                <span>Available</span>
+
+                <strong>
+                  KES {money(profileBalance)}
+                </strong>
+              </div>
+
+              <div>
+                <span>Platform Fee</span>
+
+                <strong>
+                  {withdrawalFee}%
+                </strong>
+              </div>
+
+              <div>
+                <span>Minimum</span>
+
+                <strong>
+                  KES{' '}
+                  {shortMoney(
+                    MIN_WITHDRAWAL
+                  )}
+                </strong>
+              </div>
+
+            </div>
+
+            {withdrawals.length === 0 ? (
+              <div className="wallet-empty">
+                No withdrawals have been
+                requested yet.
+              </div>
+            ) : (
+              <div className="wallet-list">
+
+                {withdrawals.map(
+                  (withdrawal) => (
+                    <div
+                      className="wallet-list-row"
+                      key={withdrawal.id}
+                    >
+
+                      <div>
+                        <strong>
+                          Withdrawal
+                        </strong>
+
+                        <small>
+                          {formatDate(
+                            withdrawal.created_at
+                          )}
+                        </small>
+
+                        {withdrawal.batch_code ? (
+                          <small>
+                            Batch:{' '}
+                            {
+                              withdrawal.batch_code
+                            }
+                          </small>
+                        ) : null}
+                      </div>
+
+                      <div className="wallet-row-right">
+
+                        <strong>
+                          KES{' '}
+                          {money(
+                            withdrawal.net_amount ||
+                              withdrawal.amount
+                          )}
+                        </strong>
+
+                        <span
+                          className={statusClass(
+                            withdrawal.status
+                          )}
+                        >
+                          {withdrawal.status ||
+                            'Pending'}
+                        </span>
+
+                      </div>
+
+                    </div>
+                  )
+                )}
+
+              </div>
+            )}
+
+          </section>
+        ) : null}
+
+        {!loading &&
+        activeTab === 'transactions' ? (
+          <section className="wallet-content">
+
+            <div className="wallet-section-heading">
+
+              <div>
+                <h2>
+                  Wallet Transactions
+                </h2>
+
+                <p>
+                  Your latest wallet activity.
+                </p>
+              </div>
+
+            </div>
+
+            {transactions.length === 0 ? (
+              <div className="wallet-empty">
+                No wallet transactions yet.
+              </div>
+            ) : (
+              <div className="wallet-list">
+
+                {transactions.map(
+                  (transaction) => {
+                    const amount =
+                      getTransactionAmount(
+                        transaction
+                      )
+
+                    return (
+                      <div
+                        className="wallet-list-row"
+                        key={transaction.id}
+                      >
+
+                        <div>
+                          <strong>
+                            {getTransactionLabel(
+                              transaction
+                            )}
+                          </strong>
+
+                          {transaction.reference ? (
+                            <small>
+                              Reference:{' '}
+                              {
+                                transaction.reference
+                              }
+                            </small>
+                          ) : null}
+
+                          <small>
+                            {formatDate(
+                              transaction.created_at
+                            )}
+                          </small>
+                        </div>
+
+                        <strong
+                          className={
+                            amount >= 0
+                              ? 'wallet-positive'
+                              : 'wallet-negative'
+                          }
+                        >
+                          {amount >= 0
+                            ? '+'
+                            : '-'}
+                          KES{' '}
+                          {money(
+                            Math.abs(amount)
+                          )}
+                        </strong>
+
+                      </div>
+                    )
+                  }
+                )}
+
+              </div>
+            )}
+
+          </section>
+        ) : null}
+
+        {showDepositModal ? (
+          <div className="wallet-modal-overlay">
+
+            <div className="wallet-modal">
+
+              <div className="wallet-modal-header">
+
+                <div>
+                  <span className="wallet-eyebrow">
+                    VERITAS WALLET
+                  </span>
+
+                  <h2>
+                    {depositMethod ===
+                    'Paystack'
+                      ? 'Pay with Paystack'
+                      : 'Manual Deposit'}
+                  </h2>
+                </div>
+
+                <button
+                  type="button"
+                  className="wallet-close-button"
+                  onClick={
+                    closeDeposit
+                  }
+                  disabled={savingDeposit}
+                  aria-label="Close"
+                >
+                  Ã—
+                </button>
+
+              </div>
+
+              {depositMethod ===
+              'Manual Deposit' ? (
+                <>
+                  {depositStep ===
+                  'choose' ? (
+                    <div>
+
+                      <div className="wallet-info-box">
+                        <strong>
+                          Choose a payment method
+                        </strong>
+
+                        <p>
+                          Select the payment
+                          option that is most
+                          convenient for you.
+                        </p>
+                      </div>
+
+                      <div
+                        style={{
+                          display: 'grid',
+                          gap: '12px',
+                          marginTop: '16px'
+                        }}
+                      >
+
+                        {manualDepositMethods.map(
+                          (method) => (
+                            <button
+                              key={method.id}
+                              type="button"
+                              className="wallet-secondary-button"
+                              style={{
+                                width: '100%',
+                                textAlign:
+                                  'left',
+                                padding:
+                                  '16px'
+                              }}
+                              onClick={() =>
+                                chooseManualMethod(
+                                  method.id
+                                )
+                              }
+                            >
+                              <strong>
+                                {method.name}
+                              </strong>
+
+                              <span
+                                style={{
+                                  display:
+                                    'block',
+                                  marginTop:
+                                    '4px',
+                                  opacity:
+                                    0.75
+                                }}
+                              >
+                                View payment
+                                details
+                              </span>
+                            </button>
+                          )
+                        )}
+
+                      </div>
+
+                      <div className="wallet-modal-actions">
+
+                        <button
+                          type="button"
+                          className="wallet-secondary-button"
+                          onClick={
+                            closeDeposit
+                          }
+                          disabled={
+                            savingDeposit
+                          }
+                        >
+                          Cancel
+                        </button>
+
+                      </div>
+
+                    </div>
+                  ) : null}
+
+                  {depositStep ===
+                  'manual-details' ? (
+                    <form
+                      onSubmit={
+                        handleManualDeposit
+                      }
+                    >
+
+                      <div className="wallet-info-box">
+
+                        <strong>
+                          {
+                            selectedManualDepositMethod?.name
+                          }
+                        </strong>
+
+                        {selectedManualDepositMethod
+                          ?.account_details ? (
+                          <p
+                            style={{
+                              whiteSpace:
+                                'pre-wrap'
+                            }}
+                          >
+                            {
+                              selectedManualDepositMethod
+                                .account_details
+                            }
+                          </p>
+                        ) : null}
+
+                        {selectedManualDepositMethod
+                          ?.instructions ? (
+                          <p
+                            style={{
+                              whiteSpace:
+                                'pre-wrap',
+                              marginTop:
+                                '10px'
+                            }}
+                          >
+                            {
+                              selectedManualDepositMethod
+                                .instructions
+                            }
+                          </p>
+                        ) : null}
+
+                        {selectedManualDepositMethod
+                          ?.qr_code_url ? (
+                          <div
+                            style={{
+                              marginTop:
+                                '16px',
+                              textAlign:
+                                'center'
+                            }}
+                          >
+                            <img
+                              src={
+                                selectedManualDepositMethod
+                                  .qr_code_url
+                              }
+                              alt={
+                                selectedManualDepositMethod
+                                  .name +
+                                ' payment QR code'
+                              }
+                              style={{
+                                maxWidth:
+                                  '220px',
+                                width:
+                                  '100%',
+                                borderRadius:
+                                  '12px'
+                              }}
+                            />
+                          </div>
+                        ) : null}
+
+                      </div>
+
+                      {selectedManualAmounts.length >
+                      0 ? (
+                        <div
+                          className="wallet-field"
+                          style={{
+                            marginTop:
+                              '16px'
+                          }}
+                        >
+
+                          <span>
+                            Choose Amount
+                          </span>
+
+                          <div
+                            style={{
+                              display:
+                                'grid',
+                              gridTemplateColumns:
+                                'repeat(3, 1fr)',
+                              gap:
+                                '8px',
+                              marginTop:
+                                '8px'
+                            }}
+                          >
+
+                            {selectedManualAmounts.map(
+                              (amount) => (
+                                <button
+                                  key={amount}
+                                  type="button"
+                                  className={
+                                    Number(
+                                      depositAmount
+                                    ) ===
+                                    Number(
+                                      amount
+                                    )
+                                      ? 'wallet-primary-button'
+                                      : 'wallet-secondary-button'
+                                  }
+                                  onClick={() =>
+                                    handleManualAmount(
+                                      amount
+                                    )
+                                  }
+                                >
+                                  KES{' '}
+                                  {shortMoney(
+                                    amount
+                                  )}
+                                </button>
+                              )
+                            )}
+
+                          </div>
+
+                        </div>
+                      ) : null}
+
+                      <label className="wallet-field">
+
+                        <span>
+                          Amount (KES)
+                        </span>
+
+                        <input
+                          type="number"
+                          min="1"
+                          step="1"
+                          value={
+                            depositAmount
+                          }
+                          onChange={(
+                            event
+                          ) =>
+                            setDepositAmount(
+                              event.target
+                                .value
+                            )
+                          }
+                          placeholder="Enter amount"
+                          required
+                        />
+
+                      </label>
+
+                      <label className="wallet-field">
+
+                        <span>
+                          Transaction Code
+                        </span>
+
+                        <input
+                          type="text"
+                          value={
+                            depositReference
+                          }
+                          onChange={(
+                            event
+                          ) =>
+                            setDepositReference(
+                              event.target
+                                .value
+                            )
+                          }
+                          placeholder="Enter M-Pesa / bank transaction code"
+                          autoComplete="off"
+                          required
+                        />
+
+                      </label>
+
+                      <div className="wallet-info-box">
+
+                        <strong>
+                          After making the payment
+                        </strong>
+
+                        <p>
+                          Enter the transaction
+                          code shown by your
+                          payment provider. Your
+                          deposit will remain Pending
+                          until VERITAS verifies it.
+                        </p>
+
+                      </div>
+
+                      <div className="wallet-modal-actions">
+
+                        <button
+                          type="button"
+                          className="wallet-secondary-button"
+                          onClick={
+                            backToManualMethods
+                          }
+                          disabled={
+                            savingDeposit
+                          }
+                        >
+                          Back
+                        </button>
+
+                        <button
+                          type="submit"
+                          className="wallet-primary-button"
+                          disabled={
+                            savingDeposit
+                          }
+                        >
+                          {savingDeposit
+                            ? 'Submitting...'
+                            : 'Submit Deposit'}
+                        </button>
+
+                      </div>
+
+                    </form>
+                  ) : null}
+                </>
+              ) : (
+                <form
+                  onSubmit={
+                    handlePaystackInitialize
+                  }
+                >
+
+                  <label className="wallet-field">
+
+                    <span>
+                      Amount (KES)
+                    </span>
+
+                    <input
+                      type="number"
+                      min="1"
+                      step="1"
+                      value={
+                        depositAmount
+                      }
+                      onChange={(
+                        event
+                      ) =>
+                        setDepositAmount(
+                          event.target
+                            .value
+                        )
+                      }
+                      placeholder="e.g. 100"
+                      required
+                    />
+
+                  </label>
+
+                  <div className="wallet-info-box">
+
+                    <strong>
+                      Paystack Secure Checkout
+                    </strong>
+
+                    <p>
+                      After you continue,
+                      you will be redirected
+                      to Paystack to complete
+                      the payment.
+                    </p>
+
+                    <p>
+                      Your VERITAS wallet will
+                      only be credited after the
+                      payment is verified by the
+                      server.
+                    </p>
+
+                  </div>
+
+                  <div className="wallet-modal-actions">
+
+                    <button
+                      type="button"
+                      className="wallet-secondary-button"
+                      onClick={
+                        closeDeposit
+                      }
+                      disabled={
+                        savingDeposit
+                      }
+                    >
+                      Cancel
+                    </button>
+
+                    <button
+                      type="submit"
+                      className="wallet-primary-button"
+                      disabled={
+                        savingDeposit
+                      }
+                    >
+                      {savingDeposit
+                        ? 'Connecting...'
+                        : 'Continue to Paystack'}
+                    </button>
+
+                  </div>
+
+                </form>
+              )}
+
+            </div>
+
+          </div>
+        ) : null}
+
+        {showWithdrawalModal ? (
+          <div className="wallet-modal-overlay">
+
+            <div className="wallet-modal">
+
+              <div className="wallet-modal-header">
+
+                <div>
+                  <span className="wallet-eyebrow">
+                    VERITAS WALLET
+                  </span>
+
+                  <h2>
+                    Withdraw Funds
+                  </h2>
+                </div>
+
+                <button
+                  type="button"
+                  className="wallet-close-button"
+                  onClick={
+                    closeWithdrawal
+                  }
+                  disabled={
+                    requestingWithdrawal
+                  }
+                  aria-label="Close"
+                >
+                  Ã—
+                </button>
+
+              </div>
+
+              <form
+                onSubmit={
+                  handleWithdrawal
+                }
+              >
+
+                <div className="wallet-info-box">
+
+                  <span>
+                    Available balance
+                  </span>
+
+                  <strong>
+                    KES {money(profileBalance)}
+                  </strong>
+
+                </div>
+
+                <label className="wallet-field">
+
+                  <span>
+                    Withdrawal Amount (KES)
+                  </span>
+
+                  <input
+                    type="number"
+                    min={
+                      MIN_WITHDRAWAL
+                    }
+                    step="1"
+                    value={
+                      withdrawalAmount
+                    }
+                    onChange={(
+                      event
+                    ) =>
+                      setWithdrawalAmount(
+                        event.target
+                          .value
+                      )
+                    }
+                    placeholder="e.g. 500"
+                    required
+                  />
+
+                </label>
+
+                <label className="wallet-field">
+
+                  <span>
+                    Payout Method
+                  </span>
+
+                  <select
+                    value={
+                      selectedPayoutMethod
+                    }
+                    onChange={(
+                      event
+                    ) =>
+                      setSelectedPayoutMethod(
+                        event.target
+                          .value
+                      )
+                    }
+                    required
+                  >
+
+                    <option value="">
+                      Select payout method
+                    </option>
+
+                    {payoutMethods.map(
+                      (method) => (
+                        <option
+                          key={method.id}
+                          value={method.id}
+                        >
+                          {method.method_name ||
+                            method.name ||
+                            method.provider ||
+                            'Payout Method'}
+                        </option>
+                      )
+                    )}
+
+                  </select>
+
+                </label>
+
+                {payoutMethods.length ===
+                0 ? (
+                  <div className="wallet-info-box">
+
+                    <p>
+                      You have no payout
+                      method saved yet.
+                      Add a payout method
+                      before requesting a
+                      withdrawal.
+                    </p>
+
+                  </div>
+                ) : null}
+
+                <div className="wallet-fee-breakdown">
+
+                  <div>
+                    <span>
+                      Requested
+                    </span>
+
+                    <strong>
+                      KES{' '}
+                      {money(
+                        withdrawalNumber
+                      )}
+                    </strong>
+                  </div>
+
+                  <div>
+                    <span>
+                      VERITAS fee (
+                      {withdrawalFee}%)
+                    </span>
+
+                    <strong>
+                      KES{' '}
+                      {money(
+                        withdrawalFeeAmount
+                      )}
+                    </strong>
+                  </div>
+
+                  <div className="wallet-total-row">
+
+                    <span>
+                      You receive
+                    </span>
+
+                    <strong>
+                      KES{' '}
+                      {money(
+                        withdrawalNetAmount
+                      )}
+                    </strong>
+
+                  </div>
+
+                </div>
+
+                <div className="wallet-modal-actions">
+
+                  <button
+                    type="button"
+                    className="wallet-secondary-button"
+                    onClick={
+                      closeWithdrawal
+                    }
+                    disabled={
+                      requestingWithdrawal
+                    }
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    type="submit"
+                    className="wallet-primary-button"
+                    disabled={
+                      requestingWithdrawal ||
+                      payoutMethods.length ===
+                        0
+                    }
+                  >
+                    {requestingWithdrawal
+                      ? 'Submitting...'
+                      : 'Request Withdrawal'}
+                  </button>
+
+                </div>
+
+              </form>
+
+            </div>
+
+          </div>
+        ) : null}
+
+      </div>
+    </div>
+  )
+}
+
+export default Wallet

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+﻿import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabaseClient'
@@ -11,6 +11,7 @@ export default function Home() {
     profile,
     refreshProfile,
     signOut,
+    isAdmin,
   } = useAuth()
 
   const [tournaments, setTournaments] = useState([])
@@ -21,7 +22,6 @@ export default function Home() {
   const [loadingMyTournaments, setLoadingMyTournaments] = useState(true)
 
   const [menuOpen, setMenuOpen] = useState(false)
-
   const [equippedItems, setEquippedItems] = useState([])
 
   useEffect(() => {
@@ -37,12 +37,6 @@ export default function Home() {
     try {
       await refreshProfile()
 
-      /*
-        Load equipped marketplace items.
-
-        We read the slot and the marketplace item together
-        so the username can actually use the equipped effects.
-      */
       const {
         data: equippedData,
         error: equippedError,
@@ -64,10 +58,7 @@ export default function Home() {
         .eq('user_id', user.id)
 
       if (equippedError) {
-        console.error(
-          'Equipped items loading error:',
-          equippedError
-        )
+        console.error('Equipped items loading error:', equippedError)
         setEquippedItems([])
       } else {
         setEquippedItems(equippedData || [])
@@ -111,11 +102,7 @@ export default function Home() {
       if (!error) {
         setTournaments(data || [])
       } else {
-        console.error(
-          'Tournament loading error:',
-          error
-        )
-
+        console.error('Tournament loading error:', error)
         setTournaments([])
       }
 
@@ -175,19 +162,13 @@ export default function Home() {
             .filter((item) => item.tournaments)
             .map((item) => ({
               ...item.tournaments,
-              participant_status:
-                item.status,
-              joined_at:
-                item.joined_at,
+              participant_status: item.status,
+              joined_at: item.joined_at,
             }))
         )
       }
-
     } catch (error) {
-      console.error(
-        'Home loading error:',
-        error
-      )
+      console.error('Home loading error:', error)
     } finally {
       setLoadingTournaments(false)
       setLoadingMyTournaments(false)
@@ -209,12 +190,10 @@ export default function Home() {
     return 'Upcoming'
   }
 
-  const filteredMyTournaments =
-    myTournaments.filter(
-      (tournament) =>
-        getMyTournamentStatus(tournament) ===
-        myTournamentTab
-    )
+  const filteredMyTournaments = myTournaments.filter(
+    (tournament) =>
+      getMyTournamentStatus(tournament) === myTournamentTab
+  )
 
   async function handleLogout() {
     const { error } = await signOut()
@@ -256,36 +235,17 @@ export default function Home() {
   const fairPlay =
     profile?.fair_play_score ?? 100
 
-  /*
-    Find currently equipped effects.
-  */
   const hasSlot = (slot) =>
     equippedItems.some(
       (item) => item.slot_type === slot
     )
 
-  const hasFont =
-    hasSlot('Font')
+  const hasFont = hasSlot('Font')
+  const hasGlow = hasSlot('Glow')
+  const hasFire = hasSlot('Fire')
+  const hasIce = hasSlot('Ice')
+  const hasElectric = hasSlot('Electric')
 
-  const hasGlow =
-    hasSlot('Glow')
-
-  const hasFire =
-    hasSlot('Fire')
-
-  const hasIce =
-    hasSlot('Ice')
-
-  const hasElectric =
-    hasSlot('Electric')
-
-  /*
-    Titan Font is currently the first marketplace
-    font, so we apply a clearly visible local font.
-
-    Later, additional marketplace fonts can have
-    their own mappings here.
-  */
   const fontItem =
     equippedItems.find(
       (item) => item.slot_type === 'Font'
@@ -294,31 +254,18 @@ export default function Home() {
   const fontName =
     fontItem?.marketplace_items?.name || ''
 
-  let usernameFontFamily =
-    'inherit'
+  let usernameFontFamily = 'inherit'
+  let usernameFontWeight = 700
+  let usernameLetterSpacing = 'normal'
 
-  let usernameFontWeight =
-    700
+  if (hasFont && fontName === 'Titan Font') {
+    usernameFontFamily =
+      'Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif'
 
-  let usernameLetterSpacing =
-    'normal'
-
-  if (hasFont) {
-    if (fontName === 'Titan Font') {
-      usernameFontFamily =
-        'Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif'
-
-      usernameFontWeight = 900
-      usernameLetterSpacing = '0.5px'
-    }
+    usernameFontWeight = 900
+    usernameLetterSpacing = '0.5px'
   }
 
-  /*
-    Username visual effects.
-
-    These are deliberately layered so Font can work
-    together with Glow, Fire, Ice and Electric.
-  */
   let usernameTextShadow = 'none'
 
   if (hasGlow) {
@@ -375,36 +322,30 @@ export default function Home() {
           <button
             type="button"
             className="icon-button"
-            onClick={() =>
-              navigate('/notifications')
-            }
+            onClick={() => navigate('/notifications')}
             title="Notifications"
+            aria-label="Notifications"
           >
-            🔔
+            &#x1F514;
           </button>
 
           <button
             type="button"
             className="profile-mini"
             onClick={() =>
-              setMenuOpen(
-                (value) => !value
-              )
+              setMenuOpen((value) => !value)
             }
+            aria-label="Open profile menu"
           >
-
             <div className="mini-avatar">
-              {displayName
-                .charAt(0)
-                .toUpperCase()}
+              {displayName.charAt(0).toUpperCase()}
             </div>
 
             <span style={usernameStyle}>
               {displayName}
             </span>
 
-            <span>⌄</span>
-
+            <span>&#x25BC;</span>
           </button>
 
           {menuOpen && (
@@ -412,9 +353,7 @@ export default function Home() {
 
               <button
                 type="button"
-                onClick={() =>
-                  navigate('/settings')
-                }
+                onClick={() => navigate('/settings')}
               >
                 Settings
               </button>
@@ -444,97 +383,92 @@ export default function Home() {
             className="sidebar-link active"
             onClick={() => navigate('/')}
           >
-            <span>⌂</span>
+            <span>&#x1F3E0;</span>
             <span>Home</span>
           </button>
 
           <button
             type="button"
             className="sidebar-link"
-            onClick={() =>
-              navigate('/tournaments')
-            }
+            onClick={() => navigate('/tournaments')}
           >
-            <span>🏆</span>
+            <span>&#x1F3C6;</span>
             <span>Tournaments</span>
           </button>
 
           <button
             type="button"
             className="sidebar-link"
-            onClick={() =>
-              navigate('/matches')
-            }
+            onClick={() => navigate('/matches')}
           >
-            <span>⚔</span>
+            <span>&#x2694;&#xFE0F;</span>
             <span>My Matches</span>
           </button>
 
           <button
             type="button"
             className="sidebar-link"
-            onClick={() =>
-              navigate('/wallet')
-            }
+            onClick={() => navigate('/wallet')}
           >
-            <span>💰</span>
+            <span>&#x1F4B5;</span>
             <span>Wallet</span>
           </button>
 
           <button
             type="button"
             className="sidebar-link"
-            onClick={() =>
-              navigate('/vcoins')
-            }
+            onClick={() => navigate('/vcoins')}
           >
-            <span>🪙</span>
+            <span>&#x1FA99;</span>
             <span>V Coins</span>
           </button>
 
           <button
             type="button"
             className="sidebar-link"
-            onClick={() =>
-              navigate('/marketplace')
-            }
+            onClick={() => navigate('/marketplace')}
           >
-            <span>🛍</span>
+            <span>&#x1F6D2;</span>
             <span>Marketplace</span>
           </button>
 
           <button
             type="button"
             className="sidebar-link"
-            onClick={() =>
-              navigate('/inventory')
-            }
+            onClick={() => navigate('/inventory')}
           >
-            <span>🎒</span>
+            <span>&#x1F392;</span>
             <span>Inventory</span>
           </button>
 
           <button
             type="button"
             className="sidebar-link"
-            onClick={() =>
-              navigate('/notifications')
-            }
+            onClick={() => navigate('/notifications')}
           >
-            <span>🔔</span>
+            <span>&#x1F514;</span>
             <span>Notifications</span>
           </button>
 
           <div className="sidebar-divider" />
 
+          {isAdmin && (
+            <button
+              type="button"
+              className="sidebar-link"
+              onClick={() => navigate('/admin')}
+            >
+              <span>&#x2699;&#xFE0F;</span>
+              <span>Admin</span>
+            </button>
+          )}
+
           <button
             type="button"
             className="sidebar-link"
-            onClick={() =>
-              navigate('/settings')
-            }
+            onClick={() => navigate('/settings')}
           >
-            <span>⚙</span>
+            <span>&#x1F48E;</span>
             <span>Settings</span>
           </button>
 
@@ -543,7 +477,7 @@ export default function Home() {
             className="sidebar-link sidebar-logout"
             onClick={handleLogout}
           >
-            <span>↪</span>
+            <span>&#x2192;</span>
             <span>Logout</span>
           </button>
 
@@ -596,9 +530,8 @@ export default function Home() {
 
               <button
                 type="button"
-                onClick={() =>
-                  navigate('/wallet')
-                }
+                onClick={() => navigate('/wallet')}
+                aria-label="Open wallet"
               >
                 +
               </button>
@@ -619,9 +552,8 @@ export default function Home() {
 
               <button
                 type="button"
-                onClick={() =>
-                  navigate('/vcoins')
-                }
+                onClick={() => navigate('/vcoins')}
+                aria-label="Open V Coins"
               >
                 +
               </button>
@@ -634,7 +566,7 @@ export default function Home() {
           <section className="stats-grid">
 
             <div className="stat-card">
-              <span>🏆</span>
+              <span>&#x1F3C6;</span>
 
               <div>
                 <small>
@@ -648,7 +580,7 @@ export default function Home() {
             </div>
 
             <div className="stat-card">
-              <span>🎖</span>
+              <span>&#x1F3C5;</span>
 
               <div>
                 <small>
@@ -662,7 +594,7 @@ export default function Home() {
             </div>
 
             <div className="stat-card">
-              <span>⭐</span>
+              <span>&#x1F48E;</span>
 
               <div>
                 <small>
@@ -698,15 +630,15 @@ export default function Home() {
 
               <button
                 type="button"
-                onClick={() =>
-                  navigate('/tournaments')
-                }
+                onClick={() => navigate('/tournaments')}
                 className="action-card"
               >
-                <span>🏆</span>
+                <span>&#x1F3C6;</span>
+
                 <strong>
                   Create Tournament
                 </strong>
+
                 <small>
                   Create your own competition
                 </small>
@@ -714,15 +646,15 @@ export default function Home() {
 
               <button
                 type="button"
-                onClick={() =>
-                  navigate('/tournaments')
-                }
+                onClick={() => navigate('/tournaments')}
                 className="action-card"
               >
-                <span>🎮</span>
+                <span>&#x1F3AE;</span>
+
                 <strong>
                   Join Tournament
                 </strong>
+
                 <small>
                   Enter using a tournament code
                 </small>
@@ -730,15 +662,15 @@ export default function Home() {
 
               <button
                 type="button"
-                onClick={() =>
-                  navigate('/tournaments')
-                }
+                onClick={() => navigate('/tournaments')}
                 className="action-card"
               >
-                <span>💎</span>
+                <span>&#x1F4B0;</span>
+
                 <strong>
                   Sponsor Tournament
                 </strong>
+
                 <small>
                   Support a tournament
                 </small>
@@ -746,15 +678,15 @@ export default function Home() {
 
               <button
                 type="button"
-                onClick={() =>
-                  navigate('/matches')
-                }
+                onClick={() => navigate('/matches')}
                 className="action-card"
               >
-                <span>⚔</span>
+                <span>&#x26BD;</span>
+
                 <strong>
                   View My Matches
                 </strong>
+
                 <small>
                   See your upcoming matches
                 </small>
@@ -781,11 +713,9 @@ export default function Home() {
               <button
                 type="button"
                 className="text-button"
-                onClick={() =>
-                  navigate('/tournaments')
-                }
+                onClick={() => navigate('/tournaments')}
               >
-                View All →
+                View All &#x2192;
               </button>
 
             </div>
@@ -822,12 +752,10 @@ export default function Home() {
             ) : filteredMyTournaments.length === 0 ? (
               <div className="empty-tournament">
 
-                <div>🏟</div>
+                <div>&#x1F3C6;</div>
 
                 <h3>
-                  No{' '}
-                  {myTournamentTab.toLowerCase()}{' '}
-                  tournaments
+                  No {myTournamentTab.toLowerCase()} tournaments
                 </h3>
 
                 <p>
@@ -837,9 +765,7 @@ export default function Home() {
 
                 <button
                   type="button"
-                  onClick={() =>
-                    navigate('/tournaments')
-                  }
+                  onClick={() => navigate('/tournaments')}
                 >
                   Explore Tournaments
                 </button>
@@ -874,9 +800,7 @@ export default function Home() {
                       <div className="tournament-info">
 
                         <span>
-                          👥{' '}
-                          {tournament.players}{' '}
-                          players
+                          P {tournament.players} players
                         </span>
 
                         <span>
@@ -924,11 +848,9 @@ export default function Home() {
               <button
                 type="button"
                 className="text-button"
-                onClick={() =>
-                  navigate('/tournaments')
-                }
+                onClick={() => navigate('/tournaments')}
               >
-                See All →
+                See All &#x2192;
               </button>
 
             </div>
@@ -940,7 +862,7 @@ export default function Home() {
             ) : tournaments.length === 0 ? (
               <div className="empty-tournament">
 
-                <div>🏆</div>
+                <div>&#x1F3C6;</div>
 
                 <h3>
                   No tournaments available yet
@@ -965,8 +887,7 @@ export default function Home() {
                       <div className="tournament-card-top">
 
                         <span>
-                          {tournament.game ||
-                            'Football'}
+                          {tournament.game || 'Football'}
                         </span>
 
                         {tournament.is_sponsored && (
@@ -984,10 +905,7 @@ export default function Home() {
                       <div className="tournament-info">
 
                         <span>
-                          👥{' '}
-                          {tournament.players ||
-                            0}{' '}
-                          players
+                          P {tournament.players || 0} players
                         </span>
 
                         <span>
@@ -1022,7 +940,7 @@ export default function Home() {
 
             <div className="feature-panel">
 
-              <span>👑</span>
+              <span>&#x2605;</span>
 
               <div>
 
@@ -1045,7 +963,7 @@ export default function Home() {
 
             <div className="feature-panel">
 
-              <span>📢</span>
+              <span>&#x1F4E2;</span>
 
               <div>
 

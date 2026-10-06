@@ -1,0 +1,161 @@
+﻿import React from 'react'
+import { Routes, Route, Navigate } from 'react-router-dom'
+
+import Login from './pages/Auth/Login'
+import Register from './pages/Auth/Register'
+import ForgotPassword from './pages/Auth/ForgotPassword'
+import ResetPassword from './pages/Auth/ResetPassword'
+import VerifyEmail from './pages/Auth/VerifyEmail'
+
+import ProtectedRoute from './components/ProtectedRoute'
+import AdminRoute from './components/AdminRoute'
+
+import Home from './pages/Home/Home'
+import Tournaments from './pages/Tournaments/Tournaments'
+import TournamentDetails from './pages/Tournaments/TournamentDetails'
+import Wallet from './pages/Wallet/Wallet'
+import Marketplace from './pages/Marketplace/Marketplace'
+import Inventory from './pages/Inventory/Inventory'
+
+import AdminDepositMethods from './pages/Admin/AdminDepositMethods'
+import AdminDeposits from './pages/Admin/AdminDeposits'
+import AdminDashboard from './pages/Admin/AdminDashboard'
+
+function ComingSoon({ title }) {
+  return (
+    <div
+      style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: '#070b14',
+        color: '#ffffff',
+        padding: '24px',
+      }}
+    >
+      <div
+        style={{
+          textAlign: 'center',
+          maxWidth: '500px',
+        }}
+      >
+        <h1>{title}</h1>
+
+        <p style={{ color: '#9ca3af' }}>
+          This section is coming soon.
+        </p>
+      </div>
+    </div>
+  )
+}
+
+export default function App() {
+  return (
+    <Routes>
+      {/* AUTH */}
+      <Route
+        path="/login"
+        element={<Login />}
+      />
+
+      <Route
+        path="/register"
+        element={<Register />}
+      />
+
+      <Route
+        path="/forgot-password"
+        element={<ForgotPassword />}
+      />
+
+      <Route
+        path="/reset-password"
+        element={<ResetPassword />}
+      />
+
+      <Route
+        path="/verify-email"
+        element={<VerifyEmail />}
+      />
+
+      {/* PROTECTED APP */}
+      <Route element={<ProtectedRoute />}>
+        <Route
+          path="/"
+          element={<Home />}
+        />
+
+        <Route
+          path="/tournaments"
+          element={<Tournaments />}
+        />
+
+        <Route
+          path="/tournaments/:id"
+          element={<TournamentDetails />}
+        />
+
+        <Route
+          path="/matches"
+          element={<ComingSoon title="Matches" />}
+        />
+
+        <Route
+          path="/wallet"
+          element={<Wallet />}
+        />
+
+        <Route
+          path="/vcoins"
+          element={<ComingSoon title="V Coins" />}
+        />
+
+        <Route
+          path="/marketplace"
+          element={<Marketplace />}
+        />
+
+        <Route
+          path="/inventory"
+          element={<Inventory />}
+        />
+
+        <Route
+          path="/notifications"
+          element={<ComingSoon title="Notifications" />}
+        />
+
+        <Route
+          path="/settings"
+          element={<ComingSoon title="Settings" />}
+        />
+      </Route>
+
+      {/* ADMIN ONLY */}
+      <Route element={<AdminRoute />}>
+        <Route
+          path="/admin"
+          element={<AdminDashboard />}
+        />
+
+        <Route
+          path="/admin/deposit-methods"
+          element={<AdminDepositMethods />}
+        />
+
+        <Route
+          path="/admin/deposits"
+          element={<AdminDeposits />}
+        />
+      </Route>
+
+      {/* FALLBACK */}
+      <Route
+        path="*"
+        element={<Navigate to="/" replace />}
+      />
+    </Routes>
+  )
+}
+

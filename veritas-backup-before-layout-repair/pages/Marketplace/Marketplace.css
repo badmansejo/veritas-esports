@@ -1,0 +1,17 @@
+.marketplace-scrollbar::-webkit-scrollbar {
+  height: 4px;
+}
+
+.marketplace-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.marketplace-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+}
+
+.marketplace-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
