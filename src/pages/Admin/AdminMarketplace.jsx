@@ -107,6 +107,20 @@ export default function AdminMarketplace() {
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
 
+  const [badgeDesign, setBadgeDesign] = useState({
+    shape:'circle',
+    color:'#16c75a',
+    gradient:'#087b3d',
+    border:'#baffd1',
+    icon:'✓',
+    iconColor:'#ffffff',
+    glow:true,
+    glowColor:'#16c75a',
+    borderWidth:3,
+    size:62,
+    metallic:true,
+  })
+
   const [form, setForm] = useState({
     name:'',
     slug:'',
@@ -293,7 +307,92 @@ export default function AdminMarketplace() {
     setError('')
   }
 
-  const previewData = useMemo(() => ({
+    function updateBadgeDesign(field,value) {
+    setBadgeDesign(current => ({
+      ...current,
+      [field]:value,
+    }))
+  }
+
+  function resetBadgeDesign() {
+    setBadgeDesign({
+      shape:'circle',
+      color:'#16c75a',
+      gradient:'#087b3d',
+      border:'#baffd1',
+      icon:'✓',
+      iconColor:'#ffffff',
+      glow:true,
+      glowColor:'#16c75a',
+      borderWidth:3,
+      size:62,
+      metallic:true,
+    })
+  }
+
+  function badgeShapeRadius(shape) {
+    if (shape === 'circle') return '50%'
+    if (shape === 'square') return '8px'
+    if (shape === 'rounded') return '18px'
+    if (shape === 'shield') return '18px 18px 28px 28px'
+    if (shape === 'hexagon') return '18%'
+    if (shape === 'diamond') return '12px'
+    if (shape === 'star') return '28%'
+    return '50%'
+  }
+
+  function badgeClipPath(shape) {
+    if (shape === 'shield') {
+      return 'polygon(50% 0%, 92% 18%, 86% 72%, 50% 100%, 14% 72%, 8% 18%)'
+    }
+
+    if (shape === 'hexagon') {
+      return 'polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%)'
+    }
+
+    if (shape === 'diamond') {
+      return 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)'
+    }
+
+    if (shape === 'star') {
+      return 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 94%, 50% 72%, 21% 94%, 32% 57%, 2% 35%, 39% 35%)'
+    }
+
+    return 'none'
+  }
+
+  function getBadgePreviewStyle(large = false) {
+    const size = large
+      ? Number(badgeDesign.size || 62)
+      : Math.max(38, Math.round(Number(badgeDesign.size || 62) * 0.65))
+
+    const shadow = badgeDesign.glow
+      ? `0 0 24px ${badgeDesign.glowColor}, inset 0 2px 6px rgba(255,255,255,.65), inset 0 -6px 10px rgba(0,0,0,.25)`
+      : 'inset 0 2px 6px rgba(255,255,255,.5), inset 0 -6px 10px rgba(0,0,0,.25)'
+
+    return {
+      width:`${size}px`,
+      height:`${size}px`,
+      display:'grid',
+      placeItems:'center',
+      flexShrink:0,
+      borderRadius:badgeShapeRadius(badgeDesign.shape),
+      clipPath:badgeClipPath(badgeDesign.shape),
+      background:badgeDesign.metallic
+        ? `linear-gradient(145deg, #ffffff 0%, ${badgeDesign.color} 20%, ${badgeDesign.gradient} 65%, ${badgeDesign.color} 100%)`
+        : `linear-gradient(145deg, ${badgeDesign.color}, ${badgeDesign.gradient})`,
+      border:`${badgeDesign.borderWidth}px solid ${badgeDesign.border}`,
+      color:badgeDesign.iconColor,
+      fontSize:`${Math.max(16, Math.round(size * 0.43))}px`,
+      fontWeight:1000,
+      lineHeight:1,
+      textShadow:'0 2px 3px rgba(0,0,0,.45)',
+      boxShadow:shadow,
+      transform:badgeDesign.shape === 'diamond' ? 'rotate(0deg)' : 'none',
+      transition:'all .2s ease',
+    }
+  }
+const previewData = useMemo(() => ({
     effect:form.effect,
     font:form.font,
     frame:form.frame,
@@ -301,6 +400,7 @@ export default function AdminMarketplace() {
     badge:form.badge,
     badge_style:form.badge_style,
     intensity:Number(form.intensity || 70),
+    badge_design:badgeDesign,
   }), [
     form.effect,
     form.font,
@@ -309,6 +409,7 @@ export default function AdminMarketplace() {
     form.badge,
     form.badge_style,
     form.intensity,
+    badgeDesign,
   ])
 
   function update(field,value) {
@@ -423,6 +524,8 @@ export default function AdminMarketplace() {
   }
 
   function clearForm() {
+    resetBadgeDesign()
+
     setForm({
       name:'',
       slug:'',
@@ -628,6 +731,302 @@ export default function AdminMarketplace() {
                   <small>Live badge</small>
                 </button>
               ))}
+            </div>
+          </div>
+
+                    <div className="badge-designer">
+            <div className="badge-designer-header">
+              <div>
+                <h3>Custom Badge Designer</h3>
+                <p>Design your own badge and see it live before creating it.</p>
+              </div>
+
+              <button
+                type="button"
+                className="clear-button"
+                onClick={resetBadgeDesign}
+              >
+                Reset Design
+              </button>
+            </div>
+
+            <div className="badge-designer-layout">
+
+              <div className="badge-designer-controls">
+
+                <label>
+                  Badge Name
+                  <input
+                    value={
+                      form.item_type === 'Badge' &&
+                      form.badge !== 'None'
+                        ? form.name
+                        : ''
+                    }
+                    onChange={e => {
+                      update('name',e.target.value)
+                      update('slug',slugify(e.target.value))
+                    }}
+                    placeholder="My Custom Badge"
+                  />
+                </label>
+
+                <label>
+                  Shape
+                  <select
+                    value={badgeDesign.shape}
+                    onChange={e =>
+                      updateBadgeDesign('shape',e.target.value)
+                    }
+                  >
+                    <option value="circle">Circle</option>
+                    <option value="rounded">Rounded Square</option>
+                    <option value="square">Square</option>
+                    <option value="shield">Shield</option>
+                    <option value="hexagon">Hexagon</option>
+                    <option value="diamond">Diamond</option>
+                    <option value="star">Star</option>
+                  </select>
+                </label>
+
+                <label>
+                  Icon / Letter
+                  <input
+                    maxLength="3"
+                    value={badgeDesign.icon}
+                    onChange={e =>
+                      updateBadgeDesign('icon',e.target.value)
+                    }
+                  />
+                </label>
+
+                <div className="two-columns">
+
+                  <label>
+                    Main Colour
+                    <input
+                      type="color"
+                      value={badgeDesign.color}
+                      onChange={e =>
+                        updateBadgeDesign('color',e.target.value)
+                      }
+                    />
+                  </label>
+
+                  <label>
+                    Gradient
+                    <input
+                      type="color"
+                      value={badgeDesign.gradient}
+                      onChange={e =>
+                        updateBadgeDesign('gradient',e.target.value)
+                      }
+                    />
+                  </label>
+
+                </div>
+
+                <div className="two-columns">
+
+                  <label>
+                    Border
+                    <input
+                      type="color"
+                      value={badgeDesign.border}
+                      onChange={e =>
+                        updateBadgeDesign('border',e.target.value)
+                      }
+                    />
+                  </label>
+
+                  <label>
+                    Icon Colour
+                    <input
+                      type="color"
+                      value={badgeDesign.iconColor}
+                      onChange={e =>
+                        updateBadgeDesign('iconColor',e.target.value)
+                      }
+                    />
+                  </label>
+
+                </div>
+
+                <div className="two-columns">
+
+                  <label>
+                    Glow Colour
+                    <input
+                      type="color"
+                      value={badgeDesign.glowColor}
+                      onChange={e =>
+                        updateBadgeDesign('glowColor',e.target.value)
+                      }
+                    />
+                  </label>
+
+                  <label>
+                    Border Width
+                    <input
+                      type="number"
+                      min="1"
+                      max="10"
+                      value={badgeDesign.borderWidth}
+                      onChange={e =>
+                        updateBadgeDesign(
+                          'borderWidth',
+                          Number(e.target.value)
+                        )
+                      }
+                    />
+                  </label>
+
+                </div>
+
+                <label>
+                  Badge Size
+                  <div className="range-heading">
+                    <span>Size</span>
+                    <strong>{badgeDesign.size}px</strong>
+                  </div>
+
+                  <input
+                    type="range"
+                    min="40"
+                    max="110"
+                    value={badgeDesign.size}
+                    onChange={e =>
+                      updateBadgeDesign(
+                        'size',
+                        Number(e.target.value)
+                      )
+                    }
+                  />
+                </label>
+
+                <div className="switch-row">
+
+                  <label className="switch-control">
+                    <input
+                      type="checkbox"
+                      checked={badgeDesign.glow}
+                      onChange={e =>
+                        updateBadgeDesign(
+                          'glow',
+                          e.target.checked
+                        )
+                      }
+                    />
+                    <span>Glow</span>
+                  </label>
+
+                  <label className="switch-control">
+                    <input
+                      type="checkbox"
+                      checked={badgeDesign.metallic}
+                      onChange={e =>
+                        updateBadgeDesign(
+                          'metallic',
+                          e.target.checked
+                        )
+                      }
+                    />
+                    <span>Metallic</span>
+                  </label>
+
+                </div>
+
+                <button
+                  type="button"
+                  className="create-button"
+                  onClick={() => {
+                    update('badge','Custom')
+                    update('badge_style','custom')
+                    update('item_type','Badge')
+                    update(
+                      'category_id',
+                      categoryId('Badges')
+                    )
+
+                    if (
+                      !form.name ||
+                      form.name === 'Custom Badge'
+                    ) {
+                      const name = 'Custom Badge'
+                      update('name',name)
+                      update('slug',slugify(name))
+                    }
+
+                    setMessage('Custom badge design selected.')
+                    setError('')
+                  }}
+                >
+                  Use This Badge
+                </button>
+
+              </div>
+
+              <div className="badge-designer-preview">
+
+                <span className="badge-designer-label">
+                  LIVE BADGE
+                </span>
+
+                <div
+                  style={{
+                    minHeight:'240px',
+                    display:'grid',
+                    placeItems:'center',
+                    padding:'30px',
+                    borderRadius:'24px',
+                    background:'radial-gradient(circle at center, rgba(35,45,55,.8), rgba(5,7,10,.98))',
+                    border:'1px solid rgba(255,255,255,.1)',
+                    position:'relative',
+                    overflow:'hidden',
+                  }}
+                >
+
+                  <div
+                    style={{
+                      position:'absolute',
+                      inset:0,
+                      background:'linear-gradient(135deg, rgba(255,255,255,.04), transparent 45%, rgba(0,255,120,.05))',
+                      pointerEvents:'none',
+                    }}
+                  />
+
+                  <div
+                    style={{
+                      display:'flex',
+                      flexDirection:'column',
+                      alignItems:'center',
+                      gap:'14px',
+                      position:'relative',
+                      zIndex:2,
+                    }}
+                  >
+
+                    <span style={getBadgePreviewStyle(true)}>
+                      {badgeDesign.icon}
+                    </span>
+
+                    <strong
+                      style={{
+                        color:'#fff',
+                        fontSize:'18px',
+                        letterSpacing:'.08em',
+                        textTransform:'uppercase',
+                      }}
+                    >
+                      {form.name || 'CUSTOM BADGE'}
+                    </strong>
+
+                  </div>
+
+                </div>
+
+              </div>
+
             </div>
           </div>
 
@@ -881,17 +1280,30 @@ export default function AdminMarketplace() {
                   </span>
                 </div>
 
-                {form.badge !== 'None' && selectedBadge && (
+                {form.item_type === 'Badge' && (
                   <div className="preview-badge-wrap">
 
                     <span
-                      className={`market-badge large-badge badge-${selectedBadge.style}`}
+                      style={
+                        form.badge === 'Custom'
+                          ? getBadgePreviewStyle(true)
+                          : undefined
+                      }
+                      className={
+                        form.badge === 'Custom'
+                          ? ''
+                          : `market-badge large-badge badge-${selectedBadge?.style || 'verified'}`
+                      }
                     >
-                      {selectedBadge.icon}
+                      {form.badge === 'Custom'
+                        ? badgeDesign.icon
+                        : selectedBadge?.icon}
                     </span>
 
                     <strong>
-                      {selectedBadge.name}
+                      {form.badge === 'Custom'
+                        ? form.name || 'Custom Badge'
+                        : selectedBadge?.name}
                     </strong>
 
                   </div>
@@ -1040,3 +1452,5 @@ export default function AdminMarketplace() {
     </div>
   )
 }
+
+

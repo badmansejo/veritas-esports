@@ -1,17 +1,2110 @@
-﻿.marketplace-scrollbar::-webkit-scrollbar {
-  height: 4px;
+.marketplace-page {
+  min-height: 100vh;
+  padding: 28px;
+  background:
+    radial-gradient(circle at top right, rgba(0, 255, 140, 0.08), transparent 30%),
+    radial-gradient(circle at bottom left, rgba(0, 140, 255, 0.07), transparent 30%),
+    #05070a;
+  color: #fff;
 }
 
-.marketplace-scrollbar::-webkit-scrollbar-track {
+.marketplace-header {
+  max-width: 1400px;
+  margin: 0 auto 28px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.marketplace-header h1 {
+  margin: 8px 0 4px;
+  font-size: clamp(32px, 5vw, 54px);
+  line-height: 1;
+  font-weight: 1000;
+  letter-spacing: -0.04em;
+}
+
+.marketplace-header p {
+  margin: 0;
+  color: #8e98a5;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.marketplace-back {
+  border: 0;
   background: transparent;
+  color: #16c75a;
+  padding: 0;
+  cursor: pointer;
+  font-weight: 900;
+  font-size: 13px;
 }
 
-.marketplace-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+.marketplace-vcoins-card {
+  min-width: 155px;
+  padding: 16px 20px;
+  border: 1px solid rgba(22, 199, 90, 0.3);
+  border-radius: 18px;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(22, 199, 90, 0.16),
+      rgba(8, 123, 61, 0.08)
+    ),
+    #0a0f0d;
+  color: #fff;
+  cursor: pointer;
+  text-align: left;
+  box-shadow: 0 0 28px rgba(22, 199, 90, 0.07);
+}
+
+.marketplace-vcoins-label {
+  display: block;
+  margin-bottom: 5px;
+  color: #72e69a;
+  font-size: 10px;
+  font-weight: 1000;
+  letter-spacing: 0.16em;
+}
+
+.marketplace-vcoins-card strong {
+  font-size: 25px;
+  font-weight: 1000;
+}
+
+.marketplace-vcoins-plus {
+  float: right;
+  margin-top: 3px;
+  color: #16c75a;
+  font-size: 25px;
+  font-weight: 1000;
+}
+
+.marketplace-message {
+  max-width: 1400px;
+  margin: 0 auto 20px;
+  padding: 13px 16px;
+  border: 1px solid rgba(22, 199, 90, 0.25);
+  border-radius: 12px;
+  background: rgba(22, 199, 90, 0.08);
+  color: #baffd1;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+/* SECTIONS */
+
+.marketplace-featured,
+.marketplace-controls,
+.marketplace-catalogue {
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.marketplace-featured {
+  margin-bottom: 35px;
+}
+
+.marketplace-section-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 16px;
+}
+
+.marketplace-section-heading span {
+  display: block;
+  margin-bottom: 5px;
+  color: #16c75a;
+  font-size: 9px;
+  font-weight: 1000;
+  letter-spacing: 0.18em;
+}
+
+.marketplace-section-heading h2 {
+  margin: 0;
+  font-size: 25px;
+  font-weight: 1000;
+}
+
+.marketplace-section-heading small {
+  color: #697481;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+/* FEATURED */
+
+.marketplace-featured-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.marketplace-featured-card {
+  min-width: 0;
+  padding: 0;
+  border: 1px solid #171d24;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #0a0d11;
+  color: #fff;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.marketplace-featured-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(22, 199, 90, 0.4);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+}
+
+.marketplace-featured-info {
+  padding: 12px;
+}
+
+.marketplace-featured-info span {
+  display: block;
+  margin-bottom: 5px;
+  color: #6f7b88;
+  font-size: 8px;
+  font-weight: 1000;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.marketplace-featured-info strong {
+  display: block;
+  overflow: hidden;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 1000;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.marketplace-featured-info small {
+  display: block;
+  margin-top: 6px;
+  color: #16c75a;
+  font-size: 10px;
+  font-weight: 1000;
+}
+
+/* SEARCH + CATEGORIES */
+
+.marketplace-controls {
+  margin-bottom: 28px;
+}
+
+.marketplace-search {
+  width: 100%;
+  max-width: 600px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+  padding: 0 15px;
+  border: 1px solid #1a2129;
+  border-radius: 14px;
+  background: #0a0d11;
+}
+
+.marketplace-search span {
+  color: #687582;
+  font-size: 22px;
+}
+
+.marketplace-search input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.marketplace-search input::placeholder {
+  color: #58636f;
+}
+
+.marketplace-category-bar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.marketplace-category-bar button {
+  padding: 10px 15px;
+  border: 1px solid #1b222a;
   border-radius: 999px;
+  background: #0b0f13;
+  color: #7d8895;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 900;
+  transition: all 0.2s ease;
 }
 
-.marketplace-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+.marketplace-category-bar button:hover {
+  color: #fff;
+  border-color: #2a333d;
+}
+
+.marketplace-category-bar button.active {
+  border-color: #16c75a;
+  background: #16c75a;
+  color: #031008;
+  box-shadow: 0 0 18px rgba(22, 199, 90, 0.18);
+}
+
+/* CATALOGUE */
+
+.marketplace-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.marketplace-empty {
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed #202832;
+  border-radius: 18px;
+  color: #66727f;
+  background: rgba(8, 11, 15, 0.7);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+/* LIVE PREVIEW */
+
+.marketplace-live-preview {
+  position: relative;
+  min-height: 170px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-bottom: 1px solid #171d24;
+  background:
+    radial-gradient(circle, rgba(255, 255, 255, 0.05), transparent 60%),
+    #080b0f;
+}
+
+.marketplace-live-preview::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.018) 25%,
+      transparent 25%
+    ),
+    linear-gradient(
+      -45deg,
+      rgba(255, 255, 255, 0.018) 25%,
+      transparent 25%
+    );
+  background-size: 18px 18px;
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.marketplace-username-preview {
+  position: relative;
+  z-index: 2;
+  max-width: 90%;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 1000;
+  letter-spacing: 0.02em;
+  text-align: center;
+  text-shadow: 0 2px 15px rgba(0, 0, 0, 0.8);
+}
+
+/* EFFECTS */
+
+.preview-effect-fire,
+.preview-effect-flame,
+.preview-effect-inferno {
+  color: #ffb000;
+  text-shadow:
+    0 0 6px #ff5a00,
+    0 0 18px #ff2b00;
+}
+
+.preview-effect-ice,
+.preview-effect-frost,
+.preview-effect-frostbite {
+  color: #bcecff;
+  text-shadow:
+    0 0 7px #56d9ff,
+    0 0 20px #168fff;
+}
+
+.preview-effect-electric,
+.preview-effect-lightning,
+.preview-effect-thunder {
+  color: #e9f46a;
+  text-shadow:
+    0 0 6px #d8ff00,
+    0 0 18px #62ff00;
+}
+
+.preview-effect-neon {
+  color: #ff54e8;
+  text-shadow:
+    0 0 7px #ff00d9,
+    0 0 22px #7d00ff;
+}
+
+.preview-effect-galaxy,
+.preview-effect-cosmic {
+  color: #d6c6ff;
+  text-shadow:
+    0 0 8px #7b4dff,
+    0 0 24px #e300ff;
+}
+
+.preview-effect-shadow,
+.preview-effect-void {
+  color: #aeb5bf;
+  text-shadow: 0 0 14px #000;
+}
+
+.preview-effect-emerald {
+  color: #54ffad;
+  text-shadow: 0 0 18px #00c96a;
+}
+
+.preview-effect-ruby {
+  color: #ff8a9e;
+  text-shadow: 0 0 18px #ff1744;
+}
+
+.preview-effect-sapphire {
+  color: #82b9ff;
+  text-shadow: 0 0 18px #1768ff;
+}
+
+/* FONTS */
+
+.preview-font-bold {
+  font-weight: 1000;
+}
+
+.preview-font-elite,
+.preview-font-champion,
+.preview-font-legend,
+.preview-font-supreme {
+  font-weight: 1000;
+  letter-spacing: 0.08em;
+}
+
+.preview-font-neon {
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 12px currentColor;
+}
+
+.preview-font-royal {
+  font-family: Georgia, serif;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+.preview-font-cyber,
+.preview-font-digital,
+.preview-font-tech {
+  font-family: monospace;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+}
+
+.preview-font-pixel,
+.preview-font-arcade {
+  font-family: monospace;
+  font-weight: 1000;
+  letter-spacing: 0.1em;
+}
+
+.preview-font-heavy,
+.preview-font-ultra {
+  font-weight: 1000;
+  transform: scaleX(1.05);
+}
+
+.preview-font-veritas,
+.preview-font-veritas-elite {
+  font-weight: 1000;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* FRAMES */
+
+.preview-frame-metallic,
+.preview-frame-chrome,
+.preview-frame-steel {
+  padding: 10px 18px;
+  border: 2px solid #8e9ba7;
+  border-radius: 10px;
+  box-shadow:
+    inset 0 0 10px rgba(255, 255, 255, 0.08),
+    0 0 14px rgba(255, 255, 255, 0.08);
+}
+
+.preview-frame-gold {
+  padding: 10px 18px;
+  border: 2px solid #d7ad38;
+  border-radius: 10px;
+  box-shadow: 0 0 18px rgba(215, 173, 56, 0.25);
+}
+
+.preview-frame-diamond,
+.preview-frame-crystal {
+  padding: 10px 18px;
+  border: 2px solid #bcecff;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(86, 217, 255, 0.22);
+}
+
+.preview-frame-neon {
+  padding: 10px 18px;
+  border: 2px solid #ff38df;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(255, 0, 217, 0.25);
+}
+
+.preview-frame-veritas {
+  padding: 10px 18px;
+  border: 2px solid #16c75a;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(22, 199, 90, 0.25);
+}
+
+/* BACKGROUNDS */
+
+.preview-background-night,
+.preview-background-midnight,
+.preview-background-shadow,
+.preview-background-dark-arena {
+  padding: 14px 22px;
+  border-radius: 12px;
+  background: #05070a;
+}
+
+.preview-background-galaxy,
+.preview-background-space,
+.preview-background-cosmic {
+  padding: 14px 22px;
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 20% 30%, #4b277c, transparent 30%),
+    radial-gradient(circle at 80% 70%, #123c70, transparent 30%),
+    #070812;
+}
+
+.preview-background-inferno,
+.preview-background-volcano {
+  padding: 14px 22px;
+  border-radius: 12px;
+  background:
+    radial-gradient(circle, rgba(255, 70, 0, 0.25), transparent 60%),
+    #120604;
+}
+
+.preview-background-frost,
+.preview-background-iceberg {
+  padding: 14px 22px;
+  border-radius: 12px;
+  background:
+    radial-gradient(circle, rgba(80, 210, 255, 0.2), transparent 60%),
+    #061017;
+}
+
+.preview-background-veritas-night {
+  padding: 14px 22px;
+  border-radius: 12px;
+  background:
+    radial-gradient(circle, rgba(22, 199, 90, 0.15), transparent 60%),
+    #050a07;
+}
+
+/* BADGE PREVIEW */
+
+.marketplace-live-preview-badge {
+  min-height: 170px;
+}
+
+.marketplace-badge-preview-wrap {
+  position: relative;
+  z-index: 2;
+  width: 145px;
+  height: 145px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.marketplace-custom-badge {
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+}
+
+.marketplace-verified-label {
+  position: absolute;
+  right: 3px;
+  bottom: 8px;
+  z-index: 4;
+  padding: 4px 7px;
+  border: 1px solid rgba(186, 255, 209, 0.5);
+  border-radius: 999px;
+  background: #087b3d;
+  color: #fff;
+  font-size: 7px;
+  font-weight: 1000;
+  letter-spacing: 0.1em;
+  box-shadow: 0 0 12px rgba(22, 199, 90, 0.45);
+}
+
+.marketplace-item-card:has(.marketplace-verified-label) {
+  border-color: rgba(22, 199, 90, 0.35);
+  box-shadow:
+    0 14px 40px rgba(0, 0, 0, 0.18),
+    0 0 28px rgba(22, 199, 90, 0.08);
+}
+
+.marketplace-item-card:has(.marketplace-verified-label)
+  .marketplace-item-type {
+  color: #16c75a;
+}
+
+/* MODAL */
+
+.marketplace-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(12px);
+}
+
+.marketplace-modal {
+  position: relative;
+  width: min(520px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  border: 1px solid #222b34;
+  border-radius: 24px;
+  background: #090d12;
+  box-shadow: 0 30px 100px rgba(0, 0, 0, 0.65);
+}
+
+.marketplace-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 10;
+  width: 34px;
+  height: 34px;
+  border: 1px solid #29313a;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  cursor: pointer;
+  font-size: 22px;
+}
+
+.marketplace-modal-preview {
+  min-height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid #1b222a;
+  background:
+    radial-gradient(circle, rgba(22, 199, 90, 0.08), transparent 60%),
+    #06090c;
+}
+
+.marketplace-modal-content {
+  padding: 24px;
+}
+
+.marketplace-modal-content h2 {
+  margin: 6px 0 8px;
+  font-size: 28px;
+  font-weight: 1000;
+}
+
+.marketplace-modal-content p {
+  margin: 0 0 20px;
+  color: #87929f;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.marketplace-item-type {
+  color: #778391;
+  font-size: 9px;
+  font-weight: 1000;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.marketplace-modal-price {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin: 20px 0 10px;
+  padding: 14px;
+  border: 1px solid #1b232b;
+  border-radius: 13px;
+  background: #0c1116;
+}
+
+.marketplace-modal-price span {
+  color: #788490;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.marketplace-modal-price strong {
+  color: #16c75a;
+  font-size: 17px;
+  font-weight: 1000;
+}
+
+.marketplace-modal-balance {
+  margin-bottom: 16px;
+  color: #788490;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.marketplace-modal-balance strong {
+  color: #fff;
+}
+
+.marketplace-buy-button {
+  width: 100%;
+  min-height: 48px;
+  border: 0;
+  border-radius: 13px;
+  background: #16c75a;
+  color: #031008;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 1000;
+  transition: all 0.2s ease;
+}
+
+.marketplace-buy-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 25px rgba(22, 199, 90, 0.2);
+}
+
+.marketplace-buy-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* MOBILE */
+
+@media (max-width: 1200px) {
+  .marketplace-featured-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .marketplace-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .marketplace-page {
+    padding: 20px;
+  }
+
+  .marketplace-header {
+    align-items: flex-start;
+  }
+
+  .marketplace-featured-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .marketplace-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 650px) {
+  .marketplace-page {
+    padding: 15px;
+  }
+
+  .marketplace-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .marketplace-vcoins-card {
+    width: 100%;
+  }
+
+  .marketplace-featured-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .marketplace-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .marketplace-live-preview {
+    min-height: 135px;
+  }
+
+  .marketplace-badge-preview-wrap {
+    width: 110px;
+    height: 110px;
+  }
+
+  .marketplace-verified-label {
+    right: -2px;
+    bottom: 1px;
+  }
+
+  .marketplace-modal-content {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 430px) {
+  .marketplace-featured-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .marketplace-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .marketplace-category-bar {
+    gap: 6px;
+  }
+
+  .marketplace-category-bar button {
+    padding: 9px 11px;
+    font-size: 10px;
+  }
+}
+/* =========================================================
+   UNIVERSAL LIVE PREVIEW ENGINE
+   Every marketplace item gets a visual preview.
+   ========================================================= */
+
+.marketplace-item-card {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #1a2129;
+  border-radius: 18px;
+  background: #0a0d11;
+  transition:
+    transform .2s ease,
+    border-color .2s ease,
+    box-shadow .2s ease;
+}
+
+.marketplace-item-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(22,199,90,.35);
+  box-shadow:
+    0 16px 40px rgba(0,0,0,.3),
+    0 0 25px rgba(22,199,90,.05);
+}
+
+.marketplace-item-content {
+  position: relative;
+  padding: 14px;
+}
+
+.marketplace-item-content h3 {
+  margin: 4px 0 6px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 1000;
+  line-height: 1.2;
+}
+
+.marketplace-item-content p {
+  margin: 0 0 12px;
+  color: #687480;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.marketplace-item-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.marketplace-item-bottom strong {
+  color: #16c75a;
+  font-size: 11px;
+  font-weight: 1000;
+}
+
+.marketplace-item-bottom button {
+  padding: 7px 11px;
+  border: 1px solid #273039;
+  border-radius: 8px;
+  background: #10151a;
+  color: #fff;
+  cursor: pointer;
+  font-size: 9px;
+  font-weight: 1000;
+}
+
+.marketplace-item-bottom button:hover {
+  border-color: #16c75a;
+  color: #16c75a;
+}
+
+.marketplace-limited {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 4px 7px;
+  border: 1px solid rgba(255,195,70,.3);
+  border-radius: 999px;
+  background: rgba(80,50,5,.8);
+  color: #ffd56a;
+  font-size: 7px;
+  font-weight: 1000;
+  letter-spacing: .08em;
+}
+
+/* PREVIEW BASE */
+
+.marketplace-live-preview {
+  position: relative;
+  min-height: 170px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  isolation: isolate;
+  border-bottom: 1px solid #171d24;
+  background: #080b0f;
+}
+
+.marketplace-live-preview::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(
+      circle at 50% 50%,
+      rgba(255,255,255,.055),
+      transparent 58%
+    );
+  pointer-events: none;
+}
+
+.marketplace-username-preview {
+  position: relative;
+  z-index: 3;
+  max-width: 88%;
+  padding: 8px 12px;
+  color: #fff;
+  font-size: 19px;
+  font-weight: 1000;
+  line-height: 1.15;
+  text-align: center;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  transition: all .25s ease;
+}
+
+/* =========================================================
+   50 NAME EFFECTS
+   ========================================================= */
+
+.marketplace-effect-none {
+  color: #fff;
+}
+
+.marketplace-effect-fire {
+  color: #ffb347;
+  text-shadow:
+    0 0 5px #ff6a00,
+    0 0 13px #ff3000,
+    0 0 28px #ff1200;
+}
+
+.marketplace-effect-ice {
+  color: #c9f6ff;
+  text-shadow:
+    0 0 6px #5de7ff,
+    0 0 18px #178cff;
+}
+
+.marketplace-effect-electric {
+  color: #f2ff64;
+  text-shadow:
+    0 0 5px #dfff00,
+    0 0 17px #75ff00;
+}
+
+.marketplace-effect-inferno {
+  color: #ff792f;
+  text-shadow:
+    0 0 7px #ff2d00,
+    0 0 24px #ff0000;
+}
+
+.marketplace-effect-frostbite {
+  color: #e6fbff;
+  text-shadow:
+    0 0 8px #6eeaff,
+    0 0 24px #008dff;
+}
+
+.marketplace-effect-thunder {
+  color: #f5ff4e;
+  text-shadow:
+    0 0 8px #f5ff00,
+    0 0 25px #8cff00;
+}
+
+.marketplace-effect-neon {
+  color: #ff62ee;
+  text-shadow:
+    0 0 7px #ff00d9,
+    0 0 24px #8c00ff;
+}
+
+.marketplace-effect-galaxy {
+  color: #d5c3ff;
+  text-shadow:
+    0 0 8px #7d4dff,
+    0 0 25px #d000ff;
+}
+
+.marketplace-effect-shadow {
+  color: #9ca4ae;
+  text-shadow: 0 0 18px #000;
+}
+
+.marketplace-effect-ember {
+  color: #ff9d48;
+  text-shadow: 0 0 17px #ff4100;
+}
+
+.marketplace-effect-flame {
+  color: #ffcf43;
+  text-shadow:
+    0 0 8px #ff6a00,
+    0 0 24px #ff1500;
+}
+
+.marketplace-effect-blaze {
+  color: #ff733c;
+  text-shadow:
+    0 0 9px #ff2600,
+    0 0 25px #ff0000;
+}
+
+.marketplace-effect-magma {
+  color: #ff5538;
+  text-shadow:
+    0 0 6px #ff0000,
+    0 0 25px #ff6a00;
+}
+
+.marketplace-effect-storm {
+  color: #c5d4e5;
+  text-shadow: 0 0 17px #6286a8;
+}
+
+.marketplace-effect-lightning {
+  color: #faff62;
+  text-shadow:
+    0 0 5px #eaff00,
+    0 0 25px #4dff00;
+}
+
+.marketplace-effect-plasma {
+  color: #8bffef;
+  text-shadow:
+    0 0 7px #00eaff,
+    0 0 25px #006cff;
+}
+
+.marketplace-effect-void {
+  color: #9ba0ad;
+  text-shadow:
+    0 0 12px #000,
+    0 0 28px #222;
+}
+
+.marketplace-effect-solar {
+  color: #ffe16b;
+  text-shadow:
+    0 0 8px #ffb300,
+    0 0 28px #ff6500;
+}
+
+.marketplace-effect-lunar {
+  color: #d5dcff;
+  text-shadow: 0 0 22px #768cff;
+}
+
+.marketplace-effect-ocean {
+  color: #66ddff;
+  text-shadow:
+    0 0 8px #00aaff,
+    0 0 25px #005eff;
+}
+
+.marketplace-effect-crystal {
+  color: #d7ffff;
+  text-shadow:
+    0 0 7px #7cffff,
+    0 0 25px #20aaff;
+}
+
+.marketplace-effect-diamond {
+  color: #ffffff;
+  text-shadow:
+    0 0 8px #bcecff,
+    0 0 26px #5ac8ff;
+}
+
+.marketplace-effect-phoenix {
+  color: #ffab55;
+  text-shadow:
+    0 0 8px #ff5700,
+    0 0 28px #e00000;
+}
+
+.marketplace-effect-spectral {
+  color: #d9b4ff;
+  text-shadow:
+    0 0 8px #8c44ff,
+    0 0 25px #ff44dd;
+}
+
+.marketplace-effect-venom {
+  color: #89ff55;
+  text-shadow:
+    0 0 7px #4cff00,
+    0 0 25px #00a000;
+}
+
+.marketplace-effect-toxic {
+  color: #e4ff42;
+  text-shadow:
+    0 0 7px #b8ff00,
+    0 0 25px #35b800;
+}
+
+.marketplace-effect-aurora {
+  color: #89ffe2;
+  text-shadow:
+    0 0 8px #00e6b8,
+    0 0 25px #7b4dff;
+}
+
+.marketplace-effect-cosmic {
+  color: #c39cff;
+  text-shadow:
+    0 0 8px #763dff,
+    0 0 26px #e900ff;
+}
+
+.marketplace-effect-royal {
+  color: #e7b8ff;
+  text-shadow:
+    0 0 8px #9b30ff,
+    0 0 25px #ff55c9;
+}
+
+.marketplace-effect-ruby {
+  color: #ff7189;
+  text-shadow: 0 0 23px #ff1744;
+}
+
+.marketplace-effect-emerald {
+  color: #62ffad;
+  text-shadow: 0 0 23px #00c96a;
+}
+
+.marketplace-effect-sapphire {
+  color: #79b8ff;
+  text-shadow: 0 0 23px #1768ff;
+}
+
+.marketplace-effect-amethyst {
+  color: #db8cff;
+  text-shadow: 0 0 23px #8a20ff;
+}
+
+.marketplace-effect-obsidian {
+  color: #aeb5bf;
+  text-shadow: 0 0 18px #000;
+}
+
+.marketplace-effect-carbon {
+  color: #adb5bf;
+  text-shadow: 0 0 12px #222;
+}
+
+.marketplace-effect-energy {
+  color: #73ffff;
+  text-shadow:
+    0 0 8px #00eaff,
+    0 0 27px #00aaff;
+}
+
+.marketplace-effect-pulse {
+  color: #ff70cf;
+  text-shadow: 0 0 22px #ff00a8;
+}
+
+.marketplace-effect-radiant {
+  color: #fff8ba;
+  text-shadow:
+    0 0 8px #ffe600,
+    0 0 30px #ff9d00;
+}
+
+.marketplace-effect-nova {
+  color: #e6d3ff;
+  text-shadow:
+    0 0 8px #a05cff,
+    0 0 30px #ff3cff;
+}
+
+.marketplace-effect-quantum {
+  color: #93fff8;
+  text-shadow:
+    0 0 8px #00fff0,
+    0 0 28px #5b55ff;
+}
+
+.marketplace-effect-cyber {
+  color: #58fff1;
+  text-shadow:
+    0 0 7px #00f0d0,
+    0 0 24px #006cff;
+}
+
+.marketplace-effect-inferno-x {
+  color: #ff6938;
+  text-shadow:
+    0 0 9px #ff1900,
+    0 0 32px #ff8a00;
+}
+
+.marketplace-effect-frost-x {
+  color: #dffaff;
+  text-shadow:
+    0 0 10px #58eaff,
+    0 0 32px #2277ff;
+}
+
+.marketplace-effect-thunder-x {
+  color: #ffff70;
+  text-shadow:
+    0 0 8px #efff00,
+    0 0 32px #65ff00;
+}
+
+.marketplace-effect-galaxy-x {
+  color: #dcbaff;
+  text-shadow:
+    0 0 10px #7a36ff,
+    0 0 34px #ed00ff;
+}
+
+.marketplace-effect-shadow-x {
+  color: #b7bec8;
+  text-shadow:
+    0 0 10px #000,
+    0 0 30px #121212;
+}
+
+.marketplace-effect-neon-x {
+  color: #ff7bf3;
+  text-shadow:
+    0 0 10px #ff00e6,
+    0 0 34px #6e00ff;
+}
+
+.marketplace-effect-titan {
+  color: #aab9d5;
+  text-shadow:
+    0 0 8px #637ca8,
+    0 0 25px #2d4067;
+}
+
+.marketplace-effect-legend {
+  color: #ffe071;
+  text-shadow:
+    0 0 8px #ffae00,
+    0 0 28px #ff5b00;
+}
+
+/* =========================================================
+   NAME FONTS
+   ========================================================= */
+
+.marketplace-font-default {
+  font-weight: 700;
+}
+
+.marketplace-font-bold {
+  font-weight: 1000;
+}
+
+.marketplace-font-elite {
+  font-weight: 1000;
+  letter-spacing: .06em;
+}
+
+.marketplace-font-neon {
+  font-weight: 1000;
+  letter-spacing: .08em;
+  text-shadow: 0 0 13px currentColor;
+}
+
+.marketplace-font-royal {
+  font-family: Georgia, serif;
+  font-weight: 900;
+}
+
+.marketplace-font-cyber,
+.marketplace-font-hacker,
+.marketplace-font-tech,
+.marketplace-font-digital {
+  font-family: monospace;
+  letter-spacing: .06em;
+}
+
+.marketplace-font-titan {
+  font-weight: 1000;
+  transform: scaleX(1.06);
+}
+
+.marketplace-font-warrior {
+  font-weight: 1000;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+}
+
+.marketplace-font-gamer {
+  font-family: monospace;
+  font-weight: 1000;
+}
+
+.marketplace-font-champion {
+  font-weight: 1000;
+  letter-spacing: .1em;
+}
+
+.marketplace-font-legend {
+  font-family: Georgia, serif;
+  font-weight: 1000;
+  letter-spacing: .04em;
+}
+
+.marketplace-font-hero {
+  font-weight: 1000;
+  transform: skewX(-4deg);
+}
+
+.marketplace-font-future {
+  font-weight: 900;
+  letter-spacing: .12em;
+}
+
+.marketplace-font-matrix {
+  font-family: monospace;
+  color: #53ff8a;
+}
+
+.marketplace-font-arcade {
+  font-family: monospace;
+  font-weight: 1000;
+  letter-spacing: .12em;
+}
+
+.marketplace-font-pixel {
+  font-family: monospace;
+  font-weight: 1000;
+  letter-spacing: .1em;
+}
+
+.marketplace-font-hacker {
+  color: #64ff91;
+}
+
+.marketplace-font-glitch {
+  font-weight: 1000;
+  text-shadow:
+    2px 0 #ff3a8d,
+    -2px 0 #36eaff;
+}
+
+.marketplace-font-retro {
+  font-family: Georgia, serif;
+  font-weight: 900;
+  letter-spacing: .04em;
+}
+
+.marketplace-font-luxury {
+  font-family: Georgia, serif;
+  font-weight: 700;
+  letter-spacing: .12em;
+}
+
+.marketplace-font-heavy,
+.marketplace-font-ultra {
+  font-weight: 1000;
+  transform: scaleX(1.08);
+}
+
+.marketplace-font-sharp {
+  font-weight: 1000;
+  letter-spacing: .03em;
+}
+
+.marketplace-font-speed {
+  font-weight: 1000;
+  font-style: italic;
+  transform: skewX(-8deg);
+}
+
+.marketplace-font-power {
+  font-weight: 1000;
+  text-transform: uppercase;
+}
+
+.marketplace-font-military {
+  font-family: monospace;
+  font-weight: 1000;
+  letter-spacing: .08em;
+}
+
+.marketplace-font-scifi {
+  font-family: monospace;
+  letter-spacing: .12em;
+}
+
+.marketplace-font-ultra {
+  letter-spacing: .03em;
+}
+
+.marketplace-font-street {
+  font-weight: 1000;
+  text-transform: uppercase;
+  transform: skewX(-5deg);
+}
+
+.marketplace-font-pro {
+  font-weight: 900;
+  letter-spacing: .05em;
+}
+
+.marketplace-font-master {
+  font-weight: 1000;
+  letter-spacing: .07em;
+}
+
+.marketplace-font-supreme {
+  font-weight: 1000;
+  letter-spacing: .12em;
+}
+
+.marketplace-font-king {
+  font-family: Georgia, serif;
+  font-weight: 1000;
+}
+
+.marketplace-font-queen {
+  font-family: Georgia, serif;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+
+.marketplace-font-racer {
+  font-weight: 1000;
+  font-style: italic;
+  transform: skewX(-10deg);
+}
+
+.marketplace-font-battle {
+  font-weight: 1000;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.marketplace-font-extreme {
+  font-weight: 1000;
+  transform: skewX(-7deg) scaleX(1.05);
+}
+
+.marketplace-font-veritas,
+.marketplace-font-veritas-elite {
+  font-weight: 1000;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+/* =========================================================
+   PROFILE FRAMES
+   ========================================================= */
+
+.marketplace-frame-none {
+  border-radius: 0;
+}
+
+.marketplace-frame-metallic,
+.marketplace-frame-steel {
+  border: 2px solid #8d98a3;
+  border-radius: 10px;
+  box-shadow:
+    inset 0 0 10px rgba(255,255,255,.08),
+    0 0 13px rgba(255,255,255,.08);
+}
+
+.marketplace-frame-gold {
+  border: 2px solid #d6aa36;
+  border-radius: 10px;
+  box-shadow: 0 0 17px rgba(214,170,54,.25);
+}
+
+.marketplace-frame-diamond,
+.marketplace-frame-crystal {
+  border: 2px solid #bcecff;
+  border-radius: 10px;
+  box-shadow: 0 0 19px rgba(86,217,255,.25);
+}
+
+.marketplace-frame-neon {
+  border: 2px solid #ff39e2;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(255,0,217,.3);
+}
+
+.marketplace-frame-royal {
+  border: 2px solid #b568ff;
+  border-radius: 10px;
+  box-shadow: 0 0 18px rgba(155,48,255,.25);
+}
+
+.marketplace-frame-titan {
+  border: 3px solid #657a9e;
+  border-radius: 12px;
+}
+
+.marketplace-frame-champion {
+  border: 2px solid #ffe06a;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(255,208,67,.25);
+}
+
+.marketplace-frame-inferno,
+.marketplace-frame-fire {
+  border: 2px solid #ff5a2f;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(255,45,0,.25);
+}
+
+.marketplace-frame-frost,
+.marketplace-frame-ice {
+  border: 2px solid #68dfff;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0,180,255,.25);
+}
+
+.marketplace-frame-cyber {
+  border: 2px solid #46ffe8;
+  border-radius: 7px;
+  box-shadow: 0 0 18px rgba(0,255,225,.25);
+}
+
+.marketplace-frame-shadow,
+.marketplace-frame-obsidian,
+.marketplace-frame-carbon {
+  border: 2px solid #3d444d;
+  border-radius: 10px;
+  box-shadow: 0 0 12px rgba(0,0,0,.8);
+}
+
+.marketplace-frame-galaxy,
+.marketplace-frame-cosmic {
+  border: 2px solid #8d63ff;
+  border-radius: 10px;
+  box-shadow: 0 0 22px rgba(119,60,255,.3);
+}
+
+.marketplace-frame-platinum,
+.marketplace-frame-silver,
+.marketplace-frame-chrome {
+  border: 2px solid #c7d0d8;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(210,220,230,.18);
+}
+
+.marketplace-frame-ruby {
+  border: 2px solid #ff4969;
+  border-radius: 10px;
+  box-shadow: 0 0 18px rgba(255,23,68,.25);
+}
+
+.marketplace-frame-emerald {
+  border: 2px solid #39ed91;
+  border-radius: 10px;
+  box-shadow: 0 0 18px rgba(0,201,106,.25);
+}
+
+.marketplace-frame-sapphire {
+  border: 2px solid #438cff;
+  border-radius: 10px;
+  box-shadow: 0 0 18px rgba(23,104,255,.25);
+}
+
+.marketplace-frame-amethyst {
+  border: 2px solid #b95cff;
+  border-radius: 10px;
+  box-shadow: 0 0 18px rgba(138,32,255,.25);
+}
+
+.marketplace-frame-legend,
+.marketplace-frame-elite,
+.marketplace-frame-mythic {
+  border: 2px solid #ffdb63;
+  border-radius: 12px;
+  box-shadow: 0 0 23px rgba(255,196,55,.28);
+}
+
+.marketplace-frame-phoenix {
+  border: 2px solid #ff743b;
+  border-radius: 10px;
+}
+
+.marketplace-frame-lightning,
+.marketplace-frame-thunder {
+  border: 2px solid #eaff45;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(190,255,0,.25);
+}
+
+.marketplace-frame-hologram,
+.marketplace-frame-prism,
+.marketplace-frame-glitch,
+.marketplace-frame-hologram {
+  border: 2px solid #67ffe9;
+  border-radius: 10px;
+  box-shadow:
+    0 0 12px #00eaff,
+    0 0 22px #9a3cff;
+}
+
+.marketplace-frame-quantum,
+.marketplace-frame-energy,
+.marketplace-frame-pulse {
+  border: 2px solid #7eafff;
+  border-radius: 10px;
+  box-shadow: 0 0 23px rgba(82,103,255,.3);
+}
+
+.marketplace-frame-veritas {
+  border: 2px solid #16c75a;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(22,199,90,.28);
+}
+
+/* =========================================================
+   50 BACKGROUND IDENTITIES
+   ========================================================= */
+
+.marketplace-background-none {
+  background: #080b0f;
+}
+
+.marketplace-background-night,
+.marketplace-background-midnight {
+  background:
+    radial-gradient(circle at 50% 40%, #18222d, transparent 55%),
+    #030507;
+}
+
+.marketplace-background-carbon {
+  background:
+    linear-gradient(135deg, #15191d 25%, transparent 25%) 0 0/14px 14px,
+    linear-gradient(315deg, #15191d 25%, #080a0c 25%) 0 0/14px 14px;
+}
+
+.marketplace-background-galaxy {
+  background:
+    radial-gradient(circle at 25% 30%, #6339a7, transparent 20%),
+    radial-gradient(circle at 75% 70%, #164e9a, transparent 25%),
+    #060813;
+}
+
+.marketplace-background-arena {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(22,199,90,.08),
+      transparent
+    ),
+    #0a0f0d;
+}
+
+.marketplace-background-neon {
+  background:
+    radial-gradient(circle at 20% 50%, #76176b, transparent 28%),
+    radial-gradient(circle at 80% 50%, #133a83, transparent 28%),
+    #080612;
+}
+
+.marketplace-background-cyber {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(0,255,220,.08) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      rgba(0,255,220,.08) 1px,
+      transparent 1px
+    ),
+    #061012;
+  background-size: 20px 20px;
+}
+
+.marketplace-background-inferno,
+.marketplace-background-volcano {
+  background:
+    radial-gradient(circle at 50% 90%, #7e1f00, transparent 45%),
+    #120503;
+}
+
+.marketplace-background-frost,
+.marketplace-background-iceberg {
+  background:
+    radial-gradient(circle at 50% 0%, #235e7a, transparent 45%),
+    #041015;
+}
+
+.marketplace-background-storm,
+.marketplace-background-thunder {
+  background:
+    radial-gradient(circle at 50% 50%, #34485c, transparent 45%),
+    #070a0e;
+}
+
+.marketplace-background-shadow,
+.marketplace-background-void {
+  background:
+    radial-gradient(circle, #20242a, transparent 50%),
+    #020304;
+}
+
+.marketplace-background-ocean {
+  background:
+    radial-gradient(circle at 50% 20%, #0d7897, transparent 42%),
+    #031017;
+}
+
+.marketplace-background-sunset {
+  background:
+    linear-gradient(135deg, #42133b, #a53b13, #0d2548);
+}
+
+.marketplace-background-aurora {
+  background:
+    radial-gradient(circle at 25% 70%, #0abf9b, transparent 28%),
+    radial-gradient(circle at 75% 30%, #713fff, transparent 30%),
+    #050912;
+}
+
+.marketplace-background-space {
+  background:
+    radial-gradient(circle at 20% 20%, #6b48bb, transparent 18%),
+    radial-gradient(circle at 80% 80%, #20599e, transparent 18%),
+    #03050d;
+}
+
+.marketplace-background-matrix {
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(0,255,95,.06) 0,
+      rgba(0,255,95,.06) 1px,
+      transparent 1px,
+      transparent 12px
+    ),
+    #020a05;
+}
+
+.marketplace-background-tech {
+  background:
+    linear-gradient(135deg, #122333, #05080d);
+}
+
+.marketplace-background-city,
+.marketplace-background-cyber-city {
+  background:
+    linear-gradient(
+      180deg,
+      transparent 50%,
+      #05070a 50%
+    ),
+    linear-gradient(
+      90deg,
+      #14283b 10%,
+      #09111b 10% 22%,
+      #173047 22% 36%,
+      #07101b 36% 55%,
+      #193a4d 55% 72%,
+      #081019 72%
+    );
+}
+
+.marketplace-background-desert {
+  background:
+    linear-gradient(180deg, #1c2738, #684a28);
+}
+
+.marketplace-background-royal {
+  background:
+    radial-gradient(circle, #4d2378, transparent 50%),
+    #0e0717;
+}
+
+.marketplace-background-diamond {
+  background:
+    radial-gradient(circle, #bdefff, transparent 12%),
+    #07131b;
+}
+
+.marketplace-background-purple {
+  background:
+    radial-gradient(circle at 50% 50%, #6725a4, transparent 55%),
+    #0b0612;
+}
+
+.marketplace-background-red {
+  background:
+    radial-gradient(circle, #9e1832, transparent 55%),
+    #100307;
+}
+
+.marketplace-background-blue {
+  background:
+    radial-gradient(circle, #145cb3, transparent 55%),
+    #030812;
+}
+
+.marketplace-background-green {
+  background:
+    radial-gradient(circle, #087b3d, transparent 55%),
+    #030d07;
+}
+
+.marketplace-background-gold {
+  background:
+    radial-gradient(circle, #8c6410, transparent 55%),
+    #0d0a03;
+}
+
+.marketplace-background-silver {
+  background:
+    radial-gradient(circle, #6d7883, transparent 55%),
+    #07090b;
+}
+
+.marketplace-background-platinum {
+  background:
+    radial-gradient(circle, #9daab5, transparent 55%),
+    #080b0e;
+}
+
+.marketplace-background-chrome {
+  background:
+    linear-gradient(135deg, #222b33, #8d98a1, #11171c);
+}
+
+.marketplace-background-ruby {
+  background:
+    radial-gradient(circle, #a71f3a, transparent 55%),
+    #100307;
+}
+
+.marketplace-background-emerald {
+  background:
+    radial-gradient(circle, #087b3d, transparent 55%),
+    #020b06;
+}
+
+.marketplace-background-sapphire {
+  background:
+    radial-gradient(circle, #174c9a, transparent 55%),
+    #030813;
+}
+
+.marketplace-background-amethyst {
+  background:
+    radial-gradient(circle, #68249b, transparent 55%),
+    #0a0311;
+}
+
+.marketplace-background-cosmic {
+  background:
+    radial-gradient(circle at 20% 30%, #5c29a2, transparent 25%),
+    radial-gradient(circle at 80% 70%, #174d9a, transparent 25%),
+    #040610;
+}
+
+.marketplace-background-quantum {
+  background:
+    radial-gradient(circle, #283e9a, transparent 35%),
+    radial-gradient(circle at 80% 30%, #00b8a9, transparent 25%),
+    #040711;
+}
+
+.marketplace-background-lightning {
+  background:
+    radial-gradient(circle, #6c7418, transparent 30%),
+    #080a04;
+}
+
+.marketplace-background-fire {
+  background:
+    radial-gradient(circle at 50% 100%, #c32f08, transparent 45%),
+    #0d0301;
+}
+
+.marketplace-background-crystal {
+  background:
+    radial-gradient(circle, #287b92, transparent 45%),
+    #031017;
+}
+
+.marketplace-background-phoenix {
+  background:
+    radial-gradient(circle at 50% 80%, #c04b12, transparent 42%),
+    #110501;
+}
+
+.marketplace-background-hologram {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(0,255,220,.18),
+      rgba(130,60,255,.18)
+    ),
+    #060b12;
+}
+
+.marketplace-background-veritas-night {
+  background:
+    radial-gradient(circle, rgba(22,199,90,.18), transparent 50%),
+    #030a06;
+}
+
+.marketplace-background-veritas-gold {
+  background:
+    radial-gradient(circle, rgba(22,199,90,.14), transparent 45%),
+    radial-gradient(circle at 80% 20%, rgba(255,210,70,.12), transparent 30%),
+    #050a07;
+}
+
+.marketplace-background-veritas-elite {
+  background:
+    radial-gradient(circle, rgba(22,199,90,.2), transparent 42%),
+    radial-gradient(circle at 80% 20%, rgba(90,255,150,.1), transparent 25%),
+    #020806;
+}
+
+/* =========================================================
+   CUSTOM BADGES
+   ========================================================= */
+
+.marketplace-live-preview-badge {
+  min-height: 170px;
+}
+
+.marketplace-badge-preview-wrap {
+  position: relative;
+  width: 145px;
+  height: 145px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.marketplace-custom-badge {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+  font-size: 25px;
+  font-weight: 1000;
+  line-height: 1;
+}
+
+.marketplace-custom-badge span {
+  position: relative;
+  z-index: 3;
+}
+
+.badge-shape-circle {
+  border-radius: 50%;
+}
+
+.badge-shape-rounded {
+  border-radius: 18px;
+}
+
+.badge-shape-square {
+  border-radius: 5px;
+}
+
+.badge-shape-shield {
+  clip-path: polygon(
+    50% 0%,
+    92% 15%,
+    88% 65%,
+    50% 100%,
+    12% 65%,
+    8% 15%
+  );
+}
+
+.badge-shape-hexagon {
+  clip-path: polygon(
+    25% 5%,
+    75% 5%,
+    100% 50%,
+    75% 95%,
+    25% 95%,
+    0% 50%
+  );
+}
+
+.badge-shape-diamond {
+  clip-path: polygon(
+    50% 0%,
+    100% 50%,
+    50% 100%,
+    0% 50%
+  );
+}
+
+.badge-shape-star {
+  clip-path: polygon(
+    50% 0%,
+    61% 35%,
+    98% 35%,
+    68% 57%,
+    79% 94%,
+    50% 72%,
+    21% 94%,
+    32% 57%,
+    2% 35%,
+    39% 35%
+  );
+}
+
+.badge-metallic::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      125deg,
+      rgba(255,255,255,.5),
+      transparent 25%,
+      transparent 65%,
+      rgba(255,255,255,.12)
+    );
+  pointer-events: none;
+}
+
+.marketplace-verified-label {
+  position: absolute;
+  right: 4px;
+  bottom: 7px;
+  z-index: 5;
+  padding: 4px 7px;
+  border: 1px solid rgba(186,255,209,.5);
+  border-radius: 999px;
+  background: #087b3d;
+  color: #fff;
+  font-size: 7px;
+  font-weight: 1000;
+  letter-spacing: .1em;
+  box-shadow: 0 0 12px rgba(22,199,90,.45);
+}
+
+.marketplace-item-card:has(.marketplace-verified-label) {
+  border-color: rgba(22,199,90,.4);
+  box-shadow:
+    0 0 28px rgba(22,199,90,.08);
+}
+
+/* MOBILE */
+
+@media (max-width: 650px) {
+  .marketplace-live-preview {
+    min-height: 140px;
+  }
+
+  .marketplace-username-preview {
+    font-size: 16px;
+  }
+
+  .marketplace-badge-preview-wrap {
+    width: 115px;
+    height: 115px;
+  }
+
+  .marketplace-custom-badge {
+    transform: scale(.88);
+  }
 }

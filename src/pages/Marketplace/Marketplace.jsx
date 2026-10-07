@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../context/AuthContext'
@@ -7,18 +7,127 @@ import MarketplaceCategory from './MarketplaceCategory'
 import './Marketplace.css'
 
 const DEFAULT_CATEGORIES = [
-  { name: 'All', icon: 'âœ¦' },
-  { name: 'Name Effects', icon: 'âœ¨' },
-  { name: 'Fire', icon: 'ðŸ”¥' },
-  { name: 'Ice', icon: 'â„ï¸' },
-  { name: 'Electric', icon: 'âš¡' },
-  { name: 'Name Fonts', icon: 'Aa' },
-  { name: 'Profile Frames', icon: 'â–£' },
-  { name: 'Backgrounds', icon: 'â—ˆ' },
-  { name: 'Badges', icon: 'ðŸ†' },
-  { name: 'Bundles', icon: 'ðŸŽ' },
-  { name: 'Room Cards', icon: 'ðŸŽŸï¸' },
+  'All',
+  'Name Effects',
+  'Name Fonts',
+  'Profile Frames',
+  'Backgrounds',
+  'Badges',
+  'Bundles',
 ]
+
+function getPreviewData(item) {
+  return item?.preview_data && typeof item.preview_data === 'object'
+    ? item.preview_data
+    : {}
+}
+
+function getPreviewText(item, profile) {
+  const preview = getPreviewData(item)
+
+  return (
+    preview.preview_text ||
+    preview.text ||
+    preview.display_text ||
+    profile?.username ||
+    'VERITAS PLAYER'
+  )
+}
+
+function getPreviewStyle(item) {
+  const preview = getPreviewData(item)
+
+  const style = {
+    '--preview-intensity': `${Number(preview.intensity ?? 70)}%`,
+  }
+
+  if (preview.background_color) {
+    style.background = preview.background_color
+  }
+
+  if (preview.text_color) {
+    style.color = preview.text_color
+  }
+
+  if (preview.glow_color) {
+    style.textShadow = `0 0 14px ${preview.glow_color}`
+  }
+
+  return style
+}
+
+function MarketplacePreview({ item, profile }) {
+  const preview = getPreviewData(item)
+
+  const itemType = String(
+    item?.item_type ||
+      item?.category?.name ||
+      ''
+  ).toLowerCase()
+
+  const name = String(item?.name || '').toLowerCase()
+
+  const isBadge =
+    itemType.includes('badge') ||
+    name.includes('verified') ||
+    Boolean(preview.badge) ||
+    Boolean(preview.badge_design)
+
+  const isFrame =
+    itemType.includes('frame') ||
+    Boolean(preview.frame) ||
+    Boolean(preview.profile_frame)
+
+  const isBackground =
+    itemType.includes('background') ||
+    Boolean(preview.background) ||
+    Boolean(preview.profile_background)
+
+  const isEffect =
+    itemType.includes('effect') ||
+    Boolean(preview.effect) ||
+    Boolean(preview.name_effect)
+
+  const isFont =
+    itemType.includes('font') ||
+    Boolean(preview.font) ||
+    Boolean(preview.name_font)
+
+  if (isBadge) {
+    return (
+      <div className="marketplace-live-preview marketplace-live-preview-badge">
+        <MarketplaceItem
+          item={item}
+          onView={() => {}}
+          onBuy={() => {}}
+          compactPreview
+          previewUsername={profile?.username}
+        />
+      </div>
+    )
+  }
+
+  const previewClass = [
+    'marketplace-username-preview',
+    isEffect ? `preview-effect-${String(preview.effect || preview.name_effect || '').toLowerCase().replace(/\s+/g, '-')}` : '',
+    isFont ? `preview-font-${String(preview.font || preview.name_font || '').toLowerCase().replace(/\s+/g, '-')}` : '',
+    isFrame ? `preview-frame-${String(preview.frame || preview.profile_frame || '').toLowerCase().replace(/\s+/g, '-')}` : '',
+    isBackground ? `preview-background-${String(preview.background || preview.profile_background || '').toLowerCase().replace(/\s+/g, '-')}` : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
+
+  return (
+    <div
+      className="marketplace-live-preview"
+      style={getPreviewStyle(item)}
+    >
+      <div className={previewClass || 'marketplace-username-preview'}>
+        {getPreviewText(item, profile)}
+      </div>
+    </div>
+  )
+}
 
 export default function Marketplace() {
   const navigate = useNavigate()
@@ -26,17 +135,21 @@ export default function Marketplace() {
 
   const [items, setItems] = useState([])
   const [categories, setCategories] = useState([])
-
   const [selectedCategory, setSelectedCategory] = useState('All')
   const [search, setSearch] = useState('')
-
-  const [selectedItem, setSelectedItem] = useState(null)
-
   const [loading, setLoading] = useState(true)
-  const [purchasing, setPurchasing] = useState(false)
+  const [message, setMessage] = useState('')
+  const [selectedItem, setSelectedItem] = useState(null)
+  const [buying, setBuying] = useState(false)
 
-  const [error, setError] = useState('')
-  const [purchaseMessage, setPurchaseMessage] = useState('')
+  const username = profile?.username || 'VERITAS PLAYER'
+
+  const vcoins = Number(
+    profile?.vcoins ??
+      profile?.v_coins ??
+      profile?.vcoins_balance ??
+      0
+  )
 
   useEffect(() => {
     loadMarketplace()
@@ -44,727 +157,349 @@ export default function Marketplace() {
 
   async function loadMarketplace() {
     setLoading(true)
-    setError('')
+    setMessage('')
 
-    try {
-      const [itemsResult, categoriesResult] = await Promise.all([
+    const [{ data: itemData, error: itemError }, { data: categoryData }] =
+      await Promise.all([
         supabase
           .from('marketplace_items')
           .select(`
-            id,
-            category_id,
-            name,
-            description,
-            item_type,
-            price_vcoins,
-            price_kes,
-            image_url,
-            preview_data,
-            is_active,
-            is_limited,
-            starts_at,
-            expires_at,
-            created_at
+            *,
+            category:marketplace_categories(
+              id,
+              name,
+              display_order,
+              is_active
+            )
           `)
           .eq('is_active', true)
           .order('created_at', { ascending: false }),
 
         supabase
           .from('marketplace_categories')
-          .select(`
-            id,
-            name,
-            is_active
-          `)
+          .select('*')
           .eq('is_active', true)
-          .order('name', { ascending: true }),
+          .order('display_order', { ascending: true }),
       ])
 
-      if (itemsResult.error) {
-        throw itemsResult.error
-      }
-
-      if (categoriesResult.error) {
-        throw categoriesResult.error
-      }
-
-      setItems(itemsResult.data || [])
-      setCategories(categoriesResult.data || [])
-    } catch (err) {
-      console.error('Marketplace load error:', err)
-
-      setError(
-        err.message || 'Unable to load Marketplace.'
-      )
-    } finally {
-      setLoading(false)
+    if (itemError) {
+      console.error(itemError)
+      setMessage(itemError.message || 'Unable to load marketplace.')
+    } else {
+      setItems(itemData || [])
     }
+
+    setCategories(categoryData || [])
+    setLoading(false)
   }
 
-  const categoryButtons = useMemo(() => {
-    const databaseCategories = categories.map((category) => {
-      const matchingDefault = DEFAULT_CATEGORIES.find(
-        (defaultCategory) =>
-          defaultCategory.name.toLowerCase() ===
-          category.name?.toLowerCase()
-      )
+  const categoryNames = useMemo(() => {
+    const allowed = new Set(DEFAULT_CATEGORIES.slice(1))
 
-      return {
-        name: category.name,
-        icon: matchingDefault?.icon || 'âœ¦',
-      }
-    })
+    const databaseCategories = (categories || [])
+      .map((category) => category?.name)
+      .filter((name) => name && allowed.has(name))
 
-    const merged = [...DEFAULT_CATEGORIES]
-
-    databaseCategories.forEach((category) => {
-      const exists = merged.some(
-        (existing) =>
-          existing.name?.toLowerCase() ===
-          category.name?.toLowerCase()
-      )
-
-      if (!exists) {
-        merged.push(category)
-      }
-    })
-
-    return merged
+    return [
+      'All',
+      ...DEFAULT_CATEGORIES.slice(1).filter((name) =>
+        databaseCategories.includes(name)
+      ),
+    ]
   }, [categories])
 
   const filteredItems = useMemo(() => {
-    const searchText = search.trim().toLowerCase()
+    const query = search.trim().toLowerCase()
 
     return items.filter((item) => {
-      const matchesSearch =
-        !searchText ||
-        item.name?.toLowerCase().includes(searchText) ||
-        item.description?.toLowerCase().includes(searchText) ||
-        item.item_type?.toLowerCase().includes(searchText)
+      const categoryName = item?.category?.name || ''
 
       const matchesCategory =
         selectedCategory === 'All' ||
-        item.item_type?.toLowerCase() ===
-          selectedCategory.toLowerCase() ||
-        item.name
-          ?.toLowerCase()
-          .includes(selectedCategory.toLowerCase())
+        categoryName === selectedCategory
 
-      return matchesSearch && matchesCategory
+      const matchesSearch =
+        !query ||
+        String(item?.name || '').toLowerCase().includes(query) ||
+        String(item?.description || '').toLowerCase().includes(query) ||
+        String(item?.item_type || '').toLowerCase().includes(query)
+
+      return matchesCategory && matchesSearch
     })
-  }, [items, search, selectedCategory])
+  }, [items, selectedCategory, search])
 
-  const featuredItems = items.slice(0, 4)
+  const featuredItems = useMemo(() => {
+    return items.slice(0, 6)
+  }, [items])
 
-  function handleBack() {
-    navigate('/')
-  }
+  async function handleBuy(item) {
+    if (!item?.id) return
 
-  function openPreview(item) {
-    if (purchasing) return
-
-    setPurchaseMessage('')
-    setError('')
-    setSelectedItem(item)
-  }
-
-  function closePreview() {
-    if (purchasing) return
-
-    setSelectedItem(null)
-    setPurchaseMessage('')
-    setError('')
-  }
-
-  async function handlePurchase() {
-    if (!selectedItem || purchasing) {
-      return
-    }
-
-    if (!profile?.id) {
-      setError('Please log in before purchasing Marketplace items.')
-      return
-    }
-
-    const price = Number(selectedItem.price_vcoins || 0)
-    const balance = Number(profile?.vcoins || 0)
+    const price = Number(item.price_vcoins || 0)
 
     if (price <= 0) {
-      setError('This item does not have a valid V Coin price.')
+      setMessage('This item is free.')
       return
     }
 
-    if (balance < price) {
-      setError(
-        `You need ${price.toLocaleString()} V Coins, but you only have ${balance.toLocaleString()}.`
-      )
+    if (vcoins < price) {
+      setMessage(`You need ${price} V Coins to purchase this item.`)
       return
     }
 
-    const purchasedItemName = selectedItem.name
-
-    setPurchasing(true)
-    setError('')
-    setPurchaseMessage('')
+    setBuying(true)
+    setMessage('')
 
     try {
-      const { data, error: purchaseError } = await supabase.rpc(
-        'spend_vcoins',
-        {
-          p_item_id: selectedItem.id,
-          p_quantity: 1,
-        }
-      )
+      const { data, error } = await supabase.rpc('spend_vcoins', {
+        p_item_id: item.id,
+        p_quantity: 1,
+      })
 
-      if (purchaseError) {
-        throw purchaseError
+      if (error) {
+        console.error(error)
+        setMessage(error.message || 'Purchase failed.')
+        return
       }
 
-      console.log('Marketplace purchase:', data)
+      if (data?.success === false) {
+        setMessage(data?.message || 'Purchase failed.')
+        return
+      }
 
-      /*
-       * The purchase has succeeded in Supabase.
-       *
-       * Close the modal first so the success message
-       * underneath it becomes visible.
-       */
+      setMessage(`${item.name} purchased successfully.`)
       setSelectedItem(null)
 
-      setPurchaseMessage(
-        `${purchasedItemName} has been added to your inventory.`
-      )
-
-      setError('')
-
-      /*
-       * Refresh the displayed V Coin balance.
-       *
-       * A refresh problem must NOT turn a successful
-       * purchase into a failed purchase message.
-       */
-      try {
+      if (refreshProfile) {
         await refreshProfile()
-      } catch (profileRefreshError) {
-        console.warn(
-          'Purchase succeeded, but profile refresh failed:',
-          profileRefreshError
-        )
       }
-    } catch (err) {
-      console.error('Marketplace purchase error:', err)
 
-      setPurchaseMessage('')
-
-      setError(
-        err.message ||
-          'Purchase could not be completed.'
-      )
+      await loadMarketplace()
+    } catch (error) {
+      console.error(error)
+      setMessage('Purchase failed. Please try again.')
     } finally {
-      setPurchasing(false)
+      setBuying(false)
+    }
+  }
+
+  function openItem(item) {
+    setSelectedItem(item)
+    setMessage('')
+  }
+
+  function closeItem() {
+    if (!buying) {
+      setSelectedItem(null)
     }
   }
 
   return (
-    <div className="min-h-screen bg-[#050608] text-white">
-
-      {/* Ambient background */}
-      <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="absolute left-[-15%] top-[-10%] h-80 w-80 rounded-full bg-white/[0.035] blur-[100px]" />
-
-        <div className="absolute bottom-[-10%] right-[-10%] h-96 w-96 rounded-full bg-white/[0.025] blur-[120px]" />
-      </div>
-
-      <div className="relative mx-auto w-full max-w-7xl px-4 pb-12 pt-5 sm:px-6 lg:px-8">
-
-        {/* Header */}
-        <header className="mb-7">
-          <div className="flex items-center justify-between gap-4">
-
-            <div className="flex items-center gap-3">
-
-              <button
-                type="button"
-                onClick={handleBack}
-                className="
-                  flex h-10 w-10 items-center justify-center rounded-xl
-                  border border-white/10 bg-white/[0.05]
-                  text-white/70 transition
-                  hover:bg-white/10 hover:text-white
-                "
-                aria-label="Back to Home"
-              >
-                â†
-              </button>
-
-              <div>
-                <div className="text-[10px] font-bold uppercase tracking-[0.25em] text-white/35">
-                  VERITAS
-                </div>
-
-                <h1 className="text-2xl font-black tracking-tight sm:text-3xl">
-                  Marketplace
-                </h1>
-              </div>
-
-            </div>
-
-            {/* V Coins balance */}
-            <div
-              className="
-                flex items-center gap-2 rounded-2xl border border-white/10
-                bg-white/[0.05] px-3 py-2.5 backdrop-blur-xl
-              "
-            >
-              <span className="text-lg">
-                ðŸª™
-              </span>
-
-              <div>
-                <div className="text-[9px] uppercase tracking-wider text-white/35">
-                  V Coins
-                </div>
-
-                <div className="text-sm font-black text-white">
-                  {Number(
-                    profile?.vcoins || 0
-                  ).toLocaleString()}
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => navigate('/vcoins')}
-                className="
-                  ml-1 flex h-7 w-7 items-center justify-center
-                  rounded-lg bg-white text-sm font-black text-black
-                  transition hover:bg-white/80
-                "
-              >
-                +
-              </button>
-            </div>
-
-          </div>
-        </header>
-
-        {/* Hero */}
-        <section
-          className="
-            relative mb-7 overflow-hidden rounded-3xl border border-white/10
-            bg-gradient-to-br from-white/[0.09] via-white/[0.035] to-transparent
-            p-6 shadow-2xl shadow-black/20 sm:p-8
-          "
-        >
-          <div className="pointer-events-none absolute right-[-50px] top-[-80px] h-64 w-64 rounded-full bg-white/[0.05] blur-3xl" />
-
-          <div className="relative max-w-2xl">
-
-            <div
-              className="
-                mb-3 inline-flex items-center gap-2 rounded-full
-                border border-white/10 bg-black/20 px-3 py-1.5
-                text-[10px] font-bold uppercase tracking-[0.18em]
-                text-white/55
-              "
-            >
-              <span>âœ¦</span>
-              VERITAS Collection
-            </div>
-
-            <h2 className="text-3xl font-black leading-tight sm:text-4xl">
-              Make your profile
-
-              <span className="block text-white/45">
-                unmistakably yours.
-              </span>
-            </h2>
-
-            <p className="mt-3 max-w-xl text-sm leading-6 text-white/50">
-              Customize your VERITAS identity with exclusive names,
-              effects, frames, backgrounds, badges and more.
-            </p>
-
-          </div>
-        </section>
-
-        {/* Search */}
-        <div className="mb-5">
-          <div
-            className="
-              flex items-center gap-3 rounded-2xl border border-white/10
-              bg-white/[0.045] px-4 py-3 backdrop-blur-xl
-            "
+    <div className="marketplace-page">
+      <header className="marketplace-header">
+        <div>
+          <button
+            type="button"
+            className="marketplace-back"
+            onClick={() => navigate(-1)}
           >
-            <span className="text-white/35">
-              âŒ•
-            </span>
+            ? Back
+          </button>
 
-            <input
-              type="text"
-              value={search}
-              onChange={(event) =>
-                setSearch(event.target.value)
-              }
-              placeholder="Search Marketplace..."
-              className="
-                w-full bg-transparent text-sm text-white outline-none
-                placeholder:text-white/30
-              "
-            />
+          <h1>Marketplace</h1>
+          <p>Customize your VERITAS identity.</p>
+        </div>
 
-            {search && (
-              <button
-                type="button"
-                onClick={() => setSearch('')}
-                className="text-xs text-white/40 hover:text-white"
-              >
-                Clear
-              </button>
-            )}
+        <button
+          type="button"
+          className="marketplace-vcoins-card"
+          onClick={() => navigate('/wallet')}
+        >
+          <span className="marketplace-vcoins-label">V COINS</span>
+          <strong>{vcoins.toLocaleString()}</strong>
+          <span className="marketplace-vcoins-plus">+</span>
+        </button>
+      </header>
+
+      {message && (
+        <div className="marketplace-message">
+          {message}
+        </div>
+      )}
+
+      <section className="marketplace-featured">
+        <div className="marketplace-section-heading">
+          <div>
+            <span>VERITAS STORE</span>
+            <h2>Featured</h2>
           </div>
         </div>
 
-        {/* Categories */}
-        <div className="marketplace-scrollbar mb-8 flex gap-2 overflow-x-auto pb-2">
-          {categoryButtons.map((category) => (
-            <MarketplaceCategory
-              key={category.name}
-              name={category.name}
-              icon={category.icon}
-              active={
-                selectedCategory === category.name
+        {featuredItems.length > 0 && (
+          <div className="marketplace-featured-grid">
+            {featuredItems.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className="marketplace-featured-card"
+                onClick={() => openItem(item)}
+              >
+                <MarketplacePreview
+                  item={item}
+                  profile={profile}
+                />
+
+                <div className="marketplace-featured-info">
+                  <span>
+                    {item.category?.name || item.item_type || 'Cosmetic'}
+                  </span>
+
+                  <strong>{item.name}</strong>
+
+                  <small>
+                    {Number(item.price_vcoins || 0).toLocaleString()} V Coins
+                  </small>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className="marketplace-controls">
+        <div className="marketplace-search">
+          <span>?</span>
+          <input
+            type="text"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Search items..."
+          />
+        </div>
+
+        <div className="marketplace-category-bar">
+          {categoryNames.map((category) => (
+            <button
+              key={category}
+              type="button"
+              className={
+                selectedCategory === category
+                  ? 'active'
+                  : ''
               }
-              onClick={() =>
-                setSelectedCategory(category.name)
-              }
-            />
+              onClick={() => setSelectedCategory(category)}
+            >
+              {category}
+            </button>
           ))}
         </div>
+      </section>
 
-        {/* Error */}
-        {error && (
-          <div
-            className="
-              mb-6 rounded-2xl border border-red-400/20
-              bg-red-400/[0.06] p-4 text-sm text-red-200
-            "
-          >
-            {error}
+      <section className="marketplace-catalogue">
+        <div className="marketplace-section-heading">
+          <div>
+            <span>COLLECTION</span>
+            <h2>
+              {selectedCategory === 'All'
+                ? 'All Items'
+                : selectedCategory}
+            </h2>
+          </div>
+
+          <small>
+            {filteredItems.length} item
+            {filteredItems.length === 1 ? '' : 's'}
+          </small>
+        </div>
+
+        {loading ? (
+          <div className="marketplace-empty">
+            Loading marketplace...
+          </div>
+        ) : filteredItems.length === 0 ? (
+          <div className="marketplace-empty">
+            No marketplace items found.
+          </div>
+        ) : (
+          <div className="marketplace-grid">
+            {filteredItems.map((item) => (
+              <MarketplaceItem
+                key={item.id}
+                item={item}
+                onView={() => openItem(item)}
+                onBuy={() => handleBuy(item)}
+                previewUsername={username}
+              />
+            ))}
           </div>
         )}
+      </section>
 
-        {/* Purchase success */}
-        {purchaseMessage && (
-          <div
-            className="
-              mb-6 rounded-2xl border border-emerald-400/20
-              bg-emerald-400/[0.06] p-4 text-sm text-emerald-200
-            "
-          >
-            âœ“ {purchaseMessage}
-          </div>
-        )}
-
-        {/* Featured */}
-        {!loading &&
-          !search &&
-          selectedCategory === 'All' &&
-          featuredItems.length > 0 && (
-            <section className="mb-10">
-
-              <div className="mb-4 flex items-end justify-between">
-
-                <div>
-                  <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">
-                    Featured
-                  </div>
-
-                  <h2 className="mt-1 text-xl font-black">
-                    Featured Items
-                  </h2>
-                </div>
-
-                <span className="text-xs text-white/30">
-                  {featuredItems.length} items
-                </span>
-
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-                {featuredItems.map((item) => (
-                  <MarketplaceItem
-                    key={`featured-${item.id}`}
-                    item={item}
-                    onPreview={openPreview}
-                  />
-                ))}
-              </div>
-
-            </section>
-          )}
-
-        {/* Collection */}
-        <section>
-
-          <div className="mb-4 flex items-end justify-between">
-
-            <div>
-              <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">
-                Collection
-              </div>
-
-              <h2 className="mt-1 text-xl font-black">
-                {selectedCategory === 'All'
-                  ? 'All Items'
-                  : selectedCategory}
-              </h2>
-            </div>
-
-            {!loading && (
-              <span className="text-xs text-white/30">
-                {filteredItems.length} items
-              </span>
-            )}
-
-          </div>
-
-          {loading ? (
-            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-
-              {[1, 2, 3, 4].map((number) => (
-                <div
-                  key={number}
-                  className="
-                    h-72 animate-pulse rounded-2xl
-                    border border-white/5 bg-white/[0.035]
-                  "
-                />
-              ))}
-
-            </div>
-          ) : filteredItems.length === 0 ? (
-            <div
-              className="
-                rounded-3xl border border-white/10
-                bg-white/[0.035] px-6 py-16 text-center
-              "
-            >
-              <div className="mb-3 text-4xl">
-                âœ¦
-              </div>
-
-              <h3 className="text-lg font-bold">
-                Nothing here yet
-              </h3>
-
-              <p className="mx-auto mt-2 max-w-sm text-sm text-white/40">
-                New Marketplace items will appear here when they become
-                available.
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-
-              {filteredItems.map((item) => (
-                <MarketplaceItem
-                  key={item.id}
-                  item={item}
-                  onPreview={openPreview}
-                />
-              ))}
-
-            </div>
-          )}
-
-        </section>
-      </div>
-
-      {/* Item Preview Modal */}
       {selectedItem && (
         <div
-          className="
-            fixed inset-0 z-50 flex items-end justify-center
-            bg-black/75 p-3 backdrop-blur-md
-            sm:items-center
-          "
-          onClick={closePreview}
-        >
-
-          <div
-            className="
-              w-full max-w-md overflow-hidden rounded-3xl
-              border border-white/10 bg-[#0b0d11]
-              shadow-2xl shadow-black/60
-            "
-            onClick={(event) =>
-              event.stopPropagation()
+          className="marketplace-modal-overlay"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              closeItem()
             }
-          >
-
-            {/* Large preview */}
-            <div
-              className="
-                relative flex h-64 items-center justify-center
-                bg-gradient-to-br from-white/[0.09]
-                via-white/[0.025] to-transparent
-              "
+          }}
+        >
+          <div className="marketplace-modal">
+            <button
+              type="button"
+              className="marketplace-modal-close"
+              onClick={closeItem}
+              disabled={buying}
             >
+              ×
+            </button>
 
-              <div className="absolute h-44 w-44 rounded-full bg-white/[0.08] blur-3xl" />
+            <div className="marketplace-modal-preview">
+              <MarketplacePreview
+                item={selectedItem}
+                profile={profile}
+              />
+            </div>
 
-              {selectedItem.image_url ? (
-                <img
-                  src={selectedItem.image_url}
-                  alt={selectedItem.name}
-                  className="
-                    relative z-10 max-h-48 max-w-[78%]
-                    object-contain drop-shadow-2xl
-                  "
-                />
-              ) : (
-                <div
-                  className="
-                    relative z-10 flex h-32 w-32
-                    items-center justify-center rounded-3xl
-                    border border-white/10 bg-white/[0.05]
-                    text-7xl shadow-2xl
-                  "
-                >
-                  âœ¦
-                </div>
+            <div className="marketplace-modal-content">
+              <span className="marketplace-item-type">
+                {selectedItem.category?.name ||
+                  selectedItem.item_type ||
+                  'Cosmetic'}
+              </span>
+
+              <h2>{selectedItem.name}</h2>
+
+              {selectedItem.description && (
+                <p>{selectedItem.description}</p>
               )}
 
-              {selectedItem.is_limited && (
-                <div
-                  className="
-                    absolute left-4 top-4 rounded-full
-                    border border-white/10 bg-black/50
-                    px-3 py-1.5 text-[10px] font-bold
-                    uppercase tracking-wider text-white/80
-                    backdrop-blur-md
-                  "
-                >
-                  Limited
-                </div>
-              )}
+              <div className="marketplace-modal-price">
+                <span>Price</span>
+                <strong>
+                  {Number(
+                    selectedItem.price_vcoins || 0
+                  ).toLocaleString()}{' '}
+                  V Coins
+                </strong>
+              </div>
+
+              <div className="marketplace-modal-balance">
+                Your balance:{' '}
+                <strong>
+                  {vcoins.toLocaleString()} V Coins
+                </strong>
+              </div>
 
               <button
                 type="button"
-                onClick={closePreview}
-                disabled={purchasing}
-                className="
-                  absolute right-4 top-4 flex h-9 w-9
-                  items-center justify-center rounded-full
-                  border border-white/10 bg-black/50
-                  text-white/60 backdrop-blur-md
-                  transition hover:text-white
-                  disabled:cursor-not-allowed disabled:opacity-40
-                "
+                className="marketplace-buy-button"
+                onClick={() => handleBuy(selectedItem)}
+                disabled={buying}
               >
-                Ã—
+                {buying ? 'Processing...' : 'Buy Item'}
               </button>
-
             </div>
-
-            {/* Details */}
-            <div className="p-5">
-
-              <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/35">
-                {selectedItem.item_type || 'VERITAS Item'}
-              </div>
-
-              <h2 className="mt-1 text-2xl font-black">
-                {selectedItem.name}
-              </h2>
-
-              <p className="mt-3 text-sm leading-6 text-white/50">
-                {selectedItem.description ||
-                  'A unique VERITAS item for your profile.'}
-              </p>
-
-              {/* Price */}
-              <div
-                className="
-                  mt-5 rounded-2xl border border-white/10
-                  bg-white/[0.04] p-4
-                "
-              >
-
-                <div className="flex items-center justify-between">
-
-                  <div>
-                    <div className="text-[10px] uppercase tracking-wider text-white/35">
-                      Your Balance
-                    </div>
-
-                    <div className="mt-1 flex items-center gap-2">
-                      <span>ðŸª™</span>
-
-                      <span className="font-black">
-                        {Number(
-                          profile?.vcoins || 0
-                        ).toLocaleString()}
-                      </span>
-
-                      <span className="text-xs text-white/40">
-                        V Coins
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="text-right">
-
-                    <div className="text-[10px] uppercase tracking-wider text-white/35">
-                      Price
-                    </div>
-
-                    <div className="mt-1 flex items-center gap-2">
-                      <span>ðŸª™</span>
-
-                      <span className="text-lg font-black">
-                        {Number(
-                          selectedItem.price_vcoins || 0
-                        ).toLocaleString()}
-                      </span>
-                    </div>
-
-                  </div>
-
-                </div>
-
-                {/* Buy button */}
-                <button
-                  type="button"
-                  onClick={handlePurchase}
-                  disabled={purchasing}
-                  className="
-                    mt-4 w-full rounded-xl
-                    bg-white px-5 py-3.5
-                    text-sm font-black text-black
-                    transition hover:bg-white/85
-                    disabled:cursor-not-allowed
-                    disabled:opacity-50
-                  "
-                >
-                  {purchasing
-                    ? 'Processing...'
-                    : 'Buy Item'}
-                </button>
-
-              </div>
-
-              {/* KES reference price if available */}
-              {Number(selectedItem.price_kes || 0) > 0 && (
-                <div className="mt-3 text-center text-xs text-white/30">
-                  Reference price: KES{' '}
-                  {Number(
-                    selectedItem.price_kes
-                  ).toLocaleString()}
-                </div>
-              )}
-
-            </div>
-
           </div>
         </div>
       )}
