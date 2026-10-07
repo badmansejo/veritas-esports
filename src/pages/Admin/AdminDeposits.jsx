@@ -8,6 +8,13 @@ export default function AdminDeposits() {
   const [filter, setFilter] = useState('Pending')
   const [loading, setLoading] = useState(true)
   const [processingId, setProcessingId] = useState(null)
+
+  const [userCode, setUserCode] = useState('')
+  const [amount, setAmount] = useState('')
+  const [note, setNote] = useState('')
+  const [manualUser, setManualUser] = useState(null)
+  const [manualLoading, setManualLoading] = useState(false)
+
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
@@ -39,10 +46,11 @@ export default function AdminDeposits() {
       ]
 
       if (userIds.length > 0) {
-        const { data: profileRows, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .in('id', userIds)
+        const { data: profileRows, error: profileError } =
+          await supabase
+            .from('profiles')
+            .select('*')
+            .in('id', userIds)
 
         if (!profileError && profileRows) {
           const userMap = {}
@@ -55,9 +63,94 @@ export default function AdminDeposits() {
         }
       }
     } catch (err) {
-      setError(err.message || 'Failed to load manual deposits.')
+      setError(err.message || 'Failed to load deposits.')
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function findManualUser() {
+    setError('')
+    setSuccess('')
+    setManualUser(null)
+
+    const code = userCode.trim()
+
+    if (!code) {
+      setError('Enter the 5-digit VERITAS User ID.')
+      return
+    }
+
+    const { data, error: userError } = await supabase
+      .from('profiles')
+      .select('id, veritas_user_id, username, kes_balance')
+      .eq('veritas_user_id', code)
+      .maybeSingle()
+
+    if (userError) {
+      setError(userError.message)
+      return
+    }
+
+    if (!data) {
+      setError('VERITAS User ID not found.')
+      return
+    }
+
+    setManualUser(data)
+  }
+
+  async function handleManualDeposit(event) {
+    event.preventDefault()
+
+    setError('')
+    setSuccess('')
+
+    const code = userCode.trim()
+    const depositAmount = Number(amount)
+
+    if (!code) {
+      setError('Enter the 5-digit VERITAS User ID.')
+      return
+    }
+
+    if (!depositAmount || depositAmount <= 0) {
+      setError('Enter a valid deposit amount.')
+      return
+    }
+
+    setManualLoading(true)
+
+    try {
+      const { data, error: rpcError } = await supabase.rpc(
+        'admin_manual_deposit',
+        {
+          p_veritas_user_id: code,
+          p_amount: depositAmount,
+          p_note: note.trim() || null
+        }
+      )
+
+      if (rpcError) throw rpcError
+
+      setSuccess(
+        `KES ${depositAmount.toLocaleString('en-KE')} deposited to ${data.username}. ` +
+        `New balance: KES ${Number(data.balance_after).toLocaleString('en-KE')}. ` +
+        `Reference: ${data.reference}`
+      )
+
+      setAmount('')
+      setNote('')
+      setManualUser({
+        ...manualUser,
+        kes_balance: data.balance_after
+      })
+
+      await loadDeposits()
+    } catch (err) {
+      setError(err.message || 'Manual deposit failed.')
+    } finally {
+      setManualLoading(false)
     }
   }
 
@@ -70,7 +163,7 @@ export default function AdminDeposits() {
 
     return (
       deposit.user_code ||
-      profile?.user_code ||
+      profile?.veritas_user_id ||
       '—'
     )
   }
@@ -162,11 +255,6 @@ export default function AdminDeposits() {
     setSuccess('')
 
     try {
-      /*
-       * Approval is handled by the database RPC when available.
-       * This prevents the same deposit from being credited twice.
-       */
-
       if (
         newStatus === 'Confirmed' ||
         newStatus === 'Approved'
@@ -179,10 +267,6 @@ export default function AdminDeposits() {
         )
 
         if (error) {
-          /*
-           * If the RPC does not exist yet, stop instead of
-           * blindly updating the status and risking a duplicate credit.
-           */
           throw new Error(
             `Approval function is not available: ${error.message}`
           )
@@ -257,6 +341,7 @@ export default function AdminDeposits() {
 
   return (
     <div className="admin-deposits-page">
+
       <div className="admin-deposits-header">
         <div>
           <span className="admin-deposits-eyebrow">
@@ -266,7 +351,7 @@ export default function AdminDeposits() {
           <h1>Manual Deposits</h1>
 
           <p>
-            Review manual deposit requests and credit verified payments.
+            Manage deposits and directly credit a user's KES balance.
           </p>
         </div>
 
@@ -291,6 +376,122 @@ export default function AdminDeposits() {
         </div>
       )}
 
+      <div className="admin-manual-deposit-card">
+        <div className="admin-manual-deposit-title">
+          <div>
+            <span>ADMIN WALLET</span>
+            <h2>Manual Deposit</h2>
+            <p>
+              Enter a user's 5-digit VERITAS User ID and deposit the exact amount.
+            </p>
+          </div>
+        </div>
+
+        <form onSubmit={handleManualDeposit}>
+          <div className="admin-manual-deposit-grid">
+
+            <div className="admin-manual-field">
+              <label>VERITAS User ID</label>
+
+              <div className="admin-user-search-row">
+                <input
+                  value={userCode}
+                  onChange={event => {
+                    setUserCode(event.target.value)
+                    setManualUser(null)
+                    setError('')
+                  }}
+                  placeholder="e.g. 12345"
+                  maxLength={5}
+                  inputMode="numeric"
+                  disabled={manualLoading}
+                />
+
+                <button
+                  type="button"
+                  onClick={findManualUser}
+                  disabled={manualLoading}
+                >
+                  Find User
+                </button>
+              </div>
+            </div>
+
+            <div className="admin-manual-field">
+              <label>Deposit Amount</label>
+
+              <input
+                type="number"
+                min="0.01"
+                step="0.01"
+                value={amount}
+                onChange={event => {
+                  setAmount(event.target.value)
+                  setError('')
+                }}
+                placeholder="KES amount"
+                disabled={manualLoading}
+              />
+            </div>
+
+            <div className="admin-manual-field">
+              <label>Admin Note</label>
+
+              <input
+                value={note}
+                onChange={event => setNote(event.target.value)}
+                placeholder="Optional"
+                disabled={manualLoading}
+              />
+            </div>
+
+          </div>
+
+          {manualUser && (
+            <div className="admin-manual-user-preview">
+              <div>
+                <span>USER</span>
+                <strong>{manualUser.username}</strong>
+              </div>
+
+              <div>
+                <span>USER ID</span>
+                <strong>{manualUser.veritas_user_id}</strong>
+              </div>
+
+              <div>
+                <span>CURRENT BALANCE</span>
+                <strong>
+                  KES {Number(manualUser.kes_balance || 0).toLocaleString('en-KE')}
+                </strong>
+              </div>
+
+              <div>
+                <span>AFTER DEPOSIT</span>
+                <strong className="after-balance">
+                  KES {
+                    (
+                      Number(manualUser.kes_balance || 0) +
+                      Number(amount || 0)
+                    ).toLocaleString('en-KE')
+                  }
+                </strong>
+              </div>
+            </div>
+          )}
+
+          <button
+            type="submit"
+            className="admin-manual-deposit-submit"
+            disabled={manualLoading}
+          >
+            {manualLoading
+              ? 'Depositing...'
+              : 'Manual Deposit'}
+          </button>
+        </form>
+      </div>
+
       <div className="admin-deposits-tabs">
         {[
           'Pending',
@@ -305,10 +506,7 @@ export default function AdminDeposits() {
             onClick={() => setFilter(tab)}
           >
             {tab}
-
-            <span>
-              {counts[tab]}
-            </span>
+            <span>{counts[tab]}</span>
           </button>
         ))}
       </div>
@@ -332,10 +530,7 @@ export default function AdminDeposits() {
           <tbody>
             {!loading && filteredDeposits.length === 0 && (
               <tr>
-                <td
-                  colSpan="9"
-                  className="admin-deposits-empty"
-                >
+                <td colSpan="9" className="admin-deposits-empty">
                   No {filter.toLowerCase()} deposits found.
                 </td>
               </tr>
@@ -364,9 +559,7 @@ export default function AdminDeposits() {
                   </td>
 
                   <td>
-                    <strong>
-                      {getUsername(deposit)}
-                    </strong>
+                    <strong>{getUsername(deposit)}</strong>
                   </td>
 
                   <td>
@@ -375,9 +568,7 @@ export default function AdminDeposits() {
                     </strong>
                   </td>
 
-                  <td>
-                    {getMethod(deposit)}
-                  </td>
+                  <td>{getMethod(deposit)}</td>
 
                   <td>
                     <span className="admin-deposits-reference">
@@ -443,9 +634,7 @@ export default function AdminDeposits() {
                       )}
 
                       {normaliseStatus(deposit.status) !== 'pending' && (
-                        <span className="admin-deposits-dash">
-                          —
-                        </span>
+                        <span className="admin-deposits-dash">—</span>
                       )}
                     </div>
                   </td>
@@ -470,9 +659,7 @@ export default function AdminDeposits() {
               <div className="admin-deposit-mobile-top">
                 <div>
                   <span>USER ID</span>
-                  <strong>
-                    {getUserCode(deposit)}
-                  </strong>
+                  <strong>{getUserCode(deposit)}</strong>
                 </div>
 
                 <span className={statusClass(deposit.status)}>
@@ -540,9 +727,7 @@ export default function AdminDeposits() {
                       )
                     }
                   >
-                    {isProcessing
-                      ? 'Processing...'
-                      : 'Approve'}
+                    {isProcessing ? 'Processing...' : 'Approve'}
                   </button>
 
                   <button

@@ -60,23 +60,6 @@ function iconFor(category) {
   }
 }
 
-function normalizeContactLink(value) {
-  const trimmed = String(value || '').trim()
-
-  if (!trimmed) {
-    return ''
-  }
-
-  if (
-    trimmed.startsWith('http://') ||
-    trimmed.startsWith('https://')
-  ) {
-    return trimmed
-  }
-
-  return `https://${trimmed}`
-}
-
 export default function Notifications() {
   const navigate = useNavigate()
   const { user } = useAuth()
@@ -92,15 +75,6 @@ export default function Notifications() {
 
   const [error, setError] =
     useState('')
-
-  const [agents, setAgents] =
-    useState([])
-
-  const [showAgents, setShowAgents] =
-    useState(false)
-
-  const [agentsLoading, setAgentsLoading] =
-    useState(false)
 
   async function loadNotifications() {
     if (!user?.id) {
@@ -148,55 +122,6 @@ export default function Notifications() {
     setLoading(false)
   }
 
-  async function loadContactAgents() {
-    setAgentsLoading(true)
-
-    const {
-      data,
-      error: agentsError,
-    } = await supabase
-      .from('contact_agents')
-      .select(`
-        id,
-        name,
-        contact_link,
-        description,
-        sort_order
-      `)
-      .eq('is_active', true)
-      .order('sort_order', {
-        ascending: true,
-      })
-      .order('created_at', {
-        ascending: true,
-      })
-
-    if (agentsError) {
-      console.error(
-        'VERITAS contact agents error:',
-        agentsError
-      )
-
-      setAgents([])
-    } else {
-      setAgents(data || [])
-    }
-
-    setAgentsLoading(false)
-  }
-
-  async function openContactAgents() {
-    setShowAgents(true)
-
-    if (agents.length === 0) {
-      await loadContactAgents()
-    }
-  }
-
-  function closeContactAgents() {
-    setShowAgents(false)
-  }
-
   useEffect(() => {
     loadNotifications()
   }, [user?.id])
@@ -221,6 +146,18 @@ export default function Notifications() {
             payload.new,
             ...current,
           ])
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'postgres_changes',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          loadNotifications()
         }
       )
       .subscribe()
@@ -481,77 +418,54 @@ export default function Notifications() {
                   item.type ||
                   'Announcements'
 
-                const isWalletNotification =
-                  category === 'Wallet'
-
                 return (
-                  <div
+                  <button
                     key={item.id}
                     className={
                       item.is_read
                         ? 'notification-item'
                         : 'notification-item unread'
                     }
+                    onClick={() =>
+                      openNotification(item)
+                    }
                   >
 
-                    <button
-                      type="button"
-                      className="notification-main-button"
-                      onClick={() =>
-                        openNotification(item)
-                      }
-                    >
+                    <div className="notification-icon">
+                      {iconFor(category)}
+                    </div>
 
-                      <div className="notification-icon">
-                        {iconFor(category)}
-                      </div>
+                    <div className="notification-content">
 
-                      <div className="notification-content">
+                      <div className="notification-top">
 
-                        <div className="notification-top">
+                        <strong>
+                          {item.title}
+                        </strong>
 
-                          <strong>
-                            {item.title}
-                          </strong>
-
-                          <span>
-                            {formatTime(
-                              item.created_at
-                            )}
-                          </span>
-
-                        </div>
-
-                        <p>
-                          {item.message}
-                        </p>
-
-                        <small>
-                          {category}
-                        </small>
+                        <span>
+                          {formatTime(
+                            item.created_at
+                          )}
+                        </span>
 
                       </div>
 
-                      {!item.is_read && (
-                        <div className="notification-dot" />
-                      )}
+                      <p>
+                        {item.message}
+                      </p>
 
-                    </button>
+                      <small>
+                        {category}
+                      </small>
 
-                    {isWalletNotification ? (
-                      <button
-                        type="button"
-                        className="notification-contact-agent"
-                        onClick={(event) => {
-                          event.stopPropagation()
-                          openContactAgents()
-                        }}
-                      >
-                        👤 Contact Agent
-                      </button>
-                    ) : null}
+                    </div>
 
-                  </div>
+                    {!item.is_read && (
+                      <div className="notification-dot" />
+                    )}
+
+                  </button>
                 )
               }
             )
@@ -560,97 +474,6 @@ export default function Notifications() {
         </div>
 
       </div>
-
-      {showAgents ? (
-        <div
-          className="notification-agent-overlay"
-          onClick={closeContactAgents}
-        >
-
-          <div
-            className="notification-agent-modal"
-            onClick={(event) =>
-              event.stopPropagation()
-            }
-          >
-
-            <div className="notification-agent-header">
-
-              <div>
-                <span>
-                  VERITAS SUPPORT
-                </span>
-
-                <h2>
-                  Contact Agent
-                </h2>
-
-                <p>
-                  Choose an active VERITAS agent.
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={closeContactAgents}
-              >
-                ×
-              </button>
-
-            </div>
-
-            {agentsLoading ? (
-              <div className="notification-agent-empty">
-                Loading agents...
-              </div>
-            ) : agents.length === 0 ? (
-              <div className="notification-agent-empty">
-                No contact agents are currently available.
-              </div>
-            ) : (
-              <div className="notification-agent-list">
-
-                {agents.map((agent) => (
-                  <a
-                    key={agent.id}
-                    href={normalizeContactLink(
-                      agent.contact_link
-                    )}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="notification-agent-card"
-                  >
-
-                    <div className="notification-agent-icon">
-                      👤
-                    </div>
-
-                    <div>
-                      <strong>
-                        {agent.name}
-                      </strong>
-
-                      {agent.description ? (
-                        <p>
-                          {agent.description}
-                        </p>
-                      ) : null}
-
-                      <span>
-                        Contact Agent →
-                      </span>
-                    </div>
-
-                  </a>
-                ))}
-
-              </div>
-            )}
-
-          </div>
-
-        </div>
-      ) : null}
 
     </div>
   )

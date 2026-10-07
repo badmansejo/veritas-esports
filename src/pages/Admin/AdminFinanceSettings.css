@@ -1,0 +1,156 @@
+﻿.admin-finance-settings {
+  padding: 24px;
+  color: #fff;
+  max-width: 950px;
+}
+
+.admin-finance-settings-header {
+  margin-bottom: 24px;
+}
+
+.admin-finance-settings-eyebrow {
+  color: #888;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  margin-bottom: 7px;
+}
+
+.admin-finance-settings-header h1 {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 950;
+}
+
+.admin-finance-settings-header p {
+  margin: 7px 0 0;
+  color: #888;
+  font-size: 13px;
+}
+
+.admin-finance-settings-card {
+  background: linear-gradient(145deg, #111, #080808);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 18px;
+  padding: 22px;
+}
+
+.admin-finance-setting {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.admin-finance-setting strong {
+  display: block;
+  font-size: 15px;
+  font-weight: 900;
+  margin-bottom: 6px;
+}
+
+.admin-finance-setting span {
+  display: block;
+  color: #777;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.admin-finance-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.admin-finance-input-wrap > span {
+  color: #aaa;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.admin-finance-input-wrap input {
+  width: 130px;
+  box-sizing: border-box;
+  background: #050505;
+  color: #fff;
+  border: 1px solid #292929;
+  border-radius: 10px;
+  padding: 12px;
+  outline: none;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.admin-finance-input-wrap input:focus {
+  border-color: #555;
+}
+
+.admin-finance-divider {
+  height: 1px;
+  background: #202020;
+  margin: 22px 0;
+}
+
+.admin-finance-note {
+  margin-top: 24px;
+  padding: 15px;
+  background: #0b0b0b;
+  border: 1px solid #1c1c1c;
+  border-radius: 12px;
+}
+
+.admin-finance-note strong {
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.admin-finance-note p {
+  margin: 7px 0 0;
+  color: #777;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.admin-finance-save {
+  width: 100%;
+  margin-top: 20px;
+  border: 0;
+  border-radius: 11px;
+  padding: 13px;
+  background: #fff;
+  color: #000;
+  font-size: 13px;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.admin-finance-save:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.admin-finance-settings-loading {
+  color: #777;
+  padding: 30px 0;
+  text-align: center;
+}
+
+@media (max-width: 650px) {
+  .admin-finance-settings {
+    padding: 15px;
+  }
+
+  .admin-finance-setting {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .admin-finance-input-wrap {
+    width: 100%;
+  }
+
+  .admin-finance-input-wrap input {
+    width: 100%;
+  }
+}

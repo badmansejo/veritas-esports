@@ -245,6 +245,16 @@ export default function AdminDashboard() {
               path="/admin/transactions"
               live
             />
+
+            <AdminCard
+              title="⚙️ Finance Settings"
+              description="Control fees, limits, bonuses and payment settings."
+            />
+
+            <AdminCard
+              title="📈 Finance Reports"
+              description="Review and export financial reports."
+            />
           </div>
         </section>
 
@@ -419,7 +429,5 @@ export default function AdminDashboard() {
     </div>
   )
 }
-
-
 
 

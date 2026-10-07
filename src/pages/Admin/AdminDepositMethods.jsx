@@ -1,60 +1,38 @@
 ﻿import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabaseClient'
+import './AdminDepositMethods.css'
 
-const DEFAULT_AMOUNTS = '50, 100, 200, 300, 500, 1000'
+const emptyForm = {
+  name: '',
+  method_code: '',
+  description: '',
+  sort_order: 0,
+  is_active: true,
+}
 
-function AdminDepositMethods() {
-  const navigate = useNavigate()
-  const { user, isAdmin } = useAuth()
-
+export default function AdminDepositMethods() {
   const [methods, setMethods] = useState([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [editingId, setEditingId] = useState(null)
+  const [form, setForm] = useState(emptyForm)
 
-  const [form, setForm] = useState({
-    name: '',
-    account_details: '',
-    instructions: '',
-    qr_code_url: '',
-    available_amounts: DEFAULT_AMOUNTS,
-    is_active: true,
-    sort_order: 0,
-  })
-
-  useEffect(() => {
-    if (!user) {
-      navigate('/login', { replace: true })
-      return
-    }
-
-    if (isAdmin === false) {
-      navigate('/', { replace: true })
-      return
-    }
-
-    if (isAdmin === true) {
-      loadMethods()
-    }
-  }, [user, isAdmin])
-
-  async function loadMethods() {
+  const loadMethods = async () => {
     setLoading(true)
     setError('')
 
-    const { data, error: loadError } = await supabase
+    const { data, error: queryError } = await supabase
       .from('manual_deposit_methods')
       .select('*')
       .order('sort_order', { ascending: true })
       .order('created_at', { ascending: true })
 
-    if (loadError) {
-      console.error(loadError)
-      setError(loadError.message)
+    if (queryError) {
+      console.error(queryError)
+      setError(queryError.message)
+      setMethods([])
     } else {
       setMethods(data || [])
     }
@@ -62,75 +40,28 @@ function AdminDepositMethods() {
     setLoading(false)
   }
 
-  function resetForm() {
+  useEffect(() => {
+    loadMethods()
+  }, [])
+
+  const resetForm = () => {
     setEditingId(null)
-
-    setForm({
-      name: '',
-      account_details: '',
-      instructions: '',
-      qr_code_url: '',
-      available_amounts: DEFAULT_AMOUNTS,
-      is_active: true,
-      sort_order: 0,
-    })
+    setForm(emptyForm)
   }
 
-  function editMethod(method) {
-    setError('')
-    setSuccess('')
-
-    setEditingId(method.id)
-
-    setForm({
-      name: method.name || '',
-      account_details: method.account_details || '',
-      instructions: method.instructions || '',
-      qr_code_url: method.qr_code_url || '',
-      available_amounts: Array.isArray(method.available_amounts)
-        ? method.available_amounts.join(', ')
-        : '',
-      is_active: method.is_active !== false,
-      sort_order: Number(method.sort_order || 0),
-    })
-
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth',
-    })
-  }
-
-  function handleChange(event) {
-    const { name, value, type, checked } = event.target
-
-    setForm((current) => ({
-      ...current,
-      [name]: type === 'checkbox' ? checked : value,
-    }))
-  }
-
-  function parseAmounts(value) {
-    return value
-      .split(',')
-      .map((item) => Number(item.trim()))
-      .filter((item) => Number.isFinite(item) && item > 0)
-  }
-
-  async function handleSubmit(event) {
+  const saveMethod = async (event) => {
     event.preventDefault()
 
     setError('')
     setSuccess('')
 
     if (!form.name.trim()) {
-      setError('Enter the payment method name.')
+      setError('Enter a deposit method name.')
       return
     }
 
-    const amounts = parseAmounts(form.available_amounts)
-
-    if (amounts.length === 0) {
-      setError('Enter at least one valid deposit amount.')
+    if (!form.method_code.trim()) {
+      setError('Enter a method code.')
       return
     }
 
@@ -138,13 +69,10 @@ function AdminDepositMethods() {
 
     const payload = {
       name: form.name.trim(),
-      account_details: form.account_details.trim() || null,
-      instructions: form.instructions.trim() || null,
-      qr_code_url: form.qr_code_url.trim() || null,
-      available_amounts: amounts,
+      method_code: form.method_code.trim().toLowerCase().replace(/\s+/g, '_'),
+      description: form.description.trim() || null,
+      sort_order: Number(form.sort_order) || 0,
       is_active: Boolean(form.is_active),
-      sort_order: Number(form.sort_order || 0),
-      updated_at: new Date().toISOString(),
     }
 
     let result
@@ -154,34 +82,51 @@ function AdminDepositMethods() {
         .from('manual_deposit_methods')
         .update(payload)
         .eq('id', editingId)
-        .select('*')
-        .single()
     } else {
       result = await supabase
         .from('manual_deposit_methods')
         .insert(payload)
-        .select('*')
-        .single()
     }
 
     if (result.error) {
       console.error(result.error)
       setError(result.error.message)
-    } else {
-      setSuccess(
-        editingId
-          ? 'Payment method updated successfully.'
-          : 'Payment method created successfully.'
-      )
-
-      resetForm()
-      await loadMethods()
+      setSaving(false)
+      return
     }
 
+    setSuccess(
+      editingId
+        ? 'Deposit method updated successfully.'
+        : 'Deposit method added successfully.'
+    )
+
+    resetForm()
+    await loadMethods()
     setSaving(false)
   }
 
-  async function toggleMethod(method) {
+  const editMethod = (method) => {
+    setError('')
+    setSuccess('')
+
+    setEditingId(method.id)
+
+    setForm({
+      name: method.name || '',
+      method_code: method.method_code || '',
+      description: method.description || '',
+      sort_order: method.sort_order || 0,
+      is_active: method.is_active !== false,
+    })
+
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    })
+  }
+
+  const toggleMethod = async (method) => {
     setError('')
     setSuccess('')
 
@@ -189,25 +134,25 @@ function AdminDepositMethods() {
       .from('manual_deposit_methods')
       .update({
         is_active: !method.is_active,
-        updated_at: new Date().toISOString(),
       })
       .eq('id', method.id)
 
     if (updateError) {
+      console.error(updateError)
       setError(updateError.message)
       return
     }
 
     setSuccess(
       method.is_active
-        ? 'Payment method deactivated.'
-        : 'Payment method activated.'
+        ? `${method.name} disabled.`
+        : `${method.name} enabled.`
     )
 
     await loadMethods()
   }
 
-  async function deleteMethod(method) {
+  const deleteMethod = async (method) => {
     const confirmed = window.confirm(
       `Delete "${method.name}"? This cannot be undone.`
     )
@@ -225,331 +170,250 @@ function AdminDepositMethods() {
       .eq('id', method.id)
 
     if (deleteError) {
+      console.error(deleteError)
       setError(deleteError.message)
       return
     }
 
-    setSuccess('Payment method deleted.')
+    setSuccess(`${method.name} deleted.`)
+
+    if (editingId === method.id) {
+      resetForm()
+    }
+
     await loadMethods()
   }
 
-  if (!user || isAdmin !== true) {
-    return null
-  }
-
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        background: '#07080c',
-        color: '#fff',
-        padding: '32px 20px',
-      }}
-    >
-      <div
-        style={{
-          maxWidth: '1100px',
-          margin: '0 auto',
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            gap: '16px',
-            marginBottom: '28px',
-            flexWrap: 'wrap',
-          }}
-        >
-          <div>
-            <div
-              style={{
-                fontSize: '11px',
-                fontWeight: 800,
-                letterSpacing: '3px',
-                opacity: 0.5,
-                marginBottom: '8px',
-              }}
-            >
-              VERITAS ADMIN
+    <div className="admin-deposit-methods-page">
+      <div className="admin-deposit-methods-header">
+        <div>
+          <span className="admin-deposit-methods-eyebrow">
+            ADMIN / WALLET
+          </span>
+
+          <h1>Deposit Methods</h1>
+
+          <p>
+            Create and manage the payment methods users can use
+            for manual deposits.
+          </p>
+        </div>
+      </div>
+
+      {error ? (
+        <div className="admin-deposit-methods-alert error">
+          {error}
+        </div>
+      ) : null}
+
+      {success ? (
+        <div className="admin-deposit-methods-alert success">
+          {success}
+        </div>
+      ) : null}
+
+      <div className="admin-deposit-methods-grid">
+        <section className="admin-deposit-methods-card">
+          <div className="admin-deposit-methods-card-heading">
+            <div>
+              <h2>
+                {editingId
+                  ? 'Edit Deposit Method'
+                  : 'Add Deposit Method'}
+              </h2>
+
+              <p>
+                These methods appear automatically in the
+                user's Deposit page.
+              </p>
+            </div>
+          </div>
+
+          <form onSubmit={saveMethod}>
+            <div className="admin-deposit-methods-field">
+              <label>Method Name</label>
+
+              <input
+                type="text"
+                value={form.name}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    name: event.target.value,
+                  }))
+                }
+                placeholder="e.g. M-Pesa"
+              />
             </div>
 
-            <h1 style={{ margin: 0 }}>
-              Manual Deposit Methods
-            </h1>
+            <div className="admin-deposit-methods-field">
+              <label>Method Code</label>
 
-            <p style={{ opacity: 0.6 }}>
-              Configure the payment options users see when they choose
-              Manual Deposit.
-            </p>
-          </div>
+              <input
+                type="text"
+                value={form.method_code}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    method_code: event.target.value,
+                  }))
+                }
+                placeholder="e.g. mpesa"
+              />
 
-          <button
-            type="button"
-            onClick={() => navigate('/')}
-            style={buttonStyle('#151922')}
-          >
-            Back Home
-          </button>
-        </div>
+              <small>
+                Use a unique simple code such as mpesa,
+                airtel_money or bank.
+              </small>
+            </div>
 
-        {error ? (
-          <div style={alertStyle('#3b1515')}>
-            {error}
-          </div>
-        ) : null}
+            <div className="admin-deposit-methods-field">
+              <label>Description</label>
 
-        {success ? (
-          <div style={alertStyle('#12351f')}>
-            {success}
-          </div>
-        ) : null}
+              <textarea
+                value={form.description}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    description: event.target.value,
+                  }))
+                }
+                placeholder="Short description shown to users."
+                rows="4"
+              />
+            </div>
 
-        <form
-          onSubmit={handleSubmit}
-          style={{
-            background: '#0d1017',
-            border: '1px solid rgba(255,255,255,.08)',
-            borderRadius: '18px',
-            padding: '24px',
-            marginBottom: '30px',
-          }}
-        >
-          <h2 style={{ marginTop: 0 }}>
-            {editingId ? 'Edit Payment Method' : 'Add Payment Method'}
-          </h2>
+            <div className="admin-deposit-methods-two-column">
+              <div className="admin-deposit-methods-field">
+                <label>Sort Order</label>
 
-          <div style={gridStyle}>
-            <Field
-              label="Payment Method Name"
-              name="name"
-              value={form.name}
-              onChange={handleChange}
-              placeholder="e.g. Absa Next"
-            />
+                <input
+                  type="number"
+                  min="0"
+                  value={form.sort_order}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      sort_order: event.target.value,
+                    }))
+                  }
+                />
+              </div>
 
-            <Field
-              label="Account / Phone / Paybill Details"
-              name="account_details"
-              value={form.account_details}
-              onChange={handleChange}
-              placeholder="e.g. Account number or phone number"
-            />
+              <div className="admin-deposit-methods-toggle-field">
+                <label>Active</label>
 
-            <Field
-              label="QR Code Image URL"
-              name="qr_code_url"
-              value={form.qr_code_url}
-              onChange={handleChange}
-              placeholder="https://..."
-            />
+                <button
+                  type="button"
+                  className={
+                    form.is_active
+                      ? 'admin-deposit-toggle active'
+                      : 'admin-deposit-toggle'
+                  }
+                  onClick={() =>
+                    setForm((current) => ({
+                      ...current,
+                      is_active: !current.is_active,
+                    }))
+                  }
+                >
+                  {form.is_active ? 'ACTIVE' : 'DISABLED'}
+                </button>
+              </div>
+            </div>
 
-            <Field
-              label="Available Amounts"
-              name="available_amounts"
-              value={form.available_amounts}
-              onChange={handleChange}
-              placeholder="50, 100, 200, 300, 500, 1000"
-            />
-
-            <Field
-              label="Sort Order"
-              name="sort_order"
-              type="number"
-              value={form.sort_order}
-              onChange={handleChange}
-              placeholder="0"
-            />
-          </div>
-
-          <label style={{ display: 'block', marginTop: '18px' }}>
-            <span style={labelStyle}>
-              Instructions
-            </span>
-
-            <textarea
-              name="instructions"
-              value={form.instructions}
-              onChange={handleChange}
-              rows="5"
-              placeholder="Tell the user exactly how to make the payment."
-              style={inputStyle}
-            />
-          </label>
-
-          <label
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              marginTop: '18px',
-            }}
-          >
-            <input
-              type="checkbox"
-              name="is_active"
-              checked={form.is_active}
-              onChange={handleChange}
-            />
-
-            <span>
-              Active — users can see and select this method
-            </span>
-          </label>
-
-          <div
-            style={{
-              display: 'flex',
-              gap: '10px',
-              marginTop: '24px',
-              flexWrap: 'wrap',
-            }}
-          >
-            <button
-              type="submit"
-              disabled={saving}
-              style={buttonStyle('#d7ff2f', '#000')}
-            >
-              {saving
-                ? 'Saving...'
-                : editingId
-                  ? 'Save Changes'
-                  : 'Add Payment Method'}
-            </button>
-
-            {editingId ? (
+            <div className="admin-deposit-methods-actions">
               <button
-                type="button"
-                onClick={resetForm}
-                style={buttonStyle('#151922')}
+                type="submit"
+                className="admin-deposit-primary-button"
+                disabled={saving}
               >
-                Cancel Edit
+                {saving
+                  ? 'Saving...'
+                  : editingId
+                    ? 'Update Method'
+                    : 'Add Method'}
               </button>
-            ) : null}
-          </div>
-        </form>
 
-        <section>
-          <h2>Configured Payment Methods</h2>
+              {editingId ? (
+                <button
+                  type="button"
+                  className="admin-deposit-secondary-button"
+                  onClick={resetForm}
+                  disabled={saving}
+                >
+                  Cancel
+                </button>
+              ) : null}
+            </div>
+          </form>
+        </section>
+
+        <section className="admin-deposit-methods-card">
+          <div className="admin-deposit-methods-card-heading">
+            <div>
+              <h2>Available Methods</h2>
+
+              <p>
+                Only active methods are shown to users.
+              </p>
+            </div>
+
+            <span className="admin-deposit-count">
+              {methods.length}
+            </span>
+          </div>
 
           {loading ? (
-            <div style={emptyStyle}>
-              Loading payment methods...
+            <div className="admin-deposit-empty">
+              Loading deposit methods...
             </div>
           ) : methods.length === 0 ? (
-            <div style={emptyStyle}>
-              No manual payment methods configured yet.
+            <div className="admin-deposit-empty">
+              No deposit methods have been added yet.
             </div>
           ) : (
-            <div
-              style={{
-                display: 'grid',
-                gap: '16px',
-              }}
-            >
+            <div className="admin-deposit-method-list">
               {methods.map((method) => (
                 <div
+                  className="admin-deposit-method-item"
                   key={method.id}
-                  style={{
-                    background: '#0d1017',
-                    border: '1px solid rgba(255,255,255,.08)',
-                    borderRadius: '18px',
-                    padding: '20px',
-                  }}
                 >
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      gap: '16px',
-                      flexWrap: 'wrap',
-                    }}
-                  >
-                    <div>
-                      <h3 style={{ margin: 0 }}>
-                        {method.name}
-                      </h3>
+                  <div className="admin-deposit-method-main">
+                    <div className="admin-deposit-method-title-row">
+                      <h3>{method.name}</h3>
 
-                      <div
-                        style={{
-                          marginTop: '8px',
-                          opacity: 0.65,
-                        }}
+                      <span
+                        className={
+                          method.is_active
+                            ? 'admin-deposit-status active'
+                            : 'admin-deposit-status disabled'
+                        }
                       >
-                        {method.account_details ||
-                          'No account details configured'}
-                      </div>
+                        {method.is_active
+                          ? 'ACTIVE'
+                          : 'DISABLED'}
+                      </span>
                     </div>
 
-                    <span
-                      style={{
-                        padding: '6px 10px',
-                        borderRadius: '999px',
-                        background: method.is_active
-                          ? '#153c22'
-                          : '#3a1717',
-                        color: method.is_active
-                          ? '#7dff9b'
-                          : '#ff8585',
-                        fontSize: '11px',
-                        fontWeight: 800,
-                      }}
-                    >
-                      {method.is_active ? 'ACTIVE' : 'INACTIVE'}
+                    <span className="admin-deposit-method-code">
+                      {method.method_code}
                     </span>
+
+                    {method.description ? (
+                      <p>{method.description}</p>
+                    ) : null}
+
+                    <small>
+                      Sort order: {method.sort_order ?? 0}
+                    </small>
                   </div>
 
-                  {method.instructions ? (
-                    <p
-                      style={{
-                        whiteSpace: 'pre-wrap',
-                        opacity: 0.75,
-                        lineHeight: 1.6,
-                      }}
-                    >
-                      {method.instructions}
-                    </p>
-                  ) : null}
-
-                  <div
-                    style={{
-                      display: 'flex',
-                      gap: '8px',
-                      flexWrap: 'wrap',
-                      marginTop: '12px',
-                    }}
-                  >
-                    {(Array.isArray(method.available_amounts)
-                      ? method.available_amounts
-                      : []
-                    ).map((amount) => (
-                      <span
-                        key={amount}
-                        style={{
-                          padding: '7px 10px',
-                          background: '#171b24',
-                          borderRadius: '8px',
-                          fontSize: '12px',
-                        }}
-                      >
-                        KES {amount}
-                      </span>
-                    ))}
-                  </div>
-
-                  <div
-                    style={{
-                      display: 'flex',
-                      gap: '10px',
-                      flexWrap: 'wrap',
-                      marginTop: '18px',
-                    }}
-                  >
+                  <div className="admin-deposit-method-actions">
                     <button
                       type="button"
                       onClick={() => editMethod(method)}
-                      style={buttonStyle('#151922')}
                     >
                       Edit
                     </button>
@@ -557,15 +421,16 @@ function AdminDepositMethods() {
                     <button
                       type="button"
                       onClick={() => toggleMethod(method)}
-                      style={buttonStyle('#151922')}
                     >
-                      {method.is_active ? 'Deactivate' : 'Activate'}
+                      {method.is_active
+                        ? 'Disable'
+                        : 'Enable'}
                     </button>
 
                     <button
                       type="button"
+                      className="danger"
                       onClick={() => deleteMethod(method)}
-                      style={buttonStyle('#421919')}
                     >
                       Delete
                     </button>
@@ -579,83 +444,3 @@ function AdminDepositMethods() {
     </div>
   )
 }
-
-function Field({
-  label,
-  name,
-  value,
-  onChange,
-  placeholder,
-  type = 'text',
-}) {
-  return (
-    <label>
-      <span style={labelStyle}>
-        {label}
-      </span>
-
-      <input
-        type={type}
-        name={name}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        style={inputStyle}
-      />
-    </label>
-  )
-}
-
-const labelStyle = {
-  display: 'block',
-  fontSize: '12px',
-  fontWeight: 800,
-  opacity: 0.65,
-  marginBottom: '8px',
-}
-
-const inputStyle = {
-  width: '100%',
-  boxSizing: 'border-box',
-  background: '#080a0f',
-  border: '1px solid rgba(255,255,255,.1)',
-  color: '#fff',
-  borderRadius: '10px',
-  padding: '12px',
-  outline: 'none',
-}
-
-const gridStyle = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-  gap: '16px',
-}
-
-const buttonStyle = (background, color = '#fff') => ({
-  border: 'none',
-  borderRadius: '10px',
-  padding: '11px 16px',
-  background,
-  color,
-  fontWeight: 800,
-  cursor: 'pointer',
-})
-
-const alertStyle = (background) => ({
-  background,
-  border: '1px solid rgba(255,255,255,.08)',
-  borderRadius: '12px',
-  padding: '14px 16px',
-  marginBottom: '18px',
-})
-
-const emptyStyle = {
-  background: '#0d1017',
-  border: '1px solid rgba(255,255,255,.08)',
-  borderRadius: '16px',
-  padding: '24px',
-  opacity: 0.7,
-}
-
-export default AdminDepositMethods
-

@@ -358,3 +358,177 @@
     padding: 11px;
   }
 }
+
+/* ================================
+   ADMIN MANUAL DEPOSIT
+================================ */
+
+.admin-manual-deposit-card {
+  margin-bottom: 24px;
+  padding: 22px;
+  border: 1px solid #292f37;
+  border-radius: 16px;
+  background: #101318;
+}
+
+.admin-manual-deposit-title {
+  margin-bottom: 20px;
+}
+
+.admin-manual-deposit-title span {
+  color: #69727d;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 1.8px;
+}
+
+.admin-manual-deposit-title h2 {
+  margin: 5px 0;
+  color: #fff;
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.admin-manual-deposit-title p {
+  margin: 0;
+  color: #7e8792;
+  font-size: 12px;
+}
+
+.admin-manual-deposit-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  gap: 12px;
+}
+
+.admin-manual-field label {
+  display: block;
+  margin-bottom: 7px;
+  color: #858e99;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.admin-manual-field input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 13px;
+  border: 1px solid #303640;
+  border-radius: 9px;
+  outline: none;
+  background: #171a1f;
+  color: #fff;
+  font-size: 13px;
+}
+
+.admin-manual-field input:focus {
+  border-color: #5d6672;
+}
+
+.admin-user-search-row {
+  display: flex;
+  gap: 7px;
+}
+
+.admin-user-search-row input {
+  flex: 1;
+}
+
+.admin-user-search-row button {
+  border: 1px solid #3b424c;
+  border-radius: 9px;
+  padding: 0 13px;
+  background: #242930;
+  color: #fff;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.admin-user-search-row button:hover:not(:disabled) {
+  background: #303640;
+}
+
+.admin-user-search-row button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.admin-manual-user-preview {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: 16px;
+  padding: 15px;
+  border: 1px solid #303640;
+  border-radius: 11px;
+  background: #15191e;
+}
+
+.admin-manual-user-preview span {
+  display: block;
+  margin-bottom: 5px;
+  color: #69727d;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.admin-manual-user-preview strong {
+  color: #fff;
+  font-size: 13px;
+}
+
+.admin-manual-user-preview .after-balance {
+  color: #53d997;
+}
+
+.admin-manual-deposit-submit {
+  margin-top: 17px;
+  width: 100%;
+  border: 0;
+  border-radius: 10px;
+  padding: 13px 18px;
+  background: #4bda91;
+  color: #07150e;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.admin-manual-deposit-submit:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.admin-manual-deposit-submit:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 850px) {
+  .admin-manual-deposit-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-manual-user-preview {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 500px) {
+  .admin-manual-deposit-card {
+    padding: 16px;
+  }
+
+  .admin-user-search-row {
+    flex-direction: column;
+  }
+
+  .admin-user-search-row button {
+    padding: 11px;
+  }
+
+  .admin-manual-user-preview {
+    grid-template-columns: 1fr;
+  }
+}

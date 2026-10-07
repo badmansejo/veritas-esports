@@ -29,14 +29,11 @@ import AdminDepositMethods from './pages/Admin/AdminDepositMethods'
 import AdminDeposits from './pages/Admin/AdminDeposits'
 import AdminWithdrawals from './pages/Admin/AdminWithdrawals'
 import AdminPayoutMethods from './pages/Admin/AdminPayoutMethods'
-import PayoutMethods from './pages/PayoutMethods/PayoutMethods'
 import AdminDashboard from './pages/Admin/AdminDashboard'
 import AdminNotifications from './pages/Admin/AdminNotifications'
 import AdminTelegram from './pages/Admin/AdminTelegram'
 import AdminTelegramStats from './pages/Admin/AdminTelegramStats'
 import AdminVCoins from './pages/Admin/AdminVCoins'
-import AdminContactAgents from './pages/Admin/AdminContactAgents'
-import AdminTransactions from './pages/Admin/AdminTransactions'
 
 function ComingSoon({ title }) {
   return (
@@ -58,7 +55,6 @@ function ComingSoon({ title }) {
         }}
       >
         <h1>{title}</h1>
-
         <p style={{ color: '#9ca3af' }}>
           This section is coming soon.
         </p>
@@ -81,7 +77,11 @@ export default function App() {
         <Route path="/tournaments" element={<Tournaments />} />
         <Route path="/tournaments/:id" element={<TournamentDetails />} />
         <Route path="/matches" element={<ComingSoon title="Matches" />} />
-        <Route path="/wallet" element={<Wallet />} />`r`n        <Route path="/wallet/payout-methods" element={<WalletPayoutMethods />} />`r`n        <Route path="/payout-methods" element={<WalletPayoutMethods />} />
+        <Route path="/wallet" element={<Wallet />} />
+        <Route
+          path="/wallet/payout-methods"
+          element={<WalletPayoutMethods />}
+        />
         <Route path="/vcoins" element={<VCoins />} />
         <Route path="/marketplace" element={<Marketplace />} />
         <Route path="/inventory" element={<Inventory />} />
@@ -95,10 +95,6 @@ export default function App() {
 
       <Route element={<AdminRoute />}>
         <Route path="/admin" element={<AdminDashboard />} />
-          <Route
-            path="/admin/transactions"
-            element={<AdminTransactions />}
-          />
 
         <Route
           path="/admin/deposit-methods"
@@ -114,16 +110,14 @@ export default function App() {
           path="/admin/withdrawals"
           element={<AdminWithdrawals />}
         />
+
         <Route
           path="/admin/payout-methods"
           element={<AdminPayoutMethods />}
         />
 
         <Route
-          path="/admin/contact-agents"
-          element={<AdminContactAgents />}
-        />
-        <Route path="/admin/notifications"
+          path="/admin/notifications"
           element={<AdminNotifications />}
         />
 
@@ -147,10 +141,3 @@ export default function App() {
     </Routes>
   )
 }
-
-
-
-
-
-
-

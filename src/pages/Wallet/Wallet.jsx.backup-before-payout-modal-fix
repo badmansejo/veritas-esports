@@ -2445,7 +2445,7 @@ setWithdrawals(withdrawalsWithBatch)
 
                 </label>
 
-                <div className="wallet-field">
+                <label className="wallet-field">
 
                   <span>
                     Payout Method
@@ -2459,7 +2459,8 @@ setWithdrawals(withdrawalsWithBatch)
                       event
                     ) =>
                       setSelectedPayoutMethod(
-                        event.target.value
+                        event.target
+                          .value
                       )
                     }
                     required
@@ -2483,43 +2484,13 @@ setWithdrawals(withdrawalsWithBatch)
                             'Payout Method'}
                           {' - '}
                           {method.account_name || ''}
-                          {method.account_identifier
-                            ? ` - ${method.account_identifier}`
-                            : ''}
                         </option>
                       )
                     )}
 
                   </select>
 
-                  <div
-                    style={{
-                      display: 'flex',
-                      gap: '10px',
-                      marginTop: '10px',
-                      flexWrap: 'wrap'
-                    }}
-                  >
-
-                    <button
-                      type="button"
-                      className="wallet-secondary-button"
-                      onClick={() =>
-                        navigate('/wallet/payout-methods')
-                      }
-                    >
-                      <strong>
-                        Manage Payout Methods
-                      </strong>
-
-                      <span>
-                        Choose, add or edit an available payout account.
-                      </span>
-                    </button>
-
-                  </div>
-
-                </div>
+                </label>
 
                 {payoutMethods.length ===
                 0 ? (
@@ -2626,8 +2597,6 @@ setWithdrawals(withdrawalsWithBatch)
 }
 
 export default Wallet
-
-
 
 
 

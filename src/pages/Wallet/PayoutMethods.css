@@ -1,0 +1,552 @@
+﻿.wallet-payout-page {
+  min-height: 100vh;
+  padding: 28px 22px 60px;
+  color: #fff;
+  background:
+    radial-gradient(circle at 10% 0%, rgba(88, 166, 255, 0.12), transparent 28%),
+    radial-gradient(circle at 90% 15%, rgba(170, 80, 255, 0.10), transparent 25%),
+    #07090d;
+}
+
+.wallet-payout-header {
+  max-width: 1120px;
+  margin: 0 auto 28px;
+  position: relative;
+}
+
+.back-button {
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.045);
+  color: #bfc7d4;
+  padding: 10px 15px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 26px;
+  transition: 0.2s ease;
+}
+
+.back-button:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateX(-2px);
+}
+
+.wallet-payout-kicker,
+.section-kicker {
+  display: block;
+  color: #7ca9ff;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+}
+
+.wallet-payout-header h1 {
+  margin: 0;
+  font-size: clamp(30px, 5vw, 48px);
+  line-height: 1;
+  font-weight: 950;
+  letter-spacing: -1.8px;
+  background: linear-gradient(120deg, #fff, #aeb9cb);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.wallet-payout-header p {
+  margin: 12px 0 0;
+  color: #8791a2;
+  font-size: 14px;
+  max-width: 620px;
+}
+
+.wallet-payout-alert {
+  max-width: 1120px;
+  margin: 0 auto 18px;
+  padding: 14px 17px;
+  border-radius: 14px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.wallet-payout-alert.error {
+  background: rgba(255, 70, 70, 0.09);
+  border: 1px solid rgba(255, 70, 70, 0.24);
+  color: #ff9d9d;
+}
+
+.wallet-payout-alert.success {
+  background: rgba(61, 220, 151, 0.08);
+  border: 1px solid rgba(61, 220, 151, 0.22);
+  color: #76e8b4;
+}
+
+.wallet-payout-loading {
+  max-width: 1120px;
+  margin: 50px auto;
+  text-align: center;
+  color: #8791a2;
+}
+
+.wallet-payout-card {
+  max-width: 1120px;
+  margin: 0 auto 20px;
+  padding: 24px;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.055),
+      rgba(255, 255, 255, 0.018)
+    );
+  box-shadow:
+    0 22px 60px rgba(0, 0, 0, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.035);
+  backdrop-filter: blur(14px);
+}
+
+.wallet-payout-card-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  margin-bottom: 22px;
+}
+
+.wallet-payout-card-heading h2 {
+  margin: 0;
+  color: #fff;
+  font-size: 21px;
+  font-weight: 900;
+  letter-spacing: -0.4px;
+}
+
+.wallet-payout-card-heading p {
+  margin: 7px 0 0;
+  color: #7f8999;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* PROVIDERS */
+
+.wallet-payout-provider-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.wallet-payout-provider {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.055),
+      rgba(255, 255, 255, 0.02)
+    );
+  color: #fff;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.wallet-payout-provider::before {
+  content: '';
+  position: absolute;
+  width: 90px;
+  height: 90px;
+  right: -30px;
+  top: -35px;
+  border-radius: 50%;
+  background: rgba(100, 145, 255, 0.08);
+  pointer-events: none;
+}
+
+.wallet-payout-provider:hover {
+  transform: translateY(-3px);
+  border-color: rgba(120, 160, 255, 0.35);
+  background:
+    linear-gradient(
+      145deg,
+      rgba(90, 130, 255, 0.12),
+      rgba(255, 255, 255, 0.035)
+    );
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.25);
+}
+
+.wallet-payout-provider.selected {
+  border-color: rgba(110, 155, 255, 0.65);
+  background:
+    linear-gradient(
+      145deg,
+      rgba(70, 115, 255, 0.16),
+      rgba(255, 255, 255, 0.035)
+    );
+  box-shadow:
+    0 0 0 1px rgba(100, 145, 255, 0.10),
+    0 14px 38px rgba(30, 70, 180, 0.14);
+}
+
+.provider-icon {
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 15px;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(130, 165, 255, 0.22),
+      rgba(90, 100, 170, 0.08)
+    );
+  border: 1px solid rgba(145, 175, 255, 0.18);
+  color: #dce6ff;
+  font-size: 19px;
+  font-weight: 950;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 8px 22px rgba(0, 0, 0, 0.2);
+}
+
+.provider-content {
+  min-width: 0;
+  flex: 1;
+}
+
+.provider-content strong {
+  display: block;
+  font-size: 15px;
+  font-weight: 900;
+  margin-bottom: 4px;
+}
+
+.provider-content small {
+  display: block;
+  color: #7f8999;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.provider-arrow {
+  color: #697586;
+  font-size: 20px;
+  font-weight: 400;
+  transition: 0.2s ease;
+}
+
+.wallet-payout-provider:hover .provider-arrow,
+.wallet-payout-provider.selected .provider-arrow {
+  color: #9bb9ff;
+  transform: translateX(3px);
+}
+
+/* FORM */
+
+.payout-form-card {
+  border-color: rgba(100, 145, 255, 0.15);
+}
+
+.form-cancel-button {
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.045);
+  color: #9ba5b5;
+  padding: 9px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.form-cancel-button:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.dynamic-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 17px;
+}
+
+.wallet-payout-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wallet-payout-field label {
+  color: #b8c0cd;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+}
+
+.required-star {
+  color: #ff7272;
+  margin-left: 4px;
+}
+
+.wallet-payout-field input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgba(0, 0, 0, 0.22);
+  color: #fff;
+  padding: 14px 15px;
+  border-radius: 12px;
+  outline: none;
+  font-size: 13px;
+  transition: 0.2s ease;
+}
+
+.wallet-payout-field input::placeholder {
+  color: #4f5969;
+}
+
+.wallet-payout-field input:focus {
+  border-color: rgba(105, 150, 255, 0.62);
+  background: rgba(20, 30, 55, 0.32);
+  box-shadow:
+    0 0 0 3px rgba(80, 125, 255, 0.08);
+}
+
+.wallet-payout-save-button {
+  width: 100%;
+  margin-top: 22px;
+  border: 0;
+  border-radius: 13px;
+  padding: 15px 18px;
+  background:
+    linear-gradient(
+      135deg,
+      #4d7cff,
+      #7059e8
+    );
+  color: #fff;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow:
+    0 12px 28px rgba(65, 90, 220, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  transition: 0.2s ease;
+}
+
+.wallet-payout-save-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow:
+    0 16px 35px rgba(65, 90, 220, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.wallet-payout-save-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* SAVED ACCOUNTS */
+
+.wallet-payout-empty {
+  padding: 35px 20px;
+  text-align: center;
+  border: 1px dashed rgba(255, 255, 255, 0.10);
+  border-radius: 16px;
+  color: #697586;
+  font-size: 13px;
+}
+
+.saved-payout-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.saved-payout-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px;
+  border-radius: 17px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  background: rgba(0, 0, 0, 0.16);
+}
+
+.saved-payout-main {
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.saved-payout-icon {
+  flex: 0 0 43px;
+  width: 43px;
+  height: 43px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  background: rgba(100, 145, 255, 0.12);
+  border: 1px solid rgba(110, 155, 255, 0.16);
+  color: #a8c0ff;
+  font-size: 16px;
+  font-weight: 950;
+}
+
+.saved-payout-title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 10px;
+}
+
+.saved-payout-title strong {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.default-pill {
+  padding: 3px 7px;
+  border-radius: 5px;
+  background: rgba(67, 220, 150, 0.10);
+  border: 1px solid rgba(67, 220, 150, 0.18);
+  color: #6fe4ae;
+  font-size: 8px;
+  font-weight: 950;
+  letter-spacing: 0.7px;
+}
+
+.saved-payout-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 25px;
+}
+
+.saved-payout-fields div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.saved-payout-fields span {
+  color: #626d7d;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  font-weight: 800;
+}
+
+.saved-payout-fields strong {
+  color: #bfc8d7;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.saved-payout-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.saved-payout-actions button {
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.045);
+  color: #aab4c3;
+  padding: 9px 13px;
+  border-radius: 9px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 800;
+  transition: 0.2s ease;
+}
+
+.saved-payout-actions button:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.saved-payout-actions button.danger {
+  color: #ff8585;
+  border-color: rgba(255, 80, 80, 0.14);
+}
+
+.saved-payout-actions button.danger:hover {
+  background: rgba(255, 60, 60, 0.08);
+  border-color: rgba(255, 80, 80, 0.28);
+}
+
+/* MOBILE */
+
+@media (max-width: 760px) {
+  .wallet-payout-page {
+    padding: 20px 14px 45px;
+  }
+
+  .wallet-payout-card {
+    padding: 18px;
+    border-radius: 18px;
+  }
+
+  .wallet-payout-provider-grid,
+  .dynamic-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .wallet-payout-card-heading {
+    flex-direction: column;
+  }
+
+  .form-cancel-button {
+    align-self: flex-start;
+  }
+
+  .saved-payout-item {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .saved-payout-actions {
+    width: 100%;
+  }
+
+  .saved-payout-actions button {
+    flex: 1;
+  }
+
+  .saved-payout-fields {
+    gap: 10px 18px;
+  }
+}
+
+@media (max-width: 430px) {
+  .wallet-payout-header h1 {
+    font-size: 32px;
+  }
+
+  .wallet-payout-provider {
+    padding: 15px;
+  }
+
+  .provider-icon {
+    width: 42px;
+    height: 42px;
+    flex-basis: 42px;
+  }
+}

@@ -233,17 +233,18 @@ export default function AdminDashboard() {
             />
 
             <AdminCard
-              title="👤 Contact Agents"
-              description="Manage the agents users can contact for payment and withdrawal support."
-              path="/admin/contact-agents"
-              live
+              title="📒 Transactions"
+              description="View the complete wallet transaction ledger."
             />
 
             <AdminCard
-              title="📒 Transactions"
-              description="View the complete wallet transaction ledger."
-              path="/admin/transactions"
-              live
+              title="⚙️ Finance Settings"
+              description="Control fees, limits, bonuses and payment settings."
+            />
+
+            <AdminCard
+              title="📈 Finance Reports"
+              description="Review and export financial reports."
             />
           </div>
         </section>
@@ -419,7 +420,3 @@ export default function AdminDashboard() {
     </div>
   )
 }
-
-
-
-
