@@ -30,16 +30,16 @@ export default function AdminNotifications() {
   }
 
   async function sendToUser(userId) {
-    const notificationResult = await supabase
-      .from('notifications')
-      .insert({
-        user_id: userId,
-        title: title.trim(),
-        message: message.trim(),
-        category: 'Announcements',
-        is_read: false,
-        link: link.trim() || '/notifications',
-      })
+    const notificationResult = await supabase.rpc(
+      'admin_create_notification',
+      {
+        p_user_id: userId,
+        p_title: title.trim(),
+        p_message: message.trim(),
+        p_category: 'Announcements',
+        p_link: link.trim() || '/notifications',
+      }
+    )
 
     if (notificationResult.error) {
       throw notificationResult.error
@@ -61,30 +61,64 @@ export default function AdminNotifications() {
       console.error('Push error:', pushResult.error)
     }
 
-    const telegramResult = await supabase.functions.invoke(
-      'send-telegram-notification',
+    return {
+      notificationId: notificationResult.data,
+      pushSent: pushResult.data?.sent || 0,
+    }
+  }
+
+  async function getTelegramDeliveredCount(notificationIds) {
+    if (!notificationIds.length) {
+      return 0
+    }
+
+    const maxAttempts = 15
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const { data, error } = await supabase.rpc(
+        'admin_get_telegram_delivery_count',
+        {
+          p_notification_ids: notificationIds,
+        }
+      )
+
+      if (error) {
+        console.error(
+          'Telegram delivery count error:',
+          error
+        )
+        return 0
+      }
+
+      const delivered = Number(data || 0)
+
+      if (delivered >= notificationIds.length) {
+        return delivered
+      }
+
+      if (attempt < maxAttempts - 1) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, 1000)
+        )
+      }
+    }
+
+    const { data, error } = await supabase.rpc(
+      'admin_get_telegram_delivery_count',
       {
-        body: {
-          user_id: userId,
-          title: title.trim(),
-          message: message.trim(),
-        },
+        p_notification_ids: notificationIds,
       }
     )
 
-    if (telegramResult.error) {
+    if (error) {
       console.error(
-        'Telegram error:',
-        telegramResult.error
+        'Final Telegram delivery count error:',
+        error
       )
+      return 0
     }
 
-    return {
-      pushSent:
-        pushResult.data?.sent || 0,
-      telegramSent:
-        telegramResult.data?.sent || 0,
-    }
+    return Number(data || 0)
   }
 
   async function sendNotification() {
@@ -124,8 +158,8 @@ export default function AdminNotifications() {
       }
 
       let pushSent = 0
-      let telegramSent = 0
       let saved = 0
+      const notificationIds = []
 
       for (const user of targetUsers) {
         const resultData =
@@ -133,16 +167,28 @@ export default function AdminNotifications() {
 
         saved++
         pushSent += resultData.pushSent
-        telegramSent += resultData.telegramSent
+
+        notificationIds.push(
+          resultData.notificationId
+        )
       }
+
+      setResult(
+        'Waiting for Telegram delivery...'
+      )
+
+      const telegramDelivered =
+        await getTelegramDeliveredCount(
+          notificationIds
+        )
 
       if (selectedUser === 'ALL') {
         setResult(
-          `Successfully sent to ${saved} users. Chrome push: ${pushSent}. Telegram: ${telegramSent}.`
+          `Successfully sent to ${saved} users. Chrome push: ${pushSent}. Telegram delivered: ${telegramDelivered}.`
         )
       } else {
         setResult(
-          `Notification sent successfully. Chrome push: ${pushSent}. Telegram: ${telegramSent}.`
+          `Notification sent successfully. Chrome push: ${pushSent}. Telegram delivered: ${telegramDelivered}.`
         )
       }
 
@@ -150,6 +196,7 @@ export default function AdminNotifications() {
       setMessage('')
     } catch (error) {
       console.error(error)
+
       setResult(
         error?.message ||
           'Failed to send notification.'

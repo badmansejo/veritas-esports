@@ -1,162 +1,193 @@
-﻿import "jsr:@supabase/functions-js/edge-runtime.d.ts"
+﻿import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
+const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-}
+const supabase = createClient(supabaseUrl, serviceRoleKey);
+
+const sleep = (ms: number) =>
+  new Promise((resolve) => setTimeout(resolve, ms));
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", {
-      headers: corsHeaders,
-    })
-  }
-
   try {
-    const body = await req.json()
+    const { notification_id } = await req.json();
 
-    const userId = body.user_id
-    const title = body.title || "VERITAS"
-    const message = body.message || ""
-
-    if (!userId) {
-      throw new Error("user_id is required")
+    if (!notification_id) {
+      return new Response(
+        JSON.stringify({ success: false, error: "notification_id required" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
     }
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!
-    const serviceRoleKey =
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    const { data: notification, error } = await supabase
+      .from("notifications")
+      .select("*")
+      .eq("id", notification_id)
+      .maybeSingle();
 
-    const supabase = createClient(
-      supabaseUrl,
-      serviceRoleKey
-    )
-
-    const { data: settings, error: settingsError } =
-      await supabase
-        .from("telegram_bot_settings")
-        .select("*")
-        .order("updated_at", {
-          ascending: false,
-        })
-        .limit(1)
-        .maybeSingle()
-
-    if (settingsError) {
-      throw settingsError
+    if (error || !notification) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Notification not found" }),
+        { status: 404, headers: { "Content-Type": "application/json" } }
+      );
     }
 
-    const activeBotNumber = Math.min(
-      6,
-      Math.max(
-        1,
-        Number(settings?.active_bot_number || 6)
-      )
-    )
+    const { data: settings } = await supabase
+      .from("notification_delivery_settings")
+      .select("*")
+      .eq("user_id", notification.user_id)
+      .maybeSingle();
 
-    const token =
-      Deno.env.get(
-        `TELEGRAM_BOT_TOKEN_${activeBotNumber}`
-      ) || ""
-
-    if (!token) {
-      throw new Error(
-        `TELEGRAM_BOT_TOKEN_${activeBotNumber} is not configured`
-      )
+    if (settings?.telegram_enabled === false) {
+      return new Response(JSON.stringify({ success: true, skipped: true }));
     }
 
-    const { data: connections, error: connectionError } =
-      await supabase
-        .from("telegram_connections")
-        .select("telegram_chat_id")
-        .eq("user_id", userId)
-        .eq("connected", true)
-        .not("telegram_chat_id", "is", null)
+    const category = String(
+      notification.category || notification.type || "Announcements"
+    ).toLowerCase();
 
-    if (connectionError) {
-      throw connectionError
+    if (category.includes("match") && settings?.matches_enabled === false) {
+      return new Response(JSON.stringify({ success: true, skipped: true }));
     }
 
-    if (!connections || connections.length === 0) {
+    if (
+      category.includes("tournament") &&
+      settings?.tournaments_enabled === false
+    ) {
+      return new Response(JSON.stringify({ success: true, skipped: true }));
+    }
+
+    if (category.includes("wallet") && settings?.wallet_enabled === false) {
+      return new Response(JSON.stringify({ success: true, skipped: true }));
+    }
+
+    if (category.includes("reward") && settings?.rewards_enabled === false) {
+      return new Response(JSON.stringify({ success: true, skipped: true }));
+    }
+
+    if (
+      category.includes("security") &&
+      settings?.security_enabled === false
+    ) {
+      return new Response(JSON.stringify({ success: true, skipped: true }));
+    }
+
+    if (
+      category.includes("announcement") &&
+      settings?.announcements_enabled === false
+    ) {
+      return new Response(JSON.stringify({ success: true, skipped: true }));
+    }
+
+    const { data: connection } = await supabase
+      .from("telegram_connections")
+      .select("telegram_chat_id, connected")
+      .eq("user_id", notification.user_id)
+      .eq("connected", true)
+      .not("telegram_chat_id", "is", null)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (!connection?.telegram_chat_id) {
       return new Response(
         JSON.stringify({
           success: true,
-          sent: 0,
-          active_bot: activeBotNumber,
-          message: "No connected Telegram account",
-        }),
-        {
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-          },
-        }
-      )
+          skipped: true,
+          reason: "Telegram not connected"
+        })
+      );
     }
 
-    const telegramMessage =
-      `VERITAS\n\n${title}\n\n${message}`
+    const { data: botSettings } = await supabase
+      .from("telegram_bot_settings")
+      .select("*")
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
-    let sent = 0
+    const activeBotNumber = Math.min(
+      6,
+      Math.max(1, Number(botSettings?.active_bot_number || 6))
+    );
 
-    for (const connection of connections) {
-      if (!connection.telegram_chat_id) {
-        continue
-      }
+    const token = Deno.env.get(
+      `TELEGRAM_BOT_TOKEN_${activeBotNumber}`
+    );
 
-      const response = await fetch(
-        `https://api.telegram.org/bot${token}/sendMessage`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            chat_id: connection.telegram_chat_id,
-            text: telegramMessage,
-          }),
-        }
-      )
+    if (!token) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: `Missing TELEGRAM_BOT_TOKEN_${activeBotNumber}`
+        }),
+        { status: 500 }
+      );
+    }
 
-      const result = await response.json()
+    const text =
+      `VERITAS\n\n${notification.title}\n\n${notification.message}`;
 
-      if (result.ok) {
-        sent++
-      }
+    const telegramUrl =
+      `https://api.telegram.org/bot${token}/sendMessage`;
+
+    let response = await fetch(telegramUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: connection.telegram_chat_id,
+        text
+      })
+    });
+
+    if (response.status === 429) {
+      const retryData = await response.json().catch(() => null);
+      const retryAfter =
+        Number(retryData?.parameters?.retry_after || 1);
+
+      await sleep(retryAfter * 1000);
+
+      response = await fetch(telegramUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: connection.telegram_chat_id,
+          text
+        })
+      });
+    }
+
+    const result = await response.json().catch(() => null);
+
+    if (!response.ok || result?.ok !== true) {
+      console.error("Telegram error:", result);
+
+      return new Response(
+        JSON.stringify({
+          success: false,
+          telegram_error: result
+        }),
+        { status: 500 }
+      );
     }
 
     return new Response(
       JSON.stringify({
         success: true,
-        sent,
-        active_bot: activeBotNumber,
+        telegram_sent: true
       }),
-      {
-        headers: {
-          ...corsHeaders,
-          "Content-Type": "application/json",
-        },
-      }
-    )
+      { headers: { "Content-Type": "application/json" } }
+    );
+
   } catch (error) {
+    console.error(error);
+
     return new Response(
       JSON.stringify({
         success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : "Unknown error",
+        error: String(error)
       }),
-      {
-        status: 400,
-        headers: {
-          ...corsHeaders,
-          "Content-Type": "application/json",
-        },
-      }
-    )
+      { status: 500 }
+    );
   }
-})
+});
