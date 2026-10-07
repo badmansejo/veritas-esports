@@ -3,34 +3,92 @@ import { supabase } from '../../lib/supabaseClient'
 import './AdminMarketplace.css'
 
 const EFFECTS = [
-  'None','Fire','Ice','Electric','Inferno','Frostbite','Thunder','Plasma','Void','Galaxy',
-  'Shadow','Ember','Flame','Blaze','Magma','Storm','Lightning','Aurora','Cosmic','Royal',
-  'Venom','Toxic','Solar','Lunar','Ocean','Crystal','Diamond','Phoenix','Spectral','Energy'
+  'None','Fire','Ice','Electric','Inferno','Frostbite','Thunder','Neon','Galaxy','Shadow',
+  'Ember','Flame','Blaze','Magma','Storm','Lightning','Plasma','Void','Solar','Lunar',
+  'Ocean','Crystal','Diamond','Phoenix','Spectral','Venom','Toxic','Aurora','Cosmic','Royal',
+  'Ruby','Emerald','Sapphire','Amethyst','Obsidian','Carbon','Energy','Pulse','Radiant','Nova',
+  'Quantum','Cyber','Inferno X','Frost X','Thunder X','Galaxy X','Shadow X','Neon X','Titan','Legend'
 ]
 
 const FONTS = [
-  'Default','Bold','Elite','Neon','Royal','Cyber','Titan','Warrior','Street','Future',
-  'Matrix','Arcade','Hacker','Tech','Glitch','Digital','Retro','Gamer','Champion','Legend',
-  'Luxury','Hero','Heavy','Sharp','Speed','Power','Military','SciFi','Pixel','Ultra'
+  'Default','Bold','Elite','Neon','Royal','Cyber','Titan','Warrior','Gamer','Champion',
+  'Legend','Hero','Future','Matrix','Arcade','Hacker','Tech','Glitch','Digital','Retro',
+  'Luxury','Heavy','Sharp','Speed','Power','Military','SciFi','Pixel','Ultra','Street',
+  'Pro','Master','Supreme','King','Queen','Racer','Battle','Extreme','Fireline','Icebound',
+  'Thunder','Galaxy','Shadow','Cosmic','Royal X','Titan X','Legend X','Champion X','VERITAS','VERITAS Elite'
 ]
 
 const FRAMES = [
   'None','Metallic','Gold','Diamond','Neon','Royal','Titan','Champion','Inferno','Frost',
   'Cyber','Shadow','Galaxy','Platinum','Chrome','Ruby','Emerald','Sapphire','Amethyst','Obsidian',
-  'Crystal','Phoenix','Lightning','Carbon','Steel','Copper','Pearl','Legend','Elite','Mythic'
+  'Crystal','Phoenix','Lightning','Carbon','Steel','Copper','Pearl','Legend','Elite','Mythic',
+  'Void','Solar','Lunar','Storm','Thunder','Fire','Ice','Ocean','Cosmic','Aurora',
+  'Quantum','Energy','Pulse','Glitch','Hologram','Prism','Crown','King','Warrior','VERITAS'
 ]
 
 const BACKGROUNDS = [
   'None','Night','Carbon','Galaxy','Arena','Neon','Cyber','Inferno','Frost','Storm',
   'Shadow','Void','Ocean','Sunset','Midnight','Aurora','Space','Matrix','Tech','City',
-  'Desert','Volcano','Iceberg','Royal','Diamond','Purple','Red','Blue','Green','Gold'
+  'Desert','Volcano','Iceberg','Royal','Diamond','Purple','Red','Blue','Green','Gold',
+  'Silver','Platinum','Chrome','Ruby','Emerald','Sapphire','Amethyst','Cosmic','Quantum','Lightning',
+  'Thunder','Fire','Crystal','Phoenix','Hologram','Cyber City','Dark Arena','VERITAS Night','VERITAS Gold','VERITAS Elite'
 ]
 
 const BADGES = [
-  'None','Verified','Champion','Elite','Founder','Legend','Winner','Master','Pro','Veteran',
-  'MVP','Top 10','Top 50','Top 100','Tournament King','Fair Play','Rising Star','Hot Streak',
-  'Unstoppable','Invincible','Gladiator','Warrior','Titan','Phoenix','Royal','Diamond','Platinum',
-  'Gold','Silver','Bronze'
+  { name:'Verified', icon:'✓', style:'verified' },
+  { name:'Elite', icon:'◆', style:'elite' },
+  { name:'Founder', icon:'★', style:'founder' },
+  { name:'Legend', icon:'♛', style:'legend' },
+  { name:'Master', icon:'✦', style:'master' },
+  { name:'Royal', icon:'♜', style:'royal' },
+  { name:'Diamond', icon:'◇', style:'diamond' },
+  { name:'Platinum', icon:'P', style:'platinum' },
+  { name:'Gold', icon:'G', style:'gold' },
+  { name:'Silver', icon:'S', style:'silver' },
+
+  { name:'Champion', icon:'♕', style:'champion' },
+  { name:'Warrior', icon:'⚔', style:'warrior' },
+  { name:'King', icon:'K', style:'king' },
+  { name:'Queen', icon:'Q', style:'queen' },
+  { name:'Titan', icon:'T', style:'titan' },
+  { name:'Phoenix', icon:'♨', style:'phoenix' },
+  { name:'Lightning', icon:'ϟ', style:'lightning' },
+  { name:'Fire', icon:'F', style:'fire' },
+  { name:'Frost', icon:'❄', style:'frost' },
+  { name:'Cyber', icon:'C', style:'cyber' },
+
+  { name:'Galaxy', icon:'✧', style:'galaxy' },
+  { name:'Shadow', icon:'S', style:'shadow' },
+  { name:'Neon', icon:'N', style:'neon' },
+  { name:'Cosmic', icon:'✦', style:'cosmic' },
+  { name:'Storm', icon:'☁', style:'storm' },
+  { name:'Thunder', icon:'ϟ', style:'thunder' },
+  { name:'Crystal', icon:'◇', style:'crystal' },
+  { name:'Ruby', icon:'R', style:'ruby' },
+  { name:'Emerald', icon:'E', style:'emerald' },
+  { name:'Sapphire', icon:'S', style:'sapphire' },
+
+  { name:'Amethyst', icon:'A', style:'amethyst' },
+  { name:'Obsidian', icon:'O', style:'obsidian' },
+  { name:'Chrome', icon:'C', style:'chrome' },
+  { name:'Carbon', icon:'C', style:'carbon' },
+  { name:'Hologram', icon:'H', style:'hologram' },
+  { name:'Prism', icon:'P', style:'prism' },
+  { name:'Crown', icon:'♛', style:'crown' },
+  { name:'VIP', icon:'V', style:'vip' },
+  { name:'Pro', icon:'P', style:'pro' },
+  { name:'Supreme', icon:'S', style:'supreme' },
+
+  { name:'Racer', icon:'R', style:'racer' },
+  { name:'Gamer', icon:'G', style:'gamer' },
+  { name:'Boss', icon:'B', style:'boss' },
+  { name:'MVP', icon:'M', style:'mvp' },
+  { name:'VERITAS', icon:'V', style:'veritas' },
+  { name:'VERITAS Gold', icon:'V', style:'veritas-gold' },
+  { name:'VERITAS Elite', icon:'V', style:'veritas-elite' },
+  { name:'VERITAS Champion', icon:'V', style:'veritas-champion' },
+  { name:'VERITAS Legend', icon:'V', style:'veritas-legend' },
+  { name:'Ultimate', icon:'U', style:'ultimate' },
 ]
 
 const slugify = (value = '') =>
@@ -40,36 +98,35 @@ const slugify = (value = '') =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
 
-const money = (value) => Number(value || 0)
-
 export default function AdminMarketplace() {
   const [categories, setCategories] = useState([])
   const [items, setItems] = useState([])
-  const [username, setUsername] = useState('USER')
+  const [username, setUsername] = useState('PLAYER')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
 
   const [form, setForm] = useState({
-    name: '',
-    slug: '',
-    description: '',
-    category_id: '',
-    item_type: 'Name Effect',
-    price_vcoins: '',
-    price_kes: '',
-    image_url: '',
-    starts_at: '',
-    expires_at: '',
-    intensity: 70,
-    is_active: true,
-    is_limited: false,
-    effect: 'None',
-    font: 'Default',
-    frame: 'None',
-    background: 'None',
-    badge: 'None',
+    name:'',
+    slug:'',
+    description:'',
+    category_id:'',
+    item_type:'Name Effect',
+    price_vcoins:'',
+    price_kes:'',
+    image_url:'',
+    starts_at:'',
+    expires_at:'',
+    intensity:70,
+    is_active:true,
+    is_limited:false,
+    effect:'None',
+    font:'Default',
+    frame:'None',
+    background:'None',
+    badge:'None',
+    badge_style:'none',
   })
 
   useEffect(() => {
@@ -81,18 +138,17 @@ export default function AdminMarketplace() {
     setError('')
 
     try {
-      const [
-        { data: categoryData, error: categoryError },
-        { data: itemData, error: itemError },
-        { data: userData, error: userError },
-      ] = await Promise.all([
-        supabase
+      const { data: categoryData, error: categoryError } =
+        await supabase
           .from('marketplace_categories')
           .select('*')
-          .order('display_order', { ascending: true })
-          .order('name', { ascending: true }),
+          .order('display_order', { ascending:true })
+          .order('name', { ascending:true })
 
-        supabase
+      if (categoryError) throw categoryError
+
+      const { data:itemData, error:itemError } =
+        await supabase
           .from('marketplace_items')
           .select(`
             *,
@@ -101,28 +157,23 @@ export default function AdminMarketplace() {
               name
             )
           `)
-          .order('created_at', { ascending: false }),
+          .order('created_at', { ascending:false })
 
-        supabase.auth.getUser(),
-      ])
-
-      if (categoryError) throw categoryError
       if (itemError) throw itemError
-      if (userError) throw userError
 
       setCategories(categoryData || [])
       setItems(itemData || [])
 
-      const userId = userData?.user?.id
+      const {
+        data:{ user },
+      } = await supabase.auth.getUser()
 
-      if (userId) {
-        const { data: profile, error: profileError } = await supabase
+      if (user?.id) {
+        const { data:profile } = await supabase
           .from('profiles')
           .select('username')
-          .eq('id', userId)
+          .eq('id', user.id)
           .maybeSingle()
-
-        if (profileError) throw profileError
 
         if (profile?.username) {
           setUsername(profile.username)
@@ -135,67 +186,55 @@ export default function AdminMarketplace() {
     }
   }
 
-  function updateForm(field, value) {
-    setForm((current) => ({
-      ...current,
-      [field]: value,
-    }))
+  function categoryId(name) {
+    return categories.find(
+      c => String(c.name).toLowerCase() === String(name).toLowerCase()
+    )?.id || ''
   }
 
-  function getCategoryId(categoryName) {
-    const category = categories.find(
-      (item) =>
-        String(item.name).toLowerCase() ===
-        String(categoryName).toLowerCase()
-    )
+  function selectEffect(effect) {
+    let category = 'Name Effects'
+    let type = 'Name Effect'
 
-    return category?.id || ''
-  }
-
-  function chooseEffect(effect) {
-    let categoryName = 'Name Effects'
-
-    if (['Fire', 'Inferno', 'Ember', 'Flame', 'Blaze', 'Magma', 'Phoenix'].includes(effect)) {
-      categoryName = 'Fire'
+    if (['Fire','Inferno','Ember','Flame','Blaze','Magma','Inferno X'].includes(effect)) {
+      category = 'Fire'
+      type = 'Name Fire'
     }
 
-    if (['Ice', 'Frostbite', 'Frost', 'Crystal', 'Diamond', 'Iceberg'].includes(effect)) {
-      categoryName = 'Ice'
+    if (['Ice','Frostbite','Frost','Frost X'].includes(effect)) {
+      category = 'Ice'
+      type = 'Name Ice'
     }
 
-    if (['Electric', 'Thunder', 'Lightning', 'Storm'].includes(effect)) {
-      categoryName = 'Electric'
+    if (['Electric','Thunder','Lightning','Storm','Thunder X'].includes(effect)) {
+      category = 'Electric'
+      type = 'Name Electric'
     }
 
-    setForm((current) => ({
+    const name = effect === 'None' ? 'No Name Effect' : `${effect} Name`
+
+    setForm(current => ({
       ...current,
-      name: effect === 'None' ? 'No Name Effect' : `${effect} Name`,
-      slug: slugify(effect === 'None' ? 'no-name-effect' : `${effect}-name`),
-      item_type:
-        categoryName === 'Fire'
-          ? 'Name Fire'
-          : categoryName === 'Ice'
-          ? 'Name Ice'
-          : categoryName === 'Electric'
-          ? 'Name Electric'
-          : 'Name Effect',
-      category_id: getCategoryId(categoryName),
+      name,
+      slug:slugify(name),
+      item_type:type,
+      category_id:categoryId(category),
       effect,
     }))
 
-    setMessage(`${effect} effect selected.`)
+    setMessage(`${effect} selected.`)
     setError('')
   }
 
-  function chooseFont(font) {
-    const itemName = font === 'Default' ? 'Default Font' : `${font} Font`
+  function selectFont(font) {
+    const name = font === 'Default' ? 'Default Font' : `${font} Font`
 
-    setForm((current) => ({
+    setForm(current => ({
       ...current,
-      name: itemName,
-      slug: slugify(itemName),
-      item_type: 'Name Font',
-      category_id: getCategoryId('Name Fonts'),
+      name,
+      slug:slugify(name),
+      item_type:'Name Font',
+      category_id:categoryId('Name Fonts'),
       font,
     }))
 
@@ -203,84 +242,86 @@ export default function AdminMarketplace() {
     setError('')
   }
 
-  function chooseFrame(frame) {
-    const itemName = frame === 'None' ? 'No Frame' : `${frame} Frame`
+  function selectFrame(frame) {
+    const name = frame === 'None' ? 'No Frame' : `${frame} Frame`
 
-    setForm((current) => ({
+    setForm(current => ({
       ...current,
-      name: itemName,
-      slug: slugify(itemName),
-      item_type: 'Profile Frame',
-      category_id: getCategoryId('Profile Frames'),
+      name,
+      slug:slugify(name),
+      item_type:'Profile Frame',
+      category_id:categoryId('Profile Frames'),
       frame,
     }))
 
-    setMessage(`${frame} frame selected.`)
+    setMessage(`${frame} selected.`)
     setError('')
   }
 
-  function chooseBackground(background) {
-    const itemName =
-      background === 'None'
-        ? 'No Background'
-        : `${background} Background`
+  function selectBackground(background) {
+    const name = background === 'None'
+      ? 'No Background'
+      : `${background} Background`
 
-    setForm((current) => ({
+    setForm(current => ({
       ...current,
-      name: itemName,
-      slug: slugify(itemName),
-      item_type: 'Profile Background',
-      category_id: getCategoryId('Backgrounds'),
+      name,
+      slug:slugify(name),
+      item_type:'Profile Background',
+      category_id:categoryId('Backgrounds'),
       background,
     }))
 
-    setMessage(`${background} background selected.`)
+    setMessage(`${background} selected.`)
     setError('')
   }
 
-  function chooseBadge(badge) {
-    const itemName = badge === 'None' ? 'No Badge' : `${badge} Badge`
+  function selectBadge(badge) {
+    const name = `${badge.name} Badge`
 
-    setForm((current) => ({
+    setForm(current => ({
       ...current,
-      name: itemName,
-      slug: slugify(itemName),
-      item_type: 'Badge',
-      category_id: getCategoryId('Badges'),
-      badge,
+      name,
+      slug:slugify(name),
+      item_type:'Badge',
+      category_id:categoryId('Badges'),
+      badge:badge.name,
+      badge_style:badge.style,
     }))
 
-    setMessage(`${badge} badge selected.`)
+    setMessage(`${badge.name} badge selected.`)
     setError('')
   }
 
-  const effectClass = slugify(form.effect || 'none')
-  const fontClass = slugify(form.font || 'default')
-  const frameClass = slugify(form.frame || 'none')
-  const backgroundClass = slugify(form.background || 'none')
-  const badgeClass = slugify(form.badge || 'none')
+  const previewData = useMemo(() => ({
+    effect:form.effect,
+    font:form.font,
+    frame:form.frame,
+    background:form.background,
+    badge:form.badge,
+    badge_style:form.badge_style,
+    intensity:Number(form.intensity || 70),
+  }), [
+    form.effect,
+    form.font,
+    form.frame,
+    form.background,
+    form.badge,
+    form.badge_style,
+    form.intensity,
+  ])
 
-  const previewData = useMemo(
-    () => ({
-      effects: form.effect,
-      font: form.font,
-      frame: form.frame,
-      background: form.background,
-      badge: form.badge,
-      intensity: Number(form.intensity || 70),
-    }),
-    [
-      form.effect,
-      form.font,
-      form.frame,
-      form.background,
-      form.badge,
-      form.intensity,
-    ]
-  )
+  function update(field,value) {
+    setForm(current => ({
+      ...current,
+      [field]:value,
+    }))
+  }
 
   async function createItem(event) {
     event.preventDefault()
+
+    if (saving) return
 
     setSaving(true)
     setMessage('')
@@ -288,53 +329,52 @@ export default function AdminMarketplace() {
 
     try {
       if (!form.name.trim()) {
-        throw new Error('Choose an item first.')
+        throw new Error('Select an item first.')
       }
 
       if (!form.category_id) {
-        throw new Error('The selected item has no matching category.')
+        throw new Error('Marketplace category was not found.')
       }
 
-      const vcoins = money(form.price_vcoins)
+      const price = Number(form.price_vcoins || 0)
 
-      if (vcoins < 0) {
-        throw new Error('V Coins price cannot be negative.')
+      if (!Number.isFinite(price) || price < 0) {
+        throw new Error('Enter a valid V Coins price.')
       }
 
-      const payload = {
-        category_id: form.category_id,
-        name: form.name.trim(),
-        slug: form.slug.trim() || slugify(form.name),
-        description: form.description.trim() || null,
-        item_type: form.item_type,
-        price_vcoins: vcoins,
-        price_kes:
-          form.price_kes === ''
+      const { error:rpcError } = await supabase.rpc(
+        'admin_create_marketplace_item',
+        {
+          p_category_id:form.category_id,
+          p_name:form.name.trim(),
+          p_slug:form.slug.trim() || slugify(form.name),
+          p_description:form.description.trim() || null,
+          p_item_type:form.item_type,
+          p_price_vcoins:Math.round(price),
+          p_price_kes:form.price_kes === ''
             ? null
-            : money(form.price_kes),
-        image_url: form.image_url.trim() || null,
-        preview_data: previewData,
-        is_active: form.is_active,
-        is_limited: form.is_limited,
-        starts_at: form.starts_at
-          ? new Date(form.starts_at).toISOString()
-          : null,
-        expires_at: form.expires_at
-          ? new Date(form.expires_at).toISOString()
-          : null,
-      }
+            : Number(form.price_kes),
+          p_image_url:form.image_url.trim() || null,
+          p_preview_data:previewData,
+          p_is_active:Boolean(form.is_active),
+          p_is_limited:Boolean(form.is_limited),
+          p_starts_at:form.starts_at
+            ? new Date(form.starts_at).toISOString()
+            : null,
+          p_expires_at:form.expires_at
+            ? new Date(form.expires_at).toISOString()
+            : null,
+        }
+      )
 
-      const { error: insertError } = await supabase
-        .from('marketplace_items')
-        .insert(payload)
+      if (rpcError) throw rpcError
 
-      if (insertError) throw insertError
-
-      setMessage(`${payload.name} created successfully.`)
+      setMessage(`${form.name} created successfully.`)
 
       clearForm()
       await loadData()
     } catch (err) {
+      console.error(err)
       setError(err?.message || 'Could not create item.')
     } finally {
       setSaving(false)
@@ -342,24 +382,19 @@ export default function AdminMarketplace() {
   }
 
   async function toggleItem(item) {
-    setError('')
-    setMessage('')
-
     try {
-      const { error: updateError } = await supabase
+      const { error } = await supabase
         .from('marketplace_items')
         .update({
-          is_active: !item.is_active,
-          updated_at: new Date().toISOString(),
+          is_active:!item.is_active,
+          updated_at:new Date().toISOString(),
         })
-        .eq('id', item.id)
+        .eq('id',item.id)
 
-      if (updateError) throw updateError
+      if (error) throw error
 
       setMessage(
-        `${item.name} is now ${
-          !item.is_active ? 'active' : 'paused'
-        }.`
+        `${item.name} is now ${item.is_active ? 'paused' : 'active'}.`
       )
 
       await loadData()
@@ -369,28 +404,16 @@ export default function AdminMarketplace() {
   }
 
   async function deleteItem(item) {
-    const first = window.confirm(
-      `Delete "${item.name}" from the marketplace?`
-    )
-
-    if (!first) return
-
-    const second = window.confirm(
-      'This permanently deletes the marketplace item. Continue?'
-    )
-
-    if (!second) return
-
-    setError('')
-    setMessage('')
+    if (!window.confirm(`Delete "${item.name}"?`)) return
+    if (!window.confirm('This permanently deletes the item. Continue?')) return
 
     try {
-      const { error: deleteError } = await supabase
+      const { error } = await supabase
         .from('marketplace_items')
         .delete()
-        .eq('id', item.id)
+        .eq('id',item.id)
 
-      if (deleteError) throw deleteError
+      if (error) throw error
 
       setMessage(`${item.name} deleted.`)
       await loadData()
@@ -401,32 +424,34 @@ export default function AdminMarketplace() {
 
   function clearForm() {
     setForm({
-      name: '',
-      slug: '',
-      description: '',
-      category_id: '',
-      item_type: 'Name Effect',
-      price_vcoins: '',
-      price_kes: '',
-      image_url: '',
-      starts_at: '',
-      expires_at: '',
-      intensity: 70,
-      is_active: true,
-      is_limited: false,
-      effect: 'None',
-      font: 'Default',
-      frame: 'None',
-      background: 'None',
-      badge: 'None',
+      name:'',
+      slug:'',
+      description:'',
+      category_id:'',
+      item_type:'Name Effect',
+      price_vcoins:'',
+      price_kes:'',
+      image_url:'',
+      starts_at:'',
+      expires_at:'',
+      intensity:70,
+      is_active:true,
+      is_limited:false,
+      effect:'None',
+      font:'Default',
+      frame:'None',
+      background:'None',
+      badge:'None',
+      badge_style:'none',
     })
-
-    setMessage('')
-    setError('')
   }
+
+  const selectedBadge =
+    BADGES.find(b => b.name === form.badge)
 
   return (
     <div className="admin-marketplace-page">
+
       <div className="admin-marketplace-header">
         <div>
           <div className="admin-marketplace-kicker">
@@ -436,8 +461,7 @@ export default function AdminMarketplace() {
           <h1>Marketplace</h1>
 
           <p>
-            Select a visual item, let VERITAS fill the name automatically,
-            then create it.
+            Build unique cosmetics with live previews.
           </p>
         </div>
 
@@ -463,57 +487,48 @@ export default function AdminMarketplace() {
         className="marketplace-builder"
         onSubmit={createItem}
       >
-        <div className="builder-title-row">
-          <div>
-            <span className="builder-number">CREATE ITEM</span>
-            <h2>Build a marketplace item</h2>
-            <p>
-              Tap a visual name below. The item name, slug, type and category
-              are filled automatically.
-            </p>
-          </div>
-        </div>
 
         <section className="marketplace-step">
+
           <div className="step-heading">
             <span>1</span>
             <div>
               <strong>Choose an item</strong>
-              <small>
-                30 options in every marketplace category.
-              </small>
+              <small>50 unique options in every category.</small>
             </div>
           </div>
 
           <div className="picker-group">
-            <h3>Name Effects · 30</h3>
+            <h3>Name Effects · 50</h3>
 
             <div className="visual-options">
-              {EFFECTS.map((effect) => (
+              {EFFECTS.map(effect => (
                 <button
                   type="button"
                   key={effect}
                   className={`visual-option effect-option effect-${slugify(effect)} ${
-                    form.effect === effect ? 'selected' : ''
+                    form.effect === effect &&
+                    !['Name Font','Profile Frame','Profile Background','Badge'].includes(form.item_type)
+                      ? 'selected'
+                      : ''
                   }`}
-                  onClick={() => chooseEffect(effect)}
+                  onClick={() => selectEffect(effect)}
                 >
                   <span className="option-preview">
                     {username}
                   </span>
-
                   <strong>{effect}</strong>
-                  <small>Tap to use</small>
+                  <small>Live preview</small>
                 </button>
               ))}
             </div>
           </div>
 
           <div className="picker-group">
-            <h3>Name Fonts · 30</h3>
+            <h3>Name Fonts · 50</h3>
 
             <div className="visual-options">
-              {FONTS.map((font) => (
+              {FONTS.map(font => (
                 <button
                   type="button"
                   key={font}
@@ -523,24 +538,23 @@ export default function AdminMarketplace() {
                       ? 'selected'
                       : ''
                   }`}
-                  onClick={() => chooseFont(font)}
+                  onClick={() => selectFont(font)}
                 >
                   <span className="option-preview">
                     {username}
                   </span>
-
                   <strong>{font}</strong>
-                  <small>Auto name</small>
+                  <small>Live preview</small>
                 </button>
               ))}
             </div>
           </div>
 
           <div className="picker-group">
-            <h3>Profile Frames · 30</h3>
+            <h3>Profile Frames · 50</h3>
 
             <div className="visual-options">
-              {FRAMES.map((frame) => (
+              {FRAMES.map(frame => (
                 <button
                   type="button"
                   key={frame}
@@ -550,24 +564,23 @@ export default function AdminMarketplace() {
                       ? 'selected'
                       : ''
                   }`}
-                  onClick={() => chooseFrame(frame)}
+                  onClick={() => selectFrame(frame)}
                 >
-                  <span className="option-preview">
+                  <span className={`option-preview frame-preview frame-${slugify(frame)}`}>
                     {username}
                   </span>
-
                   <strong>{frame}</strong>
-                  <small>Auto name</small>
+                  <small>Live preview</small>
                 </button>
               ))}
             </div>
           </div>
 
           <div className="picker-group">
-            <h3>Backgrounds · 30</h3>
+            <h3>Backgrounds · 50</h3>
 
             <div className="visual-options">
-              {BACKGROUNDS.map((background) => (
+              {BACKGROUNDS.map(background => (
                 <button
                   type="button"
                   key={background}
@@ -577,67 +590,68 @@ export default function AdminMarketplace() {
                       ? 'selected'
                       : ''
                   }`}
-                  onClick={() => chooseBackground(background)}
+                  onClick={() => selectBackground(background)}
                 >
-                  <span className="option-preview">
+                  <span className={`option-preview background-preview bg-${slugify(background)}`}>
                     {username}
                   </span>
-
                   <strong>{background}</strong>
-                  <small>Auto name</small>
+                  <small>Live preview</small>
                 </button>
               ))}
             </div>
           </div>
 
           <div className="picker-group">
-            <h3>Badges · 30</h3>
+            <h3>Marketplace Badges · 50</h3>
 
             <div className="visual-options">
-              {BADGES.map((badge) => (
+              {BADGES.map(badge => (
                 <button
                   type="button"
-                  key={badge}
-                  className={`visual-option badge-option badge-${slugify(badge)} ${
-                    form.badge === badge &&
+                  key={badge.name}
+                  className={`visual-option badge-option ${
+                    form.badge === badge.name &&
                     form.item_type === 'Badge'
                       ? 'selected'
                       : ''
                   }`}
-                  onClick={() => chooseBadge(badge)}
+                  onClick={() => selectBadge(badge)}
                 >
-                  <span className="option-preview">
-                    {username}
+                  <span className="badge-option-preview">
+                    <span className={`market-badge badge-${badge.style}`}>
+                      {badge.icon}
+                    </span>
                   </span>
 
-                  <strong>{badge}</strong>
-                  <small>Auto name</small>
+                  <strong>{badge.name}</strong>
+                  <small>Live badge</small>
                 </button>
               ))}
             </div>
           </div>
+
         </section>
 
         <section className="marketplace-step">
+
           <div className="step-heading">
             <span>2</span>
             <div>
               <strong>Finish the item</strong>
-              <small>
-                Name and category are already filled from your selection.
-              </small>
+              <small>Set price and publishing options.</small>
             </div>
           </div>
 
           <div className="builder-grid">
+
             <div className="builder-fields">
+
               <label>
                 Item Name
                 <input
                   value={form.name}
-                  onChange={(event) =>
-                    updateForm('name', event.target.value)
-                  }
+                  onChange={e => update('name',e.target.value)}
                   placeholder="Select an item above"
                 />
               </label>
@@ -646,9 +660,7 @@ export default function AdminMarketplace() {
                 Slug
                 <input
                   value={form.slug}
-                  onChange={(event) =>
-                    updateForm('slug', event.target.value)
-                  }
+                  onChange={e => update('slug',e.target.value)}
                 />
               </label>
 
@@ -656,15 +668,14 @@ export default function AdminMarketplace() {
                 Description
                 <textarea
                   value={form.description}
-                  onChange={(event) =>
-                    updateForm('description', event.target.value)
-                  }
-                  placeholder="Describe this marketplace item"
+                  onChange={e => update('description',e.target.value)}
                   rows={4}
+                  placeholder="Describe this item"
                 />
               </label>
 
               <div className="two-columns">
+
                 <label>
                   Item Type
                   <input value={form.item_type} readOnly />
@@ -675,27 +686,25 @@ export default function AdminMarketplace() {
                   <input
                     value={
                       categories.find(
-                        (category) =>
-                          category.id === form.category_id
+                        c => c.id === form.category_id
                       )?.name || ''
                     }
                     readOnly
                   />
                 </label>
+
               </div>
 
               <div className="two-columns">
+
                 <label>
                   V Coins
                   <input
                     type="number"
                     min="0"
                     value={form.price_vcoins}
-                    onChange={(event) =>
-                      updateForm(
-                        'price_vcoins',
-                        event.target.value
-                      )
+                    onChange={e =>
+                      update('price_vcoins',e.target.value)
                     }
                     placeholder="0"
                   />
@@ -708,36 +717,35 @@ export default function AdminMarketplace() {
                     min="0"
                     step="0.01"
                     value={form.price_kes}
-                    onChange={(event) =>
-                      updateForm(
-                        'price_kes',
-                        event.target.value
-                      )
+                    onChange={e =>
+                      update('price_kes',e.target.value)
                     }
                     placeholder="Optional"
                   />
                 </label>
+
               </div>
 
               <label>
                 Image URL
                 <input
                   value={form.image_url}
-                  onChange={(event) =>
-                    updateForm('image_url', event.target.value)
+                  onChange={e =>
+                    update('image_url',e.target.value)
                   }
-                  placeholder="Optional image URL"
+                  placeholder="Optional"
                 />
               </label>
 
               <div className="two-columns">
+
                 <label>
                   Starts
                   <input
                     type="datetime-local"
                     value={form.starts_at}
-                    onChange={(event) =>
-                      updateForm('starts_at', event.target.value)
+                    onChange={e =>
+                      update('starts_at',e.target.value)
                     }
                   />
                 </label>
@@ -747,14 +755,16 @@ export default function AdminMarketplace() {
                   <input
                     type="datetime-local"
                     value={form.expires_at}
-                    onChange={(event) =>
-                      updateForm('expires_at', event.target.value)
+                    onChange={e =>
+                      update('expires_at',e.target.value)
                     }
                   />
                 </label>
+
               </div>
 
               <label className="intensity-control">
+
                 <div className="range-heading">
                   <span>Intensity</span>
                   <strong>{form.intensity}%</strong>
@@ -765,24 +775,26 @@ export default function AdminMarketplace() {
                   min="0"
                   max="100"
                   value={form.intensity}
-                  onChange={(event) =>
-                    updateForm(
+                  onChange={e =>
+                    update(
                       'intensity',
-                      Number(event.target.value)
+                      Number(e.target.value)
                     )
                   }
                 />
+
               </label>
 
               <div className="switch-row">
+
                 <label className="switch-control">
                   <input
                     type="checkbox"
                     checked={form.is_active}
-                    onChange={(event) =>
-                      updateForm(
+                    onChange={e =>
+                      update(
                         'is_active',
-                        event.target.checked
+                        e.target.checked
                       )
                     }
                   />
@@ -793,22 +805,25 @@ export default function AdminMarketplace() {
                   <input
                     type="checkbox"
                     checked={form.is_limited}
-                    onChange={(event) =>
-                      updateForm(
+                    onChange={e =>
+                      update(
                         'is_limited',
-                        event.target.checked
+                        e.target.checked
                       )
                     }
                   />
                   <span>Limited</span>
                 </label>
+
               </div>
 
               <div className="form-actions">
+
                 <button
                   type="button"
                   className="clear-button"
                   onClick={clearForm}
+                  disabled={saving}
                 >
                   Clear
                 </button>
@@ -820,33 +835,37 @@ export default function AdminMarketplace() {
                 >
                   {saving ? 'Creating...' : 'Create Item'}
                 </button>
+
               </div>
+
             </div>
 
             <div className="preview-column">
+
               <div className="preview-heading">
                 <span>LIVE PREVIEW</span>
                 <small>
-                  The preview updates as you choose each visual.
+                  Every selection updates this preview.
                 </small>
               </div>
 
               <div
-                className={`market-preview preview-bg-${backgroundClass} preview-frame-${frameClass}`}
+                className={`market-preview preview-bg-${slugify(form.background)} preview-frame-${slugify(form.frame)}`}
               >
+
                 <div className="preview-grid" />
                 <div className="preview-noise" />
 
                 <div
-                  className={`preview-avatar-shell frame-${frameClass}`}
+                  className={`preview-avatar-shell frame-${slugify(form.frame)}`}
                 >
                   <div className="preview-avatar">
-                    {username.slice(0, 1).toUpperCase()}
+                    {username.slice(0,1).toUpperCase()}
                   </div>
                 </div>
 
                 <div
-                  className={`preview-username-wrap effect-${effectClass}`}
+                  className={`preview-username-wrap effect-${slugify(form.effect)}`}
                   style={{
                     '--effect-intensity':
                       Number(form.intensity || 70) / 100,
@@ -856,23 +875,34 @@ export default function AdminMarketplace() {
                   <span className="effect-particles" />
 
                   <span
-                    className={`preview-username font-${fontClass}`}
+                    className={`preview-username font-${slugify(form.font)}`}
                   >
                     {username}
                   </span>
                 </div>
 
-                {form.badge !== 'None' && (
-                  <div
-                    className={`preview-badge badge-${badgeClass}`}
-                  >
-                    {form.badge}
+                {form.badge !== 'None' && selectedBadge && (
+                  <div className="preview-badge-wrap">
+
+                    <span
+                      className={`market-badge large-badge badge-${selectedBadge.style}`}
+                    >
+                      {selectedBadge.icon}
+                    </span>
+
+                    <strong>
+                      {selectedBadge.name}
+                    </strong>
+
                   </div>
                 )}
 
                 <div className="preview-selection">
+
                   <strong>
-                    {form.effect !== 'None'
+                    {form.badge !== 'None'
+                      ? form.badge
+                      : form.effect !== 'None'
                       ? form.effect
                       : form.font !== 'Default'
                       ? form.font
@@ -880,15 +910,15 @@ export default function AdminMarketplace() {
                       ? form.frame
                       : form.background !== 'None'
                       ? form.background
-                      : form.badge !== 'None'
-                      ? form.badge
                       : 'No visual selected'}
                   </strong>
 
                   <span>{form.item_type}</span>
+
                 </div>
 
                 <div className="preview-meta">
+
                   <div>
                     <span>Name</span>
                     <strong>{username}</strong>
@@ -905,21 +935,30 @@ export default function AdminMarketplace() {
                       {Number(form.price_vcoins || 0)} V Coins
                     </strong>
                   </div>
+
                 </div>
+
               </div>
+
             </div>
+
           </div>
+
         </section>
+
       </form>
 
       <section className="marketplace-catalogue">
+
         <div className="catalogue-header">
+
           <div>
             <span>CATALOGUE</span>
             <h2>Existing Items</h2>
           </div>
 
           <strong>{items.length} total</strong>
+
         </div>
 
         {loading ? (
@@ -932,23 +971,26 @@ export default function AdminMarketplace() {
           </div>
         ) : (
           <div className="catalogue-list">
-            {items.map((item) => (
+
+            {items.map(item => (
+
               <div
                 className="catalogue-item"
                 key={item.id}
               >
+
                 <div className="catalogue-item-main">
                   <strong>{item.name}</strong>
 
                   <span>
-                    {item.marketplace_categories?.name ||
-                      'Uncategorised'}
+                    {item.marketplace_categories?.name || 'Uncategorised'}
                     {' · '}
                     {item.price_vcoins} V Coins
                   </span>
                 </div>
 
                 <div className="catalogue-status">
+
                   <span
                     className={
                       item.is_active
@@ -964,9 +1006,11 @@ export default function AdminMarketplace() {
                       Limited
                     </span>
                   )}
+
                 </div>
 
                 <div className="catalogue-actions">
+
                   <button
                     type="button"
                     onClick={() => toggleItem(item)}
@@ -981,12 +1025,18 @@ export default function AdminMarketplace() {
                   >
                     Delete
                   </button>
+
                 </div>
+
               </div>
+
             ))}
+
           </div>
         )}
+
       </section>
+
     </div>
   )
 }
