@@ -290,16 +290,16 @@ export default function AdminDashboard() {
           <div style={sectionTitleStyle}>Marketplace</div>
 
           <div style={gridStyle}>
-            <AdminCard title="🛒 All Items" description="View and manage every marketplace item." />
-            <AdminCard title="➕ Create Item" description="Create new marketplace products and rewards." />
-            <AdminCard title="✏️ Edit Items" description="Change item names, descriptions, prices, images and settings." />
-            <AdminCard title="⏸️ Paused Items" description="Temporarily hide items without destroying their history." />
-            <AdminCard title="📦 Archived Items" description="Keep old items for historical records." />
-            <AdminCard title="🏷️ Categories" description="Create and manage marketplace categories." />
-            <AdminCard title="⭐ Featured Items" description="Choose which marketplace items receive featured placement." />
-            <AdminCard title="🔥 Promotions" description="Create limited offers, first-N-user promotions and special pricing." />
-            <AdminCard title="📦 Stock / Limits" description="Control quantities, purchase limits and availability." />
-            <AdminCard title="⚙️ Marketplace Settings" description="Control marketplace-wide rules and behaviour." />
+            <AdminCard title="🛒 All Items" description="View and manage every marketplace item." path="/admin/marketplace" live  path="/admin/marketplace" live path="/admin/marketplace?view=all" live />
+            <AdminCard title="➕ Create Item" description="Create new marketplace products and rewards." path="/admin/marketplace" live  path="/admin/marketplace" live path="/admin/marketplace?view=create" live />
+            <AdminCard title="✏️ Edit Items" description="Change item names, descriptions, prices, images and settings." path="/admin/marketplace" live  path="/admin/marketplace" live path="/admin/marketplace?view=edit" live />
+            <AdminCard title="⏸️ Paused Items" description="Temporarily hide items without destroying their history." path="/admin/marketplace" live  path="/admin/marketplace" live path="/admin/marketplace?view=paused" live />
+            <AdminCard title="📦 Archived Items" description="Keep old items for historical records." path="/admin/marketplace" live  path="/admin/marketplace" live path="/admin/marketplace?view=archived" live />
+            <AdminCard title="🏷️ Categories" description="Create and manage marketplace categories." path="/admin/marketplace" live  path="/admin/marketplace" live path="/admin/marketplace?view=categories" live />
+            <AdminCard title="⭐ Featured Items" description="Choose which marketplace items receive featured placement."  path="/admin/marketplace" live />
+            <AdminCard title="🔥 Promotions" description="Create limited offers, first-N-user promotions and special pricing."  path="/admin/marketplace" live />
+            <AdminCard title="📦 Stock / Limits" description="Control quantities, purchase limits and availability."  path="/admin/marketplace" live />
+            <AdminCard title="⚙️ Marketplace Settings" description="Control marketplace-wide rules and behaviour."  path="/admin/marketplace" live />
           </div>
         </section>
 
@@ -419,6 +419,8 @@ export default function AdminDashboard() {
     </div>
   )
 }
+
+
 
 
 

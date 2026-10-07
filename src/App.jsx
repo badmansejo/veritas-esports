@@ -37,6 +37,7 @@ import AdminTelegramStats from './pages/Admin/AdminTelegramStats'
 import AdminVCoins from './pages/Admin/AdminVCoins'
 import AdminContactAgents from './pages/Admin/AdminContactAgents'
 import AdminTransactions from './pages/Admin/AdminTransactions'
+import AdminMarketplace from './pages/Admin/AdminMarketplace'
 
 function ComingSoon({ title }) {
   return (
@@ -94,7 +95,7 @@ export default function App() {
       </Route>
 
       <Route element={<AdminRoute />}>
-        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin" element={<AdminDashboard />} />`r`n  <Route path="/admin/marketplace" element={<AdminMarketplace />} />
           <Route
             path="/admin/transactions"
             element={<AdminTransactions />}
@@ -147,6 +148,8 @@ export default function App() {
     </Routes>
   )
 }
+
+
 
 
 
