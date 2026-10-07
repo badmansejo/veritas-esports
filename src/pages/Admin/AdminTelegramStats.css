@@ -1,0 +1,123 @@
+﻿.admin-telegram-stats-page {
+  min-height: 100vh;
+  padding: 24px;
+  background: #070b14;
+  color: #ffffff;
+}
+
+.admin-telegram-stats-card {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.admin-telegram-stats-header {
+  margin-bottom: 24px;
+}
+
+.admin-telegram-stats-header h1 {
+  margin: 0 0 8px;
+  font-size: 28px;
+  font-weight: 900;
+}
+
+.admin-telegram-stats-header p {
+  margin: 0;
+  color: #9ca3af;
+}
+
+.admin-telegram-stats-error {
+  margin-bottom: 18px;
+  padding: 13px;
+  border-radius: 9px;
+  background: #7f1d1d;
+  color: #fecaca;
+}
+
+.admin-telegram-stats-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.admin-telegram-stat {
+  padding: 20px;
+  border: 1px solid #273244;
+  border-radius: 14px;
+  background: #0d1421;
+}
+
+.admin-telegram-stat span {
+  display: block;
+  margin-bottom: 10px;
+  color: #9ca3af;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.admin-telegram-stat strong {
+  font-size: 30px;
+  font-weight: 900;
+}
+
+.admin-telegram-stats-section {
+  padding: 20px;
+  border: 1px solid #273244;
+  border-radius: 14px;
+  background: #0d1421;
+  overflow: hidden;
+}
+
+.admin-telegram-stats-section-title {
+  margin-bottom: 18px;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.admin-telegram-stats-table {
+  overflow-x: auto;
+}
+
+.admin-telegram-stats-row {
+  min-width: 760px;
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 0.6fr 0.7fr 0.6fr;
+  gap: 12px;
+  padding: 14px 0;
+  border-top: 1px solid #1f2937;
+  color: #d1d5db;
+  font-size: 13px;
+}
+
+.admin-telegram-stats-head {
+  border-top: 0;
+  color: #9ca3af;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.admin-telegram-stats-refresh {
+  width: 100%;
+  margin-top: 20px;
+  padding: 15px;
+  border: 0;
+  border-radius: 10px;
+  background: #2563eb;
+  color: #ffffff;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+@media (max-width: 700px) {
+  .admin-telegram-stats-page {
+    padding: 15px;
+  }
+
+  .admin-telegram-stats-summary {
+    grid-template-columns: 1fr;
+  }
+}

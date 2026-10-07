@@ -14,6 +14,7 @@ import Home from './pages/Home/Home'
 import Tournaments from './pages/Tournaments/Tournaments'
 import TournamentDetails from './pages/Tournaments/TournamentDetails'
 import Wallet from './pages/Wallet/Wallet'
+import VCoins from './pages/VCoins'
 import Marketplace from './pages/Marketplace/Marketplace'
 import Inventory from './pages/Inventory/Inventory'
 import Settings from './pages/Settings/Settings'
@@ -28,6 +29,8 @@ import AdminDeposits from './pages/Admin/AdminDeposits'
 import AdminDashboard from './pages/Admin/AdminDashboard'
 import AdminNotifications from './pages/Admin/AdminNotifications'
 import AdminTelegram from './pages/Admin/AdminTelegram'
+import AdminTelegramStats from './pages/Admin/AdminTelegramStats'
+import AdminVCoins from './pages/Admin/AdminVCoins'
 
 function ComingSoon({ title }) {
   return (
@@ -49,6 +52,7 @@ function ComingSoon({ title }) {
         }}
       >
         <h1>{title}</h1>
+
         <p style={{ color: '#9ca3af' }}>
           This section is coming soon.
         </p>
@@ -60,126 +64,60 @@ function ComingSoon({ title }) {
 export default function App() {
   return (
     <Routes>
-      {/* AUTH */}
-
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route
-        path="/forgot-password"
-        element={<ForgotPassword />}
-      />
-      <Route
-        path="/reset-password"
-        element={<ResetPassword />}
-      />
-      <Route
-        path="/verify-email"
-        element={<VerifyEmail />}
-      />
-
-      {/* USER APP */}
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/verify-email" element={<VerifyEmail />} />
 
       <Route element={<ProtectedRoute />}>
         <Route path="/" element={<Home />} />
-
-        <Route
-          path="/tournaments"
-          element={<Tournaments />}
-        />
-
-        <Route
-          path="/tournaments/:id"
-          element={<TournamentDetails />}
-        />
-
-        <Route
-          path="/matches"
-          element={<ComingSoon title="Matches" />}
-        />
-
+        <Route path="/tournaments" element={<Tournaments />} />
+        <Route path="/tournaments/:id" element={<TournamentDetails />} />
+        <Route path="/matches" element={<ComingSoon title="Matches" />} />
         <Route path="/wallet" element={<Wallet />} />
-
-        <Route
-          path="/vcoins"
-          element={<ComingSoon title="V Coins" />}
-        />
-
-        <Route
-          path="/marketplace"
-          element={<Marketplace />}
-        />
-
-        <Route
-          path="/inventory"
-          element={<Inventory />}
-        />
-
-        <Route
-          path="/notifications"
-          element={<Notifications />}
-        />
-
-        <Route
-          path="/settings"
-          element={<Settings />}
-        />
-
-        <Route
-          path="/settings/account"
-          element={<Account />}
-        />
-
-        <Route
-          path="/settings/profile"
-          element={<Profile />}
-        />
-
-        <Route
-          path="/settings/security"
-          element={<Security />}
-        />
-
-        <Route
-          path="/settings/telegram"
-          element={<Telegram />}
-        />
+        <Route path="/vcoins" element={<VCoins />} />
+        <Route path="/marketplace" element={<Marketplace />} />
+        <Route path="/inventory" element={<Inventory />} />
+        <Route path="/notifications" element={<Notifications />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/settings/account" element={<Account />} />
+        <Route path="/settings/profile" element={<Profile />} />
+        <Route path="/settings/security" element={<Security />} />
+        <Route path="/settings/telegram" element={<Telegram />} />
       </Route>
 
-      {/* ADMIN */}
-
       <Route element={<AdminRoute />}>
-        <Route
-          path="/admin"
-          element={<AdminDashboard />}
-        />
-
+        <Route path="/admin" element={<AdminDashboard />} />
         <Route
           path="/admin/deposit-methods"
           element={<AdminDepositMethods />}
         />
-
         <Route
           path="/admin/deposits"
           element={<AdminDeposits />}
         />
-
         <Route
           path="/admin/notifications"
           element={<AdminNotifications />}
         />
-
         <Route
           path="/admin/telegram"
           element={<AdminTelegram />}
         />
+        <Route
+          path="/admin/telegram/stats"
+          element={<AdminTelegramStats />}
+        />
+        <Route
+          path="/admin/vcoins"
+          element={<AdminVCoins />}
+        />
       </Route>
 
-      {/* FALLBACK */}
-
-      <Route
-        path="*"
-        element={<Navigate to="/" replace />}
-      />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
 }
+
+

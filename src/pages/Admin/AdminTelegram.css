@@ -1,0 +1,157 @@
+﻿.admin-telegram-page {
+  min-height: 100vh;
+  padding: 24px;
+  background: #070b14;
+  color: #ffffff;
+}
+
+.admin-telegram-card {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.admin-telegram-header {
+  margin-bottom: 24px;
+}
+
+.admin-telegram-header h1 {
+  margin: 0 0 8px;
+  font-size: 28px;
+  font-weight: 900;
+}
+
+.admin-telegram-header p {
+  margin: 0;
+  color: #9ca3af;
+}
+
+.admin-telegram-section {
+  margin-bottom: 24px;
+  padding: 20px;
+  border: 1px solid #273244;
+  border-radius: 14px;
+  background: #0d1421;
+}
+
+.admin-telegram-section h2 {
+  margin: 0 0 15px;
+  font-size: 13px;
+  letter-spacing: 1px;
+}
+
+.admin-telegram-section select,
+.admin-telegram-field input,
+.admin-telegram-field textarea,
+.admin-telegram-bot input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 13px;
+  border: 1px solid #374151;
+  border-radius: 9px;
+  background: #111827;
+  color: #ffffff;
+  outline: none;
+}
+
+.admin-telegram-section select:focus,
+.admin-telegram-field textarea:focus,
+.admin-telegram-bot input:focus {
+  border-color: #6b7280;
+}
+
+.admin-telegram-active {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 9px;
+  background: #111827;
+  color: #9ca3af;
+}
+
+.admin-telegram-active strong {
+  color: #ffffff;
+}
+
+.admin-telegram-bots {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.admin-telegram-bot {
+  padding: 15px;
+  border: 1px solid #273244;
+  border-radius: 10px;
+  background: #111827;
+}
+
+.admin-telegram-bot-title {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.admin-telegram-bot-title span {
+  color: #22c55e;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.admin-telegram-field {
+  margin-bottom: 16px;
+}
+
+.admin-telegram-field label {
+  display: block;
+  margin-bottom: 7px;
+  color: #d1d5db;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.admin-telegram-field textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.admin-telegram-save {
+  width: 100%;
+  padding: 16px;
+  border: 0;
+  border-radius: 10px;
+  background: #2563eb;
+  color: #ffffff;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.admin-telegram-save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.admin-telegram-success {
+  margin-bottom: 18px;
+  padding: 13px;
+  border-radius: 9px;
+  background: #064e3b;
+  color: #a7f3d0;
+}
+
+.admin-telegram-error {
+  margin-bottom: 18px;
+  padding: 13px;
+  border-radius: 9px;
+  background: #7f1d1d;
+  color: #fecaca;
+}
+
+@media (max-width: 700px) {
+  .admin-telegram-page {
+    padding: 15px;
+  }
+
+  .admin-telegram-bots {
+    grid-template-columns: 1fr;
+  }
+}

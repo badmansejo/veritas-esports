@@ -83,18 +83,6 @@ export default function Settings() {
           <div className="settings-arrow">›</div>
         </button>
 
-        <button
-          className="settings-row"
-          onClick={() => alert('Appearance coming soon')}
-        >
-          <div className="settings-row-icon">🎨</div>
-          <div className="settings-row-content">
-            <strong>Appearance</strong>
-            <span>Customize your VERITAS experience</span>
-          </div>
-          <div className="settings-arrow">›</div>
-        </button>
-
       </div>
 
       <button
