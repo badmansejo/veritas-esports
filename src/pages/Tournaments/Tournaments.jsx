@@ -1,1258 +1,461 @@
-﻿import React, { useEffect, useMemo, useState } from 'react'
+﻿import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { supabase } from '../../lib/supabaseClient'
-import { useAuth } from '../../context/AuthContext'
+import { supabase } from '../../lib/supabase'
 
-const GAMES = ['Football', 'PUBG', 'COD', 'Mini Militia']
-
-const FORMATS = [
-  {
-    value: 'Knockout',
-    title: 'Knockout',
-    description: 'Players are eliminated after losing.'
-  },
-  {
-    value: 'League',
-    title: 'League',
-    description: 'Players compete in league rounds and standings.'
-  },
-  {
-    value: 'Group+Knockout',
-    title: 'Group + Knockout',
-    description: 'Players begin in groups before advancing to knockout.'
-  }
-]
-
-const MATCH_FORMATS = ['Bo1', 'Bo3', 'Bo5']
-
-const MATCH_RULES = [
-  {
-    value: 'Full Time',
-    title: 'Full Time',
-    description: 'Match ends when normal time is complete.'
-  },
-  {
-    value: 'Golden Goal',
-    title: 'Golden Goal',
-    description: 'First goal during the deciding period wins.'
-  },
-  {
-    value: 'Extra Time',
-    title: 'Extra Time',
-    description: 'Extra time is played before penalties.'
-  },
-  {
-    value: 'Penalties',
-    title: 'Penalties',
-    description: 'A penalty shootout decides the winner.'
-  }
-]
-
-const MATCH_DURATIONS = ['5', '6', '10', '15']
-
-const MANAGEMENT_OPTIONS = [
-  {
-    value: 'Leader Managed',
-    title: 'Leader Managed',
-    description: 'Tournament creator manages the tournament.'
-  },
-  {
-    value: 'VERITAS Managed',
-    title: 'VERITAS Managed',
-    description: 'VERITAS handles tournament management.'
-  }
-]
-
-const SETUP_MODES = [
-  {
-    value: 'Automatic',
-    title: 'Automatic',
-    description: 'VERITAS automatically prepares the tournament.'
-  },
-  {
-    value: 'Manual',
-    title: 'Manual',
-    description: 'The creator handles the tournament setup manually.'
-  },
-  {
-    value: 'Creator Assisted',
-    title: 'Creator Assisted',
-    description: 'VERITAS assists while the creator controls the setup.'
-  }
-]
-
-const FILTERS = [
-  'All',
-  'Open',
-  'Starting Soon',
-  'Live',
-  'Sponsored',
-  'University',
-  'Completed'
-]
-
-function getDefaultForm(roundDeadline) {
-  return {
-    name: '',
-    game: 'Football',
-    players: 8,
-    format: 'Knockout',
-    matchFormat: 'Bo1',
-    matchRule: 'Full Time',
-    matchDuration: '10',
-    management: 'Leader Managed',
-    setupMode: 'Automatic',
-    startTime: '',
-    roundDeadline: roundDeadline || '22:00',
-    rules: '',
-    isSponsored: false
-  }
-}
-
-function formatDate(value) {
-  if (!value) return 'Not set'
-
-  const date = new Date(value)
-
-  if (Number.isNaN(date.getTime())) {
-    return 'Not set'
-  }
-
-  return date.toLocaleString()
-}
-
-function formatDeadline(value) {
-  if (!value) return 'Not set'
-
-  const parts = String(value).split(':')
-
-  if (parts.length < 2) {
-    return value
-  }
-
-  return parts[0] + ':' + parts[1]
-}
+const APP_URL = 'https://veritas-esportss.veritasesports.workers.dev'
 
 export default function Tournaments() {
   const navigate = useNavigate()
-  const { user } = useAuth()
 
   const [tournaments, setTournaments] = useState([])
   const [loading, setLoading] = useState(true)
+  const [showCreate, setShowCreate] = useState(false)
+  const [activeTab, setActiveTab] = useState('Open')
+  const [user, setUser] = useState(null)
 
-  const [activeFilter, setActiveFilter] = useState('All')
+  const [form, setForm] = useState({
+    name: '',
+    room_type: 'Public',
+    max_players: 8,
+    format: 'Knockout',
+    rules: '',
+    start_date: '',
+    start_time: '',
+    creator_whatsapp: '',
+  })
 
-  const [showCreateModal, setShowCreateModal] = useState(false)
-  const [showJoinModal, setShowJoinModal] = useState(false)
+  async function loadUser() {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
 
-  const [joinCode, setJoinCode] = useState('')
+    setUser(user)
+  }
 
-  const [creating, setCreating] = useState(false)
-  const [joining, setJoining] = useState(false)
-
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
-
-  const [roundDeadlineDefault, setRoundDeadlineDefault] = useState('22:00')
-
-  const [form, setForm] = useState(getDefaultForm('22:00'))
-
-  const loadTournaments = async () => {
+  async function loadTournaments() {
     setLoading(true)
-    setError('')
 
-    const { data, error: fetchError } = await supabase
+    const { data, error } = await supabase
       .from('tournaments')
       .select(`
         id,
         creator_id,
         tournament_code,
+        private_room_code,
+        private_room_link,
         name,
         game,
+        room_type,
         players,
+        max_players,
         format,
-        match_format,
-        match_rule,
-        management,
-        entry_type,
-        start_time,
-        round_deadline,
         rules,
+        start_date,
+        start_time,
+        creator_whatsapp,
         status,
-        setup_mode,
-        is_sponsored,
-        sponsor_name,
-        prize_pool,
-        first_prize,
-        second_prize,
-        third_prize,
         creator_started,
+        expires_at,
         created_at
       `)
       .order('created_at', { ascending: false })
 
-    if (fetchError) {
-      setError(fetchError.message)
-      setTournaments([])
-    } else {
-      setTournaments(data || [])
+    if (!error) {
+      const now = Date.now()
+
+      const active = (data || []).filter((t) => {
+        if (!t.expires_at) return true
+        return new Date(t.expires_at).getTime() > now
+      })
+
+      setTournaments(active)
     }
 
     setLoading(false)
   }
 
-  const loadRoundDeadline = async () => {
-    const { data, error: settingsError } = await supabase
-      .from('app_settings')
-      .select('*')
-      .eq('setting_key', 'round_deadline')
-      .maybeSingle()
-
-    if (settingsError || !data) {
-      setRoundDeadlineDefault('22:00')
-      return
-    }
-
-    let value = data.setting_value
-
-    if (typeof value === 'object' && value !== null) {
-      value =
-        value.value ||
-        value.time ||
-        value.default ||
-        value.setting ||
-        null
-    }
-
-    if (typeof value === 'string') {
-      value = value.replace(/"/g, '').trim()
-
-      if (/^\d{2}:\d{2}/.test(value)) {
-        value = value.substring(0, 5)
-      }
-    }
-
-    if (value) {
-      setRoundDeadlineDefault(value)
-
-      setForm((current) => {
-        if (!current.roundDeadline || current.roundDeadline === '22:00') {
-          return {
-            ...current,
-            roundDeadline: value
-          }
-        }
-
-        return current
-      })
-    }
-  }
-
   useEffect(() => {
+    loadUser()
     loadTournaments()
-    loadRoundDeadline()
   }, [])
 
-  const filteredTournaments = useMemo(() => {
-    if (activeFilter === 'All') {
-      return tournaments
+  function getJoinLink(tournamentCode) {
+    return `${APP_URL}/tournaments/${tournamentCode}`
+  }
+
+  async function createTournament(e) {
+    e.preventDefault()
+
+    if (!form.name.trim()) {
+      alert('Enter tournament name')
+      return
     }
 
-    if (activeFilter === 'Sponsored') {
-      return tournaments.filter((item) => item.is_sponsored)
+    if (!form.start_date || !form.start_time) {
+      alert('Select start date and time')
+      return
     }
 
-    if (activeFilter === 'University') {
-      return tournaments.filter((item) => {
-        const name = String(item.name || '').toLowerCase()
-        const rules = String(item.rules || '').toLowerCase()
+    if (!creatorWhatsapp.trim()) {
+      alert("Enter WhatsApp Number for Notifications number is required.")
+      return
+    }
 
-        return (
-          name.includes('university') ||
-          name.includes('campus') ||
-          rules.includes('university') ||
-          rules.includes('campus')
-        )
+    const { data, error } = await supabase.rpc('create_tournament', {
+      p_name: form.name.trim(),
+      p_room_type: form.room_type,
+      p_max_players: Number(form.max_players),
+      p_format: form.format,
+      p_rules: form.rules.trim(),
+      p_start_date: form.start_date,
+      p_start_time: form.start_time,
+      p_creator_whatsapp: form.creator_whatsapp.trim(),
+    })
+
+    if (error) {
+      alert(error.message)
+      return
+    }
+
+    setShowCreate(false)
+
+    setForm({
+      name: '',
+      room_type: 'Public',
+      max_players: 8,
+      format: 'Knockout',
+      rules: '',
+      start_date: '',
+      start_time: '',
+      creator_whatsapp: '',
+    })
+
+    await loadTournaments()
+
+    navigate(`/tournaments/${data}`)
+  }
+
+  const visible = tournaments.filter(
+    (t) => t.status === activeTab
+  )
+
+  function copyLink(code) {
+    const link = getJoinLink(code)
+
+    navigator.clipboard
+      .writeText(link)
+      .then(() => alert('Join link copied'))
+      .catch(() => prompt('Copy tournament link:', link))
+  }
+
+  function shareLink(code) {
+    const link = getJoinLink(code)
+
+    if (navigator.share) {
+      navigator.share({
+        title: 'VERITAS Football Tournament',
+        url: link,
       })
+    } else {
+      copyLink(code)
     }
-
-    return tournaments.filter((item) => item.status === activeFilter)
-  }, [activeFilter, tournaments])
-
-  const updateForm = (field, value) => {
-    setForm((current) => ({
-      ...current,
-      [field]: value
-    }))
-  }
-
-  const resetCreateForm = () => {
-    setForm(getDefaultForm(roundDeadlineDefault))
-  }
-
-  const openCreateModal = () => {
-    setError('')
-    setSuccess('')
-
-    setForm((current) => ({
-      ...current,
-      roundDeadline: current.roundDeadline || roundDeadlineDefault
-    }))
-
-    setShowCreateModal(true)
-  }
-
-  const closeCreateModal = () => {
-    if (creating) return
-
-    setShowCreateModal(false)
-    resetCreateForm()
-  }
-
-  const handleCreateTournament = async (event) => {
-    event.preventDefault()
-
-    setError('')
-    setSuccess('')
-
-    if (!user) {
-      setError('You must be logged in to create a tournament.')
-      return
-    }
-
-    const name = form.name.trim()
-
-    if (!name) {
-      setError('Please enter a tournament name.')
-      return
-    }
-
-    const players = Number(form.players)
-
-    if (!Number.isInteger(players) || players < 2) {
-      setError('Tournament players must be at least 2.')
-      return
-    }
-
-    if (!form.startTime) {
-      setError('Please select a tournament start time.')
-      return
-    }
-
-    if (!form.roundDeadline) {
-      setError('Please select a round deadline.')
-      return
-    }
-
-    if (form.rules.trim().length > 200) {
-      setError('Tournament rules must be 200 words or fewer.')
-      return
-    }
-
-    setCreating(true)
-
-    try {
-      const { data, error: createError } = await supabase.rpc(
-        'create_tournament',
-        {
-          p_name: name,
-          p_game: form.game,
-          p_players: players,
-          p_format: form.format,
-          p_match_format: form.matchFormat,
-          p_match_rule: form.matchRule,
-          p_management: form.management,
-          p_start_time: new Date(form.startTime).toISOString(),
-          p_round_deadline: form.roundDeadline,
-          p_rules: form.rules.trim(),
-          p_setup_mode: form.setupMode,
-          p_is_sponsored: Boolean(form.isSponsored)
-        }
-      )
-
-      if (createError) {
-        throw createError
-      }
-
-      const createdTournament = Array.isArray(data) ? data[0] : data
-
-      setShowCreateModal(false)
-
-      resetCreateForm()
-
-      setSuccess(
-        'Tournament created successfully' +
-          (createdTournament?.tournament_code
-            ? ' â€” Code: ' + createdTournament.tournament_code
-            : '.')
-      )
-
-      await loadTournaments()
-
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      })
-    } catch (createError) {
-      console.error('Create tournament error:', createError)
-
-      setError(
-        createError?.message ||
-          'Unable to create tournament. Please try again.'
-      )
-    } finally {
-      setCreating(false)
-    }
-  }
-
-  const handleJoinTournament = async (event) => {
-    event.preventDefault()
-
-    setError('')
-    setSuccess('')
-
-    const code = joinCode.trim().toUpperCase()
-
-    if (!code) {
-      setError('Please enter a tournament code.')
-      return
-    }
-
-    setJoining(true)
-
-    try {
-      const { data, error: joinError } = await supabase.rpc(
-        'join_tournament',
-        {
-          p_tournament_code: code
-        }
-      )
-
-      if (joinError) {
-        throw joinError
-      }
-
-      setShowJoinModal(false)
-      setJoinCode('')
-
-      setSuccess('You joined the tournament successfully.')
-
-      await loadTournaments()
-
-      console.log('Join result:', data)
-    } catch (joinError) {
-      console.error('Join tournament error:', joinError)
-
-      setError(
-        joinError?.message ||
-          'Unable to join tournament. Please check the code.'
-      )
-    } finally {
-      setJoining(false)
-    }
-  }
-
-  const handleViewTournament = (tournament) => {
-    if (!tournament?.id) return
-
-    navigate('/tournaments/' + tournament.id)
   }
 
   return (
-    <div className="tournaments-page">
-      <header className="tournaments-header">
-        <div>
-          <button
-            type="button"
-            className="back-button"
-            onClick={() => navigate('/')}
-          >
-            â† Back to Home
-          </button>
+    <div className="min-h-screen bg-[#070b14] px-4 py-6 text-white md:px-8">
+      <div className="mx-auto max-w-7xl">
 
-          <h1>Tournaments</h1>
-
-          <p>Find, create and join VERITAS competitions.</p>
-        </div>
-
-        <div className="tournament-header-actions">
-          <button
-            type="button"
-            className="secondary-action"
-            onClick={() => {
-              setError('')
-              setSuccess('')
-              setShowJoinModal(true)
-            }}
-          >
-            Join Tournament
-          </button>
-
-          <button
-            type="button"
-            className="primary-action"
-            onClick={openCreateModal}
-          >
-            + Create Tournament
-          </button>
-        </div>
-      </header>
-
-      {success && (
-        <div className="tournament-success">
-          {success}
-        </div>
-      )}
-
-      {error && (
-        <div className="tournament-error">
-          {error}
-        </div>
-      )}
-
-      <div className="tournament-filters">
-        {FILTERS.map((filter) => (
-          <button
-            key={filter}
-            type="button"
-            className={
-              activeFilter === filter ? 'active' : ''
-            }
-            onClick={() => setActiveFilter(filter)}
-          >
-            {filter}
-          </button>
-        ))}
-      </div>
-
-      <main className="tournaments-content">
-        {loading ? (
-          <div className="tournament-empty">
-            <div className="loading-spinner" />
-            <h2>Loading tournaments</h2>
-            <p>Please wait while VERITAS loads the tournaments.</p>
-          </div>
-        ) : filteredTournaments.length === 0 ? (
-          <div className="tournament-empty">
-            <div className="empty-icon">ðŸ†</div>
-
-            <h2>
-              {activeFilter === 'All'
-                ? 'No tournaments yet'
-                : 'No ' + activeFilter + ' tournaments'}
-            </h2>
-
-            <p>
-              Create the first tournament or join one using a tournament
-              code.
+        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-3xl font-black tracking-tight">
+              VERITAS FOOTBALL
+            </h1>
+<button
+  type="button"
+  onClick={() => navigate("/")}
+  className="mb-5 mt-3 rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-sm font-bold text-white hover:bg-white/10"
+>
+  ← BACK TO DASHBOARD
+</button>
+            <p className="mt-1 text-sm text-gray-400">
+              Create, join and manage tournaments.
             </p>
+          </div>
 
+          <button
+            onClick={() => setShowCreate(true)}
+            className="rounded-xl bg-white px-5 py-3 font-black text-black transition hover:bg-gray-200"
+          >
+            + CREATE TOURNAMENT
+          </button>
+        </div>
+
+        <div className="mb-6 flex gap-2 overflow-x-auto">
+          {['Open', 'Ongoing', 'Completed'].map((tab) => (
             <button
-              type="button"
-              className="primary-action"
-              onClick={openCreateModal}
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`rounded-xl px-5 py-3 text-sm font-black ${
+                activeTab === tab
+                  ? 'bg-white text-black'
+                  : 'bg-[#111827] text-gray-400'
+              }`}
             >
-              + Create Tournament
+              {tab}
             </button>
+          ))}
+        </div>
+
+        {loading ? (
+          <div className="rounded-2xl bg-[#0d1422] p-10 text-center text-gray-400">
+            Loading tournaments...
+          </div>
+        ) : visible.length === 0 ? (
+          <div className="rounded-2xl bg-[#0d1422] p-10 text-center">
+            <p className="font-bold">No {activeTab.toLowerCase()} tournaments.</p>
           </div>
         ) : (
-          <div className="tournament-grid">
-            {filteredTournaments.map((tournament) => (
-              <article
-                key={tournament.id}
-                className="tournament-card"
-              >
-                <div className="tournament-card-top">
-                  <span className="game-badge">
-                    {tournament.game}
-                  </span>
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            {visible.map((tournament) => {
+              const link = getJoinLink(tournament.tournament_code)
 
-                  <span className="status-badge">
-                    {tournament.status}
-                  </span>
-                </div>
-
-                <h2>{tournament.name}</h2>
-
-                {tournament.is_sponsored && (
-                  <div className="sponsored-label">
-                    â˜… Sponsored Tournament
-                  </div>
-                )}
-
-                <div className="tournament-info-grid">
-                  <div>
-                    <small>Players</small>
-                    <strong>{tournament.players}</strong>
-                  </div>
-
-                  <div>
-                    <small>Format</small>
-                    <strong>{tournament.format}</strong>
-                  </div>
-
-                  <div>
-                    <small>Match</small>
-                    <strong>{tournament.match_format}</strong>
-                  </div>
-
-                  <div>
-                    <small>Rule</small>
-                    <strong>{tournament.match_rule}</strong>
-                  </div>
-                </div>
-
-                <div className="tournament-meta">
-                  <div>
-                    <span>Start</span>
-                    <strong>
-                      {formatDate(tournament.start_time)}
-                    </strong>
-                  </div>
-
-                  <div>
-                    <span>Round deadline</span>
-                    <strong>
-                      {formatDeadline(tournament.round_deadline)}
-                    </strong>
-                  </div>
-
-                  <div>
-                    <span>Entry</span>
-                    <strong>
-                      {tournament.entry_type || 'FREE'}
-                    </strong>
-                  </div>
-
-                  {tournament.tournament_code && (
+              return (
+                <div
+                  key={tournament.id}
+                  className="rounded-2xl border border-white/10 bg-[#0d1422] p-5 shadow-xl"
+                >
+                  <div className="mb-4 flex items-start justify-between gap-3">
                     <div>
-                      <span>Code</span>
-                      <strong>
-                        {tournament.tournament_code}
-                      </strong>
+                      <h2 className="text-xl font-black">
+                        {tournament.name}
+                      </h2>
+
+                      <p className="mt-1 text-xs font-bold text-gray-500">
+                        {tournament.game || 'Football'}
+                      </p>
                     </div>
-                  )}
-                </div>
 
-                <div className="tournament-card-footer">
-                  <span>
-                    {tournament.management || 'Leader Managed'}
-                  </span>
+                    <span className="rounded-lg bg-white/10 px-2 py-1 text-xs font-black">
+                      {tournament.room_type}
+                    </span>
+                  </div>
 
-                  <button
-                    type="button"
-                    onClick={() =>
-                      handleViewTournament(tournament)
-                    }
-                  >
-                    View Tournament
-                  </button>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div className="rounded-xl bg-black/20 p-3">
+                      <div className="text-xs text-gray-500">Players</div>
+                      <div className="mt-1 font-black">
+                        {tournament.players || 0}/{tournament.max_players}
+                      </div>
+                    </div>
+
+                    <div className="rounded-xl bg-black/20 p-3">
+                      <div className="text-xs text-gray-500">Format</div>
+                      <div className="mt-1 font-black">
+                        {tournament.format}
+                      </div>
+                    </div>
+
+                    <div className="rounded-xl bg-black/20 p-3">
+                      <div className="text-xs text-gray-500">Start Date</div>
+                      <div className="mt-1 font-black">
+                        {tournament.start_date || '-'}
+                      </div>
+                    </div>
+
+                    <div className="rounded-xl bg-black/20 p-3">
+                      <div className="text-xs text-gray-500">Start Time</div>
+                      <div className="mt-1 font-black">
+                        {tournament.start_time || '-'}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 rounded-xl border border-white/10 bg-black/20 p-3">
+                    <div className="mb-2 text-xs font-black text-gray-500">
+                      JOIN LINK
+                    </div>
+
+                    <div className="break-all text-xs font-bold text-gray-300">
+                      {link}
+                    </div>
+
+                    <div className="mt-3 flex gap-2">
+                      <button
+                        onClick={() => copyLink(tournament.tournament_code)}
+                        className="flex-1 rounded-lg bg-white px-3 py-2 text-xs font-black text-black"
+                      >
+                        COPY LINK
+                      </button>
+
+                      <button
+                        onClick={() => shareLink(tournament.tournament_code)}
+                        className="flex-1 rounded-lg bg-gray-800 px-3 py-2 text-xs font-black"
+                      >
+                        SHARE
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex gap-2">
+                    <button
+                      onClick={() =>
+                        navigate(`/tournaments/${tournament.id}`)
+                      }
+                      className="flex-1 rounded-xl bg-white py-3 text-sm font-black text-black"
+                    >
+                      VIEW TOURNAMENT
+                    </button>
+
+                    {user?.id === tournament.creator_id && (
+                      <button
+                        onClick={() =>
+                          navigate(
+                            `/tournaments/${tournament.id}?manage=1`
+                          )
+                        }
+                        className="rounded-xl border border-white/20 px-4 py-3 text-sm font-black"
+                      >
+                        MANAGE
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </article>
-            ))}
+              )
+            })}
           </div>
         )}
-      </main>
+      </div>
 
-      {/* CREATE TOURNAMENT MODAL */}
-
-      {showCreateModal && (
-        <div
-          className="modal-overlay"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) {
-              closeCreateModal()
-            }
-          }}
-        >
-          <div
-            className="tournament-modal"
-            onMouseDown={(event) => event.stopPropagation()}
+      {showCreate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+          <form
+            onSubmit={createTournament}
+            className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl bg-[#0d1422] p-6"
           >
-            <div className="modal-header">
-              <div>
-                <h2>Create Tournament</h2>
-
-                <p>
-                  Set up your tournament and invite players to compete.
-                </p>
-              </div>
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="text-2xl font-black">
+                CREATE TOURNAMENT
+              </h2>
 
               <button
                 type="button"
-                className="modal-close"
-                onClick={closeCreateModal}
-                disabled={creating}
+                onClick={() => setShowCreate(false)}
+                className="text-gray-400"
               >
-                Ã—
+                ✕
               </button>
             </div>
 
-            <form onSubmit={handleCreateTournament}>
-              {/* BASIC DETAILS */}
-
-              <section className="form-section">
-                <h3>Basic Details</h3>
-
-                <label>
-                  <span>Tournament Name</span>
-
-                  <input
-                    type="text"
-                    value={form.name}
-                    onChange={(event) =>
-                      updateForm('name', event.target.value)
-                    }
-                    placeholder="Enter tournament name"
-                    maxLength={80}
-                    autoComplete="off"
-                    required
-                  />
-
-                  <small className="field-help">
-                    Choose a clear name players will recognize.
-                  </small>
-                </label>
-
-                <label>
-                  <span>Game</span>
-
-                  <select
-                    value={form.game}
-                    onChange={(event) =>
-                      updateForm('game', event.target.value)
-                    }
-                  >
-                    {GAMES.map((game) => (
-                      <option key={game} value={game}>
-                        {game}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-
-                <label>
-                  <span>Number of Players</span>
-
-                  <input
-                    type="number"
-                    min="2"
-                    max="128"
-                    value={form.players}
-                    onChange={(event) =>
-                      updateForm('players', event.target.value)
-                    }
-                    required
-                  />
-
-                  <small className="field-help">
-                    Enter the maximum number of players allowed.
-                  </small>
-                </label>
-
-                <div className="free-entry-box">
-                  <strong>FREE ENTRY</strong>
-
-                  <span>
-                    Players do not pay an entry fee to join tournaments.
-                  </span>
-                </div>
-              </section>
-
-              {/* FORMAT */}
-
-              <section className="form-section">
-                <h3>Tournament Format</h3>
-
-                <p className="field-help">
-                  Choose how players will progress through the tournament.
-                </p>
-
-                <div className="option-list">
-                  {FORMATS.map((option) => (
-                    <label
-                      key={option.value}
-                      className={
-                        'choice-card ' +
-                        (form.format === option.value
-                          ? 'selected'
-                          : '')
-                      }
-                    >
-                      <input
-                        type="radio"
-                        name="tournament-format"
-                        value={option.value}
-                        checked={form.format === option.value}
-                        onChange={(event) =>
-                          updateForm('format', event.target.value)
-                        }
-                      />
-
-                      <span>
-                        <strong>{option.title}</strong>
-
-                        <small>{option.description}</small>
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </section>
-
-              {/* MATCH SETTINGS */}
-
-              <section className="form-section">
-                <h3>Match Settings</h3>
-
-                <div>
-                  <span className="field-label">
-                    Match Duration
-                  </span>
-
-                  <div className="choice-row">
-                    {MATCH_DURATIONS.map((duration) => (
-                      <button
-                        key={duration}
-                        type="button"
-                        className={
-                          'choice-button ' +
-                          (form.matchDuration === duration
-                            ? 'selected'
-                            : '')
-                        }
-                        onClick={() =>
-                          updateForm('matchDuration', duration)
-                        }
-                      >
-                        {duration} min
-                      </button>
-                    ))}
-                  </div>
-
-                  <small className="field-help">
-                    Select the game duration used for each match.
-                  </small>
-                </div>
-
-                <div>
-                  <span className="field-label">
-                    Match Format
-                  </span>
-
-                  <div className="choice-row">
-                    {MATCH_FORMATS.map((format) => (
-                      <button
-                        key={format}
-                        type="button"
-                        className={
-                          'choice-button ' +
-                          (form.matchFormat === format
-                            ? 'selected'
-                            : '')
-                        }
-                        onClick={() =>
-                          updateForm('matchFormat', format)
-                        }
-                      >
-                        {format}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <span className="field-label">
-                    Match Ending Rule
-                  </span>
-
-                  <div className="option-list">
-                    {MATCH_RULES.map((option) => (
-                      <label
-                        key={option.value}
-                        className={
-                          'choice-card ' +
-                          (form.matchRule === option.value
-                            ? 'selected'
-                            : '')
-                        }
-                      >
-                        <input
-                          type="radio"
-                          name="match-rule"
-                          value={option.value}
-                          checked={
-                            form.matchRule === option.value
-                          }
-                          onChange={(event) =>
-                            updateForm(
-                              'matchRule',
-                              event.target.value
-                            )
-                          }
-                        />
-
-                        <span>
-                          <strong>{option.title}</strong>
-
-                          <small>
-                            {option.description}
-                          </small>
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              </section>
-
-              {/* SCHEDULE */}
-
-              <section className="form-section">
-                <h3>Schedule</h3>
-
-                <label>
-                  <span>Tournament Start Time</span>
-
-                  <input
-                    type="datetime-local"
-                    value={form.startTime}
-                    onChange={(event) =>
-                      updateForm(
-                        'startTime',
-                        event.target.value
-                      )
-                    }
-                    required
-                  />
-                </label>
-
-                <label>
-                  <span>Round Deadline</span>
-
-                  <input
-                    type="time"
-                    value={form.roundDeadline}
-                    onChange={(event) =>
-                      updateForm(
-                        'roundDeadline',
-                        event.target.value
-                      )
-                    }
-                    required
-                  />
-
-                  <small className="field-help">
-                    Current default from VERITAS settings:{' '}
-                    {roundDeadlineDefault}.
-                    You can change this tournament's deadline here.
-                  </small>
-                </label>
-              </section>
-
-              {/* MANAGEMENT */}
-
-              <section className="form-section">
-                <h3>Management</h3>
-
-                <div>
-                  <span className="field-label">
-                    Tournament Management
-                  </span>
-
-                  <div className="option-list">
-                    {MANAGEMENT_OPTIONS.map((option) => (
-                      <label
-                        key={option.value}
-                        className={
-                          'choice-card ' +
-                          (form.management === option.value
-                            ? 'selected'
-                            : '')
-                        }
-                      >
-                        <input
-                          type="radio"
-                          name="management"
-                          value={option.value}
-                          checked={
-                            form.management === option.value
-                          }
-                          onChange={(event) =>
-                            updateForm(
-                              'management',
-                              event.target.value
-                            )
-                          }
-                        />
-
-                        <span>
-                          <strong>{option.title}</strong>
-
-                          <small>
-                            {option.description}
-                          </small>
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <span className="field-label">
-                    Setup Mode
-                  </span>
-
-                  <div className="option-list">
-                    {SETUP_MODES.map((option) => (
-                      <label
-                        key={option.value}
-                        className={
-                          'choice-card ' +
-                          (form.setupMode === option.value
-                            ? 'selected'
-                            : '')
-                        }
-                      >
-                        <input
-                          type="radio"
-                          name="setup-mode"
-                          value={option.value}
-                          checked={
-                            form.setupMode === option.value
-                          }
-                          onChange={(event) =>
-                            updateForm(
-                              'setupMode',
-                              event.target.value
-                            )
-                          }
-                        />
-
-                        <span>
-                          <strong>{option.title}</strong>
-
-                          <small>
-                            {option.description}
-                          </small>
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              </section>
-
-              {/* RULES */}
-
-              <section className="form-section">
-                <h3>Rules</h3>
-
-                <label>
-                  <span>Tournament Rules</span>
-
-                  <textarea
-                    value={form.rules}
-                    onChange={(event) =>
-                      updateForm('rules', event.target.value)
-                    }
-                    placeholder="Enter tournament rules. Maximum 200 words."
-                    maxLength={1200}
-                  />
-
-                  <small className="field-help">
-                    Keep the rules clear. Maximum 200 words.
-                  </small>
-                </label>
-              </section>
-
-              {/* SPONSOR */}
-
-              <section className="form-section">
-                <h3>Sponsorship</h3>
-
-                <label className="choice-card">
-                  <input
-                    type="checkbox"
-                    checked={form.isSponsored}
-                    onChange={(event) =>
-                      updateForm(
-                        'isSponsored',
-                        event.target.checked
-                      )
-                    }
-                  />
-
-                  <span>
-                    <strong>Sponsored Tournament</strong>
-
-                    <small>
-                      Sponsorship configuration and payment will be
-                      connected through the VERITAS sponsorship system.
-                    </small>
-                  </span>
-                </label>
-              </section>
-
-              {/* SUMMARY */}
-
-              <section className="form-section">
-                <h3>Tournament Summary</h3>
-
-                <div className="tournament-info-grid">
-                  <div>
-                    <small>Name</small>
-                    <strong>
-                      {form.name.trim() || 'Not entered'}
-                    </strong>
-                  </div>
-
-                  <div>
-                    <small>Game</small>
-                    <strong>{form.game}</strong>
-                  </div>
-
-                  <div>
-                    <small>Players</small>
-                    <strong>{form.players}</strong>
-                  </div>
-
-                  <div>
-                    <small>Format</small>
-                    <strong>{form.format}</strong>
-                  </div>
-
-                  <div>
-                    <small>Match</small>
-                    <strong>
-                      {form.matchFormat}
-                    </strong>
-                  </div>
-
-                  <div>
-                    <small>Duration</small>
-                    <strong>
-                      {form.matchDuration} minutes
-                    </strong>
-                  </div>
-
-                  <div>
-                    <small>Ending</small>
-                    <strong>
-                      {form.matchRule}
-                    </strong>
-                  </div>
-
-                  <div>
-                    <small>Management</small>
-                    <strong>
-                      {form.management}
-                    </strong>
-                  </div>
-                </div>
-              </section>
-
-              {/* ACTIONS */}
-
-              <div className="modal-actions">
-                <button
-                  type="button"
-                  className="secondary-action"
-                  onClick={closeCreateModal}
-                  disabled={creating}
-                >
-                  Cancel
-                </button>
-
-                <button
-                  type="submit"
-                  className="primary-action"
-                  disabled={creating}
-                >
-                  {creating
-                    ? 'Creating Tournament...'
-                    : 'Create Tournament'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* JOIN TOURNAMENT MODAL */}
-
-      {showJoinModal && (
-        <div
-          className="modal-overlay"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget && !joining) {
-              setShowJoinModal(false)
-            }
-          }}
-        >
-          <div
-            className="join-modal"
-            onMouseDown={(event) => event.stopPropagation()}
-          >
-            <div className="modal-header">
-              <div>
-                <h2>Join Tournament</h2>
-
-                <p>
-                  Enter the tournament code provided by the creator.
-                </p>
-              </div>
-
-              <button
-                type="button"
-                className="modal-close"
-                onClick={() => setShowJoinModal(false)}
-                disabled={joining}
+            <div className="space-y-4">
+              <input
+                value={form.name}
+                onChange={(e) =>
+                  setForm({ ...form, name: e.target.value })
+                }
+                placeholder="Tournament Name"
+                className="w-full rounded-xl bg-black/30 px-4 py-3 outline-none"
+              />
+
+              <select
+                value={form.room_type}
+                onChange={(e) =>
+                  setForm({ ...form, room_type: e.target.value })
+                }
+                className="w-full rounded-xl bg-black/30 px-4 py-3"
               >
-                Ã—
-              </button>
+                <option value="Public">Public</option>
+                <option value="Private">Private</option>
+              </select>
+
+              <input
+                type="number"
+                min="2"
+                value={form.max_players}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    max_players: e.target.value,
+                  })
+                }
+                placeholder="Maximum Players"
+                className="w-full rounded-xl bg-black/30 px-4 py-3 outline-none"
+              />
+
+              <select
+                value={form.format}
+                onChange={(e) =>
+                  setForm({ ...form, format: e.target.value })
+                }
+                className="w-full rounded-xl bg-black/30 px-4 py-3"
+              >
+                <option>Knockout</option>
+                <option>League</option>
+                <option>Group + Knockout</option>
+              </select>
+
+              <textarea
+                value={form.rules}
+                onChange={(e) =>
+                  setForm({ ...form, rules: e.target.value })
+                }
+                placeholder="Rules (optional, max 200 words)"
+                rows="5"
+                className="w-full rounded-xl bg-black/30 px-4 py-3 outline-none"
+              />
+
+              <input
+                type="date"
+                value={form.start_date}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    start_date: e.target.value,
+                  })
+                }
+                className="w-full rounded-xl bg-black/30 px-4 py-3"
+              />
+
+              <input
+                type="time"
+                value={form.start_time}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    start_time: e.target.value,
+                  })
+                }
+                className="w-full rounded-xl bg-black/30 px-4 py-3"
+              />
+
+              <input
+                value={form.creator_whatsapp}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    creator_whatsapp: e.target.value,
+                  })
+                }
+                placeholder="Enter WhatsApp Number for Notifications"
+                className="w-full rounded-xl bg-black/30 px-4 py-3 outline-none"
+              />
             </div>
 
-            <form onSubmit={handleJoinTournament}>
-              <label>
-                <span>Tournament Code</span>
-
-                <input
-                  type="text"
-                  value={joinCode}
-                  onChange={(event) =>
-                    setJoinCode(
-                      event.target.value.toUpperCase()
-                    )
-                  }
-                  placeholder="Enter tournament code"
-                  maxLength={20}
-                  autoComplete="off"
-                  required
-                />
-              </label>
-
-              <div className="modal-actions">
-                <button
-                  type="button"
-                  className="secondary-action"
-                  onClick={() => setShowJoinModal(false)}
-                  disabled={joining}
-                >
-                  Cancel
-                </button>
-
-                <button
-                  type="submit"
-                  className="primary-action"
-                  disabled={joining}
-                >
-                  {joining
-                    ? 'Joining...'
-                    : 'Join Tournament'}
-                </button>
-              </div>
-            </form>
-          </div>
+            <button
+              type="submit"
+              className="mt-6 w-full rounded-xl bg-white py-4 font-black text-black"
+            >
+              CREATE TOURNAMENT
+            </button>
+          </form>
         </div>
       )}
     </div>
   )
 }
+
+
+
+
+
+
+
