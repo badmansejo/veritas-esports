@@ -1,0 +1,774 @@
+﻿
+import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { supabase } from '../../lib/supabase'
+
+const BUCKET = 'match-evidence'
+const MAX_IMAGE_SIZE = 8 * 1024 * 1024
+
+export default function Matches() {
+  const navigate = useNavigate()
+
+  const [matches, setMatches] = useState([])
+  const [results, setResults] = useState({})
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [userId, setUserId] = useState('')
+  const [submitting, setSubmitting] = useState('')
+  const [scores, setScores] = useState({})
+  const [evidence, setEvidence] = useState({})
+  const [reasons, setReasons] = useState({})
+  const [evidenceUrls, setEvidenceUrls] = useState({})
+
+  useEffect(() => {
+    loadMatches()
+  }, [])
+
+  async function loadMatches() {
+    setLoading(true)
+    setError('')
+
+    try {
+      const { data: authData, error: authError } =
+        await supabase.auth.getUser()
+
+      if (authError || !authData?.user) {
+        throw new Error('Please log in to view your matches.')
+      }
+
+      const currentUserId = authData.user.id
+      setUserId(currentUserId)
+
+      // Load tournaments created by this user.
+      const { data: createdTournaments, error: tournamentError } =
+        await supabase
+          .from('tournaments')
+          .select('id')
+          .eq('creator_id', currentUserId)
+
+      if (tournamentError) throw tournamentError
+
+      const tournamentIds = (createdTournaments || []).map(t => t.id)
+
+      const matchSelect = `
+        id,
+        tournament_id,
+        match_number,
+        player_one_id,
+        player_two_id,
+        winner_id,
+        status,
+        player_one_score,
+        player_two_score,
+        scheduled_time,
+        confirmation_deadline,
+        dispute_deadline,
+        created_at,
+        tournaments (
+          id,
+          name,
+          game,
+          tournament_code,
+          creator_id
+        )
+      `
+
+      // Load matches in which the user is a player.
+      const { data: playerMatches, error: playerError } =
+        await supabase
+          .from('matches')
+          .select(matchSelect)
+          .or(
+            `player_one_id.eq.${currentUserId},player_two_id.eq.${currentUserId}`
+          )
+          .order('created_at', { ascending: false })
+
+      if (playerError) throw playerError
+
+      // Also load every match in tournaments created by the user.
+      let creatorMatches = []
+
+      if (tournamentIds.length > 0) {
+        const { data, error: creatorError } = await supabase
+          .from('matches')
+          .select(matchSelect)
+          .in('tournament_id', tournamentIds)
+          .order('created_at', { ascending: false })
+
+        if (creatorError) throw creatorError
+        creatorMatches = data || []
+      }
+
+      // Merge the two lists without duplicates.
+      const uniqueMatches = new Map()
+
+      for (const match of [...(playerMatches || []), ...creatorMatches]) {
+        uniqueMatches.set(match.id, match)
+      }
+
+      const foundMatches = [...uniqueMatches.values()].sort(
+        (a, b) =>
+          new Date(b.created_at || 0) - new Date(a.created_at || 0)
+      )
+
+      setMatches(foundMatches)
+
+      if (foundMatches.length === 0) {
+        setResults({})
+        setEvidenceUrls({})
+        setLoading(false)
+        return
+      }
+
+      const matchIds = foundMatches.map(match => match.id)
+
+      const { data: resultRows, error: resultsError } = await supabase
+        .from('match_results')
+        .select(`
+          id,
+          match_id,
+          submitted_by,
+          player_one_score,
+          player_two_score,
+          result_status,
+          submitted_at,
+          confirmed_at,
+          confirmed_by,
+          evidence_url,
+          dispute_reason,
+          disputed_at,
+          creator_review_notified_at,
+          admin_review_alerted_at
+        `)
+        .in('match_id', matchIds)
+        .order('submitted_at', { ascending: false })
+
+      if (resultsError) throw resultsError
+
+      const latestByMatch = {}
+
+      for (const result of resultRows || []) {
+        if (!latestByMatch[result.match_id]) {
+          latestByMatch[result.match_id] = result
+        }
+      }
+
+      setResults(latestByMatch)
+
+      // Generate short-lived URLs for private screenshots.
+      const urls = {}
+
+      for (const result of Object.values(latestByMatch)) {
+        if (!result.evidence_url) continue
+
+        const { data, error: urlError } = await supabase.storage
+          .from(BUCKET)
+          .createSignedUrl(result.evidence_url, 300)
+
+        if (!urlError && data?.signedUrl) {
+          urls[result.id] = data.signedUrl
+        }
+      }
+
+      setEvidenceUrls(urls)
+    } catch (err) {
+      setError(err.message || 'Could not load matches.')
+      setMatches([])
+      setResults({})
+      setEvidenceUrls({})
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  function myScore(match) {
+    const result = results[match.id]
+
+    if (result) {
+      return match.player_one_id === userId
+        ? result.player_one_score
+        : result.player_two_score
+    }
+
+    return match.player_one_id === userId
+      ? match.player_one_score
+      : match.player_two_score
+  }
+
+  function opponentScore(match) {
+    const result = results[match.id]
+
+    if (result) {
+      return match.player_one_id === userId
+        ? result.player_two_score
+        : result.player_one_score
+    }
+
+    return match.player_one_id === userId
+      ? match.player_two_score
+      : match.player_one_score
+  }
+
+  function chooseEvidence(matchId, file) {
+    const previous = evidence[matchId]
+
+    if (previous?.preview) {
+      URL.revokeObjectURL(previous.preview)
+    }
+
+    if (!file) {
+      setEvidence(prev => ({ ...prev, [matchId]: null }))
+      return
+    }
+
+    if (!file.type.startsWith('image/')) {
+      alert('Choose an image file, such as JPG, PNG, or WEBP.')
+      return
+    }
+
+    if (file.size > MAX_IMAGE_SIZE) {
+      alert('The screenshot must be 8 MB or smaller.')
+      return
+    }
+
+    setEvidence(prev => ({
+      ...prev,
+      [matchId]: {
+        file,
+        preview: URL.createObjectURL(file)
+      }
+    }))
+  }
+
+  async function submitResult(match) {
+    const values = scores[match.id] || {}
+    const mine = Number(values.mine)
+    const opponent = Number(values.opponent)
+    const selectedEvidence = evidence[match.id]
+
+    if (
+      values.mine === undefined || values.mine === '' ||
+      values.opponent === undefined || values.opponent === '' ||
+      !Number.isInteger(mine) || !Number.isInteger(opponent) ||
+      mine < 0 || opponent < 0
+    ) {
+      alert('Enter both scores as non-negative whole numbers.')
+      return
+    }
+
+    if (!selectedEvidence?.file) {
+      alert('Please upload a screenshot of the match result.')
+      return
+    }
+
+    setSubmitting(match.id)
+
+    let uploadedPath = ''
+
+    try {
+      const file = selectedEvidence.file
+      const extension = (file.name.split('.').pop() || 'jpg')
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '')
+
+      uploadedPath =
+        `${userId}/${match.id}/${crypto.randomUUID()}.${extension}`
+
+      const { error: uploadError } = await supabase.storage
+        .from(BUCKET)
+        .upload(uploadedPath, file, {
+          contentType: file.type,
+          upsert: false
+        })
+
+      if (uploadError) {
+        throw new Error(`Screenshot upload failed: ${uploadError.message}`)
+      }
+
+      const { error: submitError } = await supabase.rpc(
+        'submit_match_result',
+        {
+          p_match_id: match.id,
+          p_my_score: mine,
+          p_opponent_score: opponent,
+          p_evidence_url: uploadedPath
+        }
+      )
+
+      if (submitError) {
+        await supabase.storage.from(BUCKET).remove([uploadedPath])
+        uploadedPath = ''
+        throw new Error(submitError.message)
+      }
+
+      alert('Result submitted. Your opponent can respond, and the creator can review unresolved results.')
+
+      if (selectedEvidence.preview) {
+        URL.revokeObjectURL(selectedEvidence.preview)
+      }
+
+      setEvidence(prev => ({ ...prev, [match.id]: null }))
+      setScores(prev => ({
+        ...prev,
+        [match.id]: { mine: '', opponent: '' }
+      }))
+
+      await loadMatches()
+    } catch (err) {
+      alert(err.message || 'Could not submit the match result.')
+    } finally {
+      setSubmitting('')
+    }
+  }
+
+  async function confirmResult(match) {
+    const result = results[match.id]
+
+    if (!result) {
+      alert('No result is available to confirm.')
+      return
+    }
+
+    const isCreator = match.tournaments?.creator_id === userId
+
+    const message = isCreator
+      ? 'Review this score and screenshot carefully. Confirm this result?'
+      : 'Confirm that the submitted score is correct?'
+
+    if (!window.confirm(message)) return
+
+    setSubmitting(match.id)
+
+    try {
+      const { error: confirmError } = await supabase.rpc(
+        'confirm_match_result',
+        { p_match_id: match.id }
+      )
+
+      if (confirmError) throw confirmError
+
+      alert('Result confirmed and finalized.')
+      await loadMatches()
+    } catch (err) {
+      alert(err.message || 'Could not confirm the result.')
+    } finally {
+      setSubmitting('')
+    }
+  }
+
+  async function disputeResult(match) {
+    const reason = (reasons[match.id] || '').trim()
+
+    if (reason.length < 5) {
+      alert('Enter a dispute reason of at least 5 characters.')
+      return
+    }
+
+    setSubmitting(match.id)
+
+    try {
+      const { error: disputeError } = await supabase.rpc(
+        'dispute_match_result',
+        {
+          p_match_id: match.id,
+          p_reason: reason
+        }
+      )
+
+      if (disputeError) throw disputeError
+
+      alert('Dispute submitted. The tournament creator will be notified.')
+      await loadMatches()
+    } catch (err) {
+      alert(err.message || 'Could not submit the dispute.')
+    } finally {
+      setSubmitting('')
+    }
+  }
+
+  const styles = `
+    .mt-page{min-height:100vh;background:#09090f;color:#f5f5f7;padding:24px 16px 48px;font-family:Arial,sans-serif}
+    .mt-wrap{max-width:1100px;margin:0 auto}
+    .mt-back{background:#22222d;border:1px solid #414151;color:#fff;padding:10px 14px;border-radius:9px;cursor:pointer;font-weight:700}
+    .mt-title{font-size:30px;font-weight:900;margin:24px 0 6px}
+    .mt-muted{color:#a5a5b5;font-size:14px;line-height:1.6}
+    .mt-card{background:#14141e;border:1px solid #30303e;border-radius:15px;padding:18px;margin-top:16px}
+    .mt-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+    .mt-badge{display:inline-block;background:#252538;border:1px solid #44445c;border-radius:99px;padding:5px 10px;font-size:12px}
+    .mt-review{border-color:#88733c}
+    .mt-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
+    .mt-field{width:100%;box-sizing:border-box;background:#0b0b12;border:1px solid #393948;color:white;border-radius:9px;padding:11px;margin-top:5px}
+    .mt-label{font-size:13px;color:#bdbdca}
+    .mt-btn{background:#b7ff35;color:#101010;border:0;border-radius:9px;padding:11px 14px;font-weight:800;cursor:pointer;margin:10px 8px 0 0}
+    .mt-btn-alt{background:#292938;color:white;border:1px solid #48485a}
+    .mt-btn:disabled{opacity:.5;cursor:not-allowed}
+    .mt-error{background:#351c24;border:1px solid #773747;padding:12px;border-radius:10px;color:#ffd5dc;margin-top:16px}
+    .mt-preview{display:block;max-width:100%;max-height:300px;object-fit:contain;margin-top:12px;border:1px solid #393948;border-radius:10px}
+    .mt-upload{display:block;margin-top:8px;padding:12px;background:#0b0b12;border:1px dashed #55556b;border-radius:9px;width:100%;box-sizing:border-box;color:#fff}
+    .mt-note{padding:12px;border-radius:10px;background:#20202d;margin-top:12px;overflow-wrap:anywhere}
+    @media(max-width:600px){.mt-grid{grid-template-columns:1fr}.mt-title{font-size:25px}}
+  `
+
+  return (
+    <div className="mt-page">
+      <style>{styles}</style>
+
+      <div className="mt-wrap">
+        <button className="mt-back" onClick={() => navigate('/')}>
+          ← Back to Dashboard
+        </button>
+
+        <h1 className="mt-title">Matches & Reviews</h1>
+        <p className="mt-muted">
+          View your matches or review unresolved results in tournaments you created.
+        </p>
+
+        {loading && <div className="mt-card">Loading matches...</div>}
+        {error && <div className="mt-error">{error}</div>}
+
+        {!loading && !error && matches.length === 0 && (
+          <div className="mt-card">
+            <h3>No matches available</h3>
+            <p className="mt-muted">
+              Your assigned matches and matches in your tournaments will appear here.
+            </p>
+            <button
+              className="mt-btn mt-btn-alt"
+              onClick={() => navigate('/tournaments')}
+            >
+              Browse tournaments
+            </button>
+          </div>
+        )}
+
+        {!loading && matches.map(match => {
+          const isPlayerOne = match.player_one_id === userId
+          const isPlayer = isPlayerOne ||
+            match.player_two_id === userId
+          const isCreator = match.tournaments?.creator_id === userId
+          const opponentId = isPlayerOne
+            ? match.player_two_id
+            : match.player_one_id
+
+          const result = results[match.id]
+          const submittedByMe = result?.submitted_by === userId
+          const resultStatus = String(result?.result_status || '').toLowerCase()
+          const status = String(match.status || 'Ready')
+          const lowerStatus = status.toLowerCase()
+
+          const isFinished = [
+            'completed', 'confirmed', 'cancelled', 'forfeit'
+          ].includes(lowerStatus)
+
+          const isUnresolved = result && [
+            'pending',
+            'disputed',
+            'awaiting admin review'
+          ].includes(resultStatus)
+
+          const awaitingResponse = result && [
+            'pending',
+            'awaiting confirmation',
+            'submitted'
+          ].includes(resultStatus)
+
+          const canSubmit = isPlayer &&
+            !isFinished &&
+            Boolean(opponentId) &&
+            !isUnresolved &&
+            !result
+
+          const needsCreatorReview = isCreator &&
+            !isFinished &&
+            Boolean(isUnresolved)
+
+          const canPlayerConfirm = isPlayer &&
+            !isFinished &&
+            Boolean(awaitingResponse) &&
+            !submittedByMe &&
+            resultStatus !== 'disputed'
+
+          const selectedEvidence = evidence[match.id]
+
+          return (
+            <div
+              className={`mt-card ${needsCreatorReview ? 'mt-review' : ''}`}
+              key={match.id}
+            >
+              <div className="mt-row">
+                <div>
+                  <h3 style={{ margin: '0 0 6px' }}>
+                    {match.tournaments?.name || 'Tournament match'}
+                  </h3>
+                  <div className="mt-muted">
+                    {match.tournaments?.game || 'Game'} · Match #{match.match_number}
+                  </div>
+                  {match.tournaments?.tournament_code && (
+                    <div className="mt-muted">
+                      Tournament code: {match.tournaments.tournament_code}
+                    </div>
+                  )}
+                  {!isPlayer && isCreator && (
+                    <div className="mt-muted">
+                      Creator review · You are not playing in this match
+                    </div>
+                  )}
+                </div>
+
+                <span className="mt-badge">
+                  {needsCreatorReview ? 'Needs your review' : status}
+                </span>
+              </div>
+
+              <div className="mt-grid">
+                <div>
+                  <div className="mt-label">Player 1 score</div>
+                  <div style={{ fontSize: 24, fontWeight: 900 }}>
+                    {result?.player_one_score ?? match.player_one_score ?? '—'}
+                  </div>
+                </div>
+                <div>
+                  <div className="mt-label">Player 2 score</div>
+                  <div style={{ fontSize: 24, fontWeight: 900 }}>
+                    {result?.player_two_score ?? match.player_two_score ?? '—'}
+                  </div>
+                </div>
+                <div>
+                  <div className="mt-label">Scheduled time</div>
+                  <div>
+                    {match.scheduled_time
+                      ? new Date(match.scheduled_time).toLocaleString()
+                      : 'Not scheduled'}
+                  </div>
+                </div>
+                <div>
+                  <div className="mt-label">Creator notified</div>
+                  <div>
+                    {result?.creator_review_notified_at
+                      ? new Date(result.creator_review_notified_at).toLocaleString()
+                      : 'Not yet notified'}
+                  </div>
+                </div>
+              </div>
+
+              {result && (
+                <div className="mt-note">
+                  <strong>Result status:</strong> {result.result_status}
+                  {result.dispute_reason && (
+                    <p className="mt-muted">
+                      <strong>Dispute reason:</strong> {result.dispute_reason}
+                    </p>
+                  )}
+                  {result.submitted_at && (
+                    <p className="mt-muted">
+                      Submitted: {new Date(result.submitted_at).toLocaleString()}
+                    </p>
+                  )}
+
+                  {evidenceUrls[result.id] && (
+                    <div>
+                      <p className="mt-muted">Submitted screenshot evidence</p>
+                      <a
+                        href={evidenceUrls[result.id]}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{ color: '#b7ff35' }}
+                      >
+                        Open screenshot
+                      </a>
+                      <img
+                        className="mt-preview"
+                        src={evidenceUrls[result.id]}
+                        alt="Submitted match evidence"
+                      />
+                    </div>
+                  )}
+
+                  {!evidenceUrls[result.id] && result.evidence_url && (
+                    <p className="mt-muted">
+                      Evidence is recorded, but the screenshot could not be loaded.
+                      Check the private Storage bucket permissions.
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {canSubmit && (
+                <div style={{ marginTop: 18 }}>
+                  <h4>Submit match result</h4>
+                  <div className="mt-grid">
+                    <label className="mt-label">
+                      Your score
+                      <input
+                        className="mt-field"
+                        type="number"
+                        min="0"
+                        step="1"
+                        value={scores[match.id]?.mine ?? ''}
+                        onChange={e => setScores(prev => ({
+                          ...prev,
+                          [match.id]: {
+                            ...prev[match.id],
+                            mine: e.target.value
+                          }
+                        }))}
+                      />
+                    </label>
+
+                    <label className="mt-label">
+                      Opponent score
+                      <input
+                        className="mt-field"
+                        type="number"
+                        min="0"
+                        step="1"
+                        value={scores[match.id]?.opponent ?? ''}
+                        onChange={e => setScores(prev => ({
+                          ...prev,
+                          [match.id]: {
+                            ...prev[match.id],
+                            opponent: e.target.value
+                          }
+                        }))}
+                      />
+                    </label>
+                  </div>
+
+                  <label
+                    className="mt-label"
+                    style={{ display: 'block', marginTop: 14 }}
+                  >
+                    Match screenshot (required)
+                    <input
+                      className="mt-upload"
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp,image/gif"
+                      onChange={e => chooseEvidence(
+                        match.id,
+                        e.target.files?.[0] || null
+                      )}
+                    />
+                  </label>
+
+                  {selectedEvidence?.preview && (
+                    <div>
+                      <img
+                        className="mt-preview"
+                        src={selectedEvidence.preview}
+                        alt="Selected match screenshot preview"
+                      />
+                      <button
+                        className="mt-btn mt-btn-alt"
+                        type="button"
+                        onClick={() => chooseEvidence(match.id, null)}
+                      >
+                        Remove screenshot
+                      </button>
+                    </div>
+                  )}
+
+                  <p className="mt-muted">
+                    Image only · Maximum 8 MB. Upload a clear screenshot showing the final score.
+                  </p>
+
+                  <button
+                    className="mt-btn"
+                    disabled={submitting === match.id}
+                    onClick={() => submitResult(match)}
+                  >
+                    {submitting === match.id
+                      ? 'Uploading and submitting...'
+                      : 'Upload screenshot & submit result'}
+                  </button>
+                </div>
+              )}
+
+              {canPlayerConfirm && (
+                <div style={{ marginTop: 18 }}>
+                  <p>Your opponent submitted this score. Review the evidence before confirming.</p>
+                  <button
+                    className="mt-btn"
+                    disabled={submitting === match.id}
+                    onClick={() => confirmResult(match)}
+                  >
+                    Confirm result
+                  </button>
+
+                  <label
+                    className="mt-label"
+                    style={{ display: 'block', marginTop: 12 }}
+                  >
+                    Reason for dispute
+                    <input
+                      className="mt-field"
+                      placeholder="Explain why the result is incorrect"
+                      value={reasons[match.id] || ''}
+                      onChange={e => setReasons(prev => ({
+                        ...prev,
+                        [match.id]: e.target.value
+                      }))}
+                    />
+                  </label>
+
+                  <button
+                    className="mt-btn mt-btn-alt"
+                    disabled={submitting === match.id}
+                    onClick={() => disputeResult(match)}
+                  >
+                    Dispute result
+                  </button>
+                </div>
+              )}
+
+              {needsCreatorReview && (
+                <div style={{ marginTop: 18 }}>
+                  <h4>Creator review required</h4>
+                  <p className="mt-muted">
+                    Review the submitted score and screenshot. Confirm only when
+                    the evidence supports the result. If the scores are tied,
+                    resolve the draw under the tournament rules first.
+                  </p>
+                  <button
+                    className="mt-btn"
+                    disabled={submitting === match.id}
+                    onClick={() => confirmResult(match)}
+                  >
+                    {submitting === match.id
+                      ? 'Confirming...'
+                      : 'Confirm and finalize result'}
+                  </button>
+                </div>
+              )}
+
+              {submittedByMe && awaitingResponse && (
+                <p className="mt-muted">
+                  Your result has been submitted. Waiting for your opponent to respond.
+                </p>
+              )}
+
+              {resultStatus === 'disputed' && !isCreator && (
+                <p className="mt-muted">
+                  This result is disputed and awaiting tournament creator review.
+                </p>
+              )}
+
+              {result?.admin_review_alerted_at && !isFinished && (
+                <p className="mt-muted">
+                  This unresolved result has been escalated to the admin fallback.
+                </p>
+              )}
+            </div>
+          )
+        })}
+
+        <button
+          className="mt-btn mt-btn-alt"
+          onClick={loadMatches}
+          disabled={loading}
+        >
+          {loading ? 'Refreshing...' : 'Refresh matches'}
+        </button>
+      </div>
+    </div>
+  )
+}

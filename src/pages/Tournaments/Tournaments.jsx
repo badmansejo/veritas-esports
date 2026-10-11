@@ -1,461 +1,1130 @@
-﻿import React, { useEffect, useState } from 'react'
+﻿
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 
-const APP_URL = 'https://veritas-esportss.veritasesports.workers.dev'
+const PLAYER_COUNTS = [4, 8, 12, 16, 20, 24, 28, 32]
+
+const initialForm = {
+  name: '',
+  players: '8',
+  format: 'Knockout',
+  match_format: 'Bo1',
+  match_rule: 'Extra Time',
+  management: 'Leader Managed',
+  setup_mode: 'Automatic',
+  room_type: 'Public',
+  rules: '',
+  support_whatsapp: '',
+  sponsor_name: '',
+  sponsor_url: '',
+  prize_pool: '',
+  first_prize: '',
+  second_prize: '',
+  third_prize: '',
+}
+
+const styles = `
+.vt-page{min-height:100vh;background:#070b12;color:#f3f5f8;padding:25px 16px 60px;font-family:Inter,system-ui,sans-serif}
+.vt-wrap{max-width:1180px;margin:auto}
+.vt-hero{background:linear-gradient(120deg,#171d28,#0d1119 65%);border:1px solid #343b47;border-radius:20px;padding:26px;margin-bottom:20px}
+.vt-kicker{font-size:11px;letter-spacing:3px;color:#c3a66b;font-weight:800}
+.vt-title{font-size:clamp(28px,5vw,44px);line-height:1.05;margin:10px 0;font-weight:900}
+.vt-sub{color:#aab3c1;line-height:1.6}
+.vt-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.vt-btn{border:1px solid #4a5260;border-radius:10px;padding:11px 15px;color:#f4f6f8;background:#171d27;cursor:pointer;font-weight:750}
+.vt-btn:disabled{opacity:.5;cursor:not-allowed}
+.vt-btn-primary{background:#d6b46c;border-color:#d6b46c;color:#11151c}
+.vt-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}
+.vt-tab{background:#10151e;border:1px solid #303846;color:#b8c1cf;border-radius:999px;padding:10px 14px;cursor:pointer}
+.vt-tab.active{color:#11151c;background:#d6b46c;border-color:#d6b46c;font-weight:800}
+.vt-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.vt-card{background:#10151e;border:1px solid #303846;border-radius:16px;padding:18px;min-width:0}
+.vt-card h3{font-size:19px;margin:8px 0 5px;overflow-wrap:anywhere}
+.vt-muted{color:#9da8b7;font-size:13px;line-height:1.6}
+.vt-tag{display:inline-flex;border:1px solid #4a5260;border-radius:999px;padding:5px 9px;font-size:11px;color:#d7dce5;margin:0 5px 5px 0}
+.vt-tag.gold{border-color:#a58a50;color:#e4c77f}
+.vt-card-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:15px;flex-wrap:wrap}
+.vt-section-title{font-size:21px;margin:26px 0 13px;font-weight:850}
+.vt-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.vt-field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.vt-field.full{grid-column:1/-1}
+.vt-field label{font-size:12px;color:#bac3d0;font-weight:750}
+.vt-field input,.vt-field select,.vt-field textarea{box-sizing:border-box;width:100%;background:#090e16;color:#f5f6f8;border:1px solid #394251;border-radius:9px;padding:11px;font:inherit}
+.vt-field textarea{min-height:90px;resize:vertical}
+.vt-notice{padding:12px 14px;background:#181c23;border:1px solid #4b4639;color:#d5c7a4;border-radius:10px;font-size:13px;line-height:1.6;margin:12px 0}
+.vt-error{background:#35191b;border:1px solid #7e3438;color:#ffc8c8;padding:12px;border-radius:10px;margin:12px 0;overflow-wrap:anywhere}
+.vt-success{background:#14291f;border:1px solid #2d6a49;color:#b7f2ce;padding:12px;border-radius:10px;margin:12px 0;overflow-wrap:anywhere}
+.vt-empty{border:1px dashed #414957;border-radius:14px;padding:28px;text-align:center;color:#9da8b7}
+.vt-modal-backdrop{position:fixed;inset:0;z-index:1000;background:#000b;display:flex;align-items:flex-start;justify-content:center;padding:15px;overflow-y:auto}
+.vt-modal{width:min(760px,100%);background:#10151e;border:1px solid #404958;border-radius:18px;padding:22px;margin:auto}
+.vt-modal-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:15px}
+.vt-modal-head h2{margin:0;font-size:23px}
+.vt-close{background:transparent;border:0;color:#fff;font-size:27px;cursor:pointer}
+.vt-loading{color:#aab3c1;padding:25px 0}
+.vt-sponsor-image{max-width:100%;max-height:100px;object-fit:contain;margin-top:8px}
+@media(max-width:560px){.vt-page{padding:14px 10px 40px}.vt-hero{padding:19px}.vt-form-grid{grid-template-columns:1fr}.vt-field.full{grid-column:auto}.vt-modal-backdrop{padding:7px}.vt-modal{padding:15px}}
+`
+
+function money(value) {
+  return `KES ${Number(value || 0).toLocaleString('en-KE')}`
+}
+
+function getBracketPreview(playerCount, selectedFormat) {
+  const players = Number(playerCount || 0)
+
+  if (selectedFormat === 'Knockout') {
+    const slots = 2 ** Math.ceil(Math.log2(Math.max(players, 2)))
+    return {
+      title: 'Knockout bracket preview',
+      rounds: Math.ceil(Math.log2(Math.max(players, 2))),
+      matches: players - 1,
+      byes: slots - players,
+      detail: `${slots} bracket slots, with ${slots - players} bye${slots - players === 1 ? '' : 's'} in the opening round.`,
+    }
+  }
+
+  if (selectedFormat === 'League') {
+    return {
+      title: 'League format preview',
+      rounds: players - 1,
+      matches: (players * (players - 1)) / 2,
+      byes: 0,
+      detail: 'Estimated round-robin schedule: every player faces every other player once.',
+    }
+  }
+
+  const groups = Math.ceil(players / 4)
+  const groupMatches = players - groups
+  const qualifyingPlayers = groups * 2
+  const knockoutMatches = Math.max(0, qualifyingPlayers - 1)
+
+  return {
+    title: 'Groups to Knockout preview',
+    rounds: Math.ceil(Math.log2(Math.max(qualifyingPlayers, 2))) + 1,
+    matches: groupMatches + knockoutMatches,
+    byes: 0,
+    detail: `Estimated ${groups} groups of up to 4 players, with the top 2 from each group qualifying for knockout rounds.`,
+  }
+}
+function countWords(value) {
+  return value.trim() ? value.trim().split(/\s+/).length : 0
+}
+
+function compressTournamentImage(file) {
+  return new Promise((resolve, reject) => {
+    const image = new Image()
+    const objectUrl = URL.createObjectURL(file)
+
+    image.onload = () => {
+      try {
+        const canvas = document.createElement('canvas')
+        canvas.width = 256
+        canvas.height = 256
+
+        const ctx = canvas.getContext('2d')
+        const cropSize = Math.min(image.naturalWidth, image.naturalHeight)
+        const sx = (image.naturalWidth - cropSize) / 2
+        const sy = (image.naturalHeight - cropSize) / 2
+
+        ctx.drawImage(image, sx, sy, cropSize, cropSize, 0, 0, 256, 256)
+
+        canvas.toBlob((blob) => {
+          URL.revokeObjectURL(objectUrl)
+
+          if (!blob) {
+            reject(new Error('Image compression failed. Choose another image.'))
+            return
+          }
+
+          if (blob.size > 256 * 1024) {
+            reject(new Error('Image is too large after compression. Choose another image.'))
+            return
+          }
+
+          resolve(blob)
+        }, 'image/webp', 0.78)
+      } catch (err) {
+        URL.revokeObjectURL(objectUrl)
+        reject(err)
+      }
+    }
+
+    image.onerror = () => {
+      URL.revokeObjectURL(objectUrl)
+      reject(new Error('Could not read that image.'))
+    }
+
+    image.src = objectUrl
+  })
+}
 
 export default function Tournaments() {
   const navigate = useNavigate()
 
-  const [tournaments, setTournaments] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [showCreate, setShowCreate] = useState(false)
-  const [activeTab, setActiveTab] = useState('Open')
   const [user, setUser] = useState(null)
+  const [profile, setProfile] = useState(null)
+  const [tournaments, setTournaments] = useState([])
+  const [creators, setCreators] = useState({})
+  const [counts, setCounts] = useState({})
+  const [loading, setLoading] = useState(true)
 
-  const [form, setForm] = useState({
-    name: '',
-    room_type: 'Public',
-    max_players: 8,
-    format: 'Knockout',
-    rules: '',
-    start_date: '',
-    start_time: '',
-    creator_whatsapp: '',
-  })
+  const [tab, setTab] = useState('all')
+  const [search, setSearch] = useState('')
+  const [showCreate, setShowCreate] = useState(false)
+  const [showJoin, setShowJoin] = useState(false)
+  const [creationType, setCreationType] = useState('normal')
 
-  async function loadUser() {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+  const [form, setForm] = useState(initialForm)
+  const [sponsorImageFile, setSponsorImageFile] = useState(null)
+  const [sponsorImagePreview, setSponsorImagePreview] = useState('')
+  const [imageBusy, setImageBusy] = useState(false)
 
-    setUser(user)
-  }
+  const [joinCode, setJoinCode] = useState('')
+  const [joinWhatsapp, setJoinWhatsapp] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const [message, setMessage] = useState('')
 
-  async function loadTournaments() {
+  const loadData = useCallback(async () => {
     setLoading(true)
+    setError('')
 
-    const { data, error } = await supabase
-      .from('tournaments')
-      .select(`
-        id,
-        creator_id,
-        tournament_code,
-        private_room_code,
-        private_room_link,
-        name,
-        game,
-        room_type,
-        players,
-        max_players,
-        format,
-        rules,
-        start_date,
-        start_time,
-        creator_whatsapp,
-        status,
-        creator_started,
-        expires_at,
-        created_at
-      `)
-      .order('created_at', { ascending: false })
+    try {
+      const { data: authData, error: authError } = await supabase.auth.getUser()
+      if (authError) throw authError
 
-    if (!error) {
-      const now = Date.now()
+      const currentUser = authData?.user
 
-      const active = (data || []).filter((t) => {
-        if (!t.expires_at) return true
-        return new Date(t.expires_at).getTime() > now
-      })
+      if (!currentUser) {
+        setUser(null)
+        setProfile(null)
+        setTournaments([])
+        setCreators({})
+        setCounts({})
+        return
+      }
 
-      setTournaments(active)
+      setUser(currentUser)
+
+      const { data: profileData, error: profileError } = await supabase
+        .from('tournament_player_profiles')
+        .select('id, username, veritas_user_id, is_admin, kes_balance')
+        .eq('id', currentUser.id)
+        .maybeSingle()
+
+      if (profileError) throw profileError
+      setProfile(profileData || null)
+
+      const { data: tournamentData, error: tournamentError } = await supabase
+        .from('tournaments')
+        .select('*')
+      .eq('is_archived', false)
+        .order('created_at', { ascending: false })
+
+      if (tournamentError) throw tournamentError
+
+      const rows = tournamentData || []
+      setTournaments(rows)
+
+      const creatorIds = [...new Set(rows.flatMap((item) => [item.creator_id, item.winner_id]).filter(Boolean))]
+
+      if (creatorIds.length) {
+        const { data: profileRows, error: creatorsError } = await supabase
+          .from('tournament_player_profiles')
+          .select('id, username, veritas_user_id')
+          .in('id', creatorIds)
+
+        if (!creatorsError) {
+          const map = {}
+          ;(profileRows || []).forEach((row) => {
+            map[row.id] = row
+          })
+          setCreators(map)
+        }
+      } else {
+        setCreators({})
+      }
+
+      const ids = rows.map((item) => item.id)
+
+      if (ids.length) {
+        const { data: participantRows, error: participantsError } = await supabase
+          .from('tournament_participants')
+          .select('tournament_id, status')
+          .in('tournament_id', ids)
+
+        if (participantsError) throw participantsError
+
+        const countMap = {}
+        ;(participantRows || []).forEach((row) => {
+          if (['Withdrawn', 'Disqualified', 'Removed'].includes(row.status)) return
+          countMap[row.tournament_id] = (countMap[row.tournament_id] || 0) + 1
+        })
+
+        setCounts(countMap)
+      } else {
+        setCounts({})
+      }
+    } catch (err) {
+      setError(err?.message || 'Could not load tournaments.')
+    } finally {
+      setLoading(false)
     }
-
-    setLoading(false)
-  }
-
-  useEffect(() => {
-    loadUser()
-    loadTournaments()
   }, [])
 
-  function getJoinLink(tournamentCode) {
-    return `${APP_URL}/tournaments/${tournamentCode}`
-  }
+  useEffect(() => {
+    loadData()
+  }, [loadData])
 
-  async function createTournament(e) {
-    e.preventDefault()
+  const visibleTournaments = useMemo(() => {
+    const query = search.trim().toLowerCase()
 
-    if (!form.name.trim()) {
-      alert('Enter tournament name')
-      return
-    }
+    return tournaments.filter((item) => {
+      if (
+        item.status === 'Completed' &&
+        item.expires_at &&
+        new Date(item.expires_at).getTime() <= Date.now()
+      ) return false
 
-    if (!form.start_date || !form.start_time) {
-      alert('Select start date and time')
-      return
-    }
+      const sponsored = Boolean(item.is_sponsored)
 
-    if (!creatorWhatsapp.trim()) {
-      alert("Enter WhatsApp Number for Notifications number is required.")
-      return
-    }
+      if (tab === 'normal' && sponsored) return false
+      if (tab === 'sponsored' && !sponsored) return false
+      if (tab === 'open' && item.status !== 'Open') return false
+      if (tab === 'active' && !['Live', 'Ongoing', 'In Progress'].includes(item.status)) return false
+      if (tab === 'completed' && item.status !== 'Completed') return false
 
-    const { data, error } = await supabase.rpc('create_tournament', {
-      p_name: form.name.trim(),
-      p_room_type: form.room_type,
-      p_max_players: Number(form.max_players),
-      p_format: form.format,
-      p_rules: form.rules.trim(),
-      p_start_date: form.start_date,
-      p_start_time: form.start_time,
-      p_creator_whatsapp: form.creator_whatsapp.trim(),
+      if (query) {
+        const creator = creators[item.creator_id]?.username || ''
+        const text = `${item.name || ''} ${item.game || ''} ${item.format || ''} ${creator} ${item.sponsor_name || ''}`.toLowerCase()
+        if (!text.includes(query)) return false
+      }
+
+      return true
     })
+  }, [tournaments, tab, search, creators])
 
-    if (error) {
-      alert(error.message)
+  function updateField(event) {
+    const { name, value } = event.target
+    setForm((current) => ({ ...current, [name]: value }))
+  }
+
+  function openCreate(type) {
+    setError('')
+    setMessage('')
+    setForm(initialForm)
+    setSponsorImageFile(null)
+    setSponsorImagePreview('')
+    setCreationType(type)
+    setShowCreate(true)
+  }
+
+  async function handleSponsorImageChange(event) {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    setError('')
+
+    if (!file.type.startsWith('image/')) {
+      setError('Choose an image file.')
+      event.target.value = ''
       return
     }
 
-    setShowCreate(false)
+    if (file.size > 10 * 1024 * 1024) {
+      setError('Choose an image smaller than 10 MB.')
+      event.target.value = ''
+      return
+    }
 
-    setForm({
-      name: '',
-      room_type: 'Public',
-      max_players: 8,
-      format: 'Knockout',
-      rules: '',
-      start_date: '',
-      start_time: '',
-      creator_whatsapp: '',
-    })
+    setImageBusy(true)
 
-    await loadTournaments()
+    try {
+      const compressed = await compressTournamentImage(file)
+      setSponsorImageFile(compressed)
 
-    navigate(`/tournaments/${data}`)
+      if (sponsorImagePreview) URL.revokeObjectURL(sponsorImagePreview)
+      setSponsorImagePreview(URL.createObjectURL(compressed))
+    } catch (err) {
+      setError(err?.message || 'Could not process the image.')
+      setSponsorImageFile(null)
+      setSponsorImagePreview('')
+      event.target.value = ''
+    } finally {
+      setImageBusy(false)
+    }
   }
 
-  const visible = tournaments.filter(
-    (t) => t.status === activeTab
-  )
+  async function createTournament(event) {
+    event.preventDefault()
+    setError('')
+    setMessage('')
 
-  function copyLink(code) {
-    const link = getJoinLink(code)
+    if (!user || !profile) {
+      setError('Your profile is not ready. Sign out and sign in again, then retry.')
+      return
+    }
 
-    navigator.clipboard
-      .writeText(link)
-      .then(() => alert('Join link copied'))
-      .catch(() => prompt('Copy tournament link:', link))
+    const sponsored = creationType === 'sponsored'
+    const name = form.name.trim()
+    const rules = form.rules.trim()
+    const players = Number(form.players)
+
+    if (!name) {
+      setError('Enter a tournament name.')
+      return
+    }
+
+    if (!PLAYER_COUNTS.includes(players)) {
+      setError('Choose 4, 8, 12, 16, 20, 24, 28 or 32 players.')
+      return
+    }
+
+    if (countWords(rules) > 100) {
+      setError('Tournament rules must be 100 words or fewer.')
+      return
+    }
+
+    if (sponsored && form.format !== 'Knockout') {
+      setError('Sponsored tournaments can only use Knockout format.')
+      return
+    }
+
+    const prizePool = Number(form.prize_pool || 0)
+    const first = Number(form.first_prize || 0)
+    const second = Number(form.second_prize || 0)
+    const third = Number(form.third_prize || 0)
+
+    if (sponsored) {
+      if (!form.sponsor_name.trim()) {
+        setError('Enter the sponsor name.')
+        return
+      }
+
+      if (!Number.isFinite(prizePool) || prizePool <= 0) {
+        setError('Enter a valid prize pool.')
+        return
+      }
+
+      if (first < 0 || second < 0 || third < 0 || first + second + third !== prizePool) {
+        setError('The 1st, 2nd and 3rd prizes must add up exactly to the total prize pool.')
+        return
+      }
+
+      if (!sponsorImageFile) {
+        setError('Upload a sponsor image first.')
+        return
+      }
+    }
+
+    setBusy(true)
+
+    try {
+      let sponsorImageUrl = null
+
+      if (sponsored) {
+        const imagePath = `${user.id}/${crypto.randomUUID()}.webp`
+
+        const { error: uploadError } = await supabase.storage
+          .from('tournament-images')
+          .upload(imagePath, sponsorImageFile, {
+            contentType: 'image/webp',
+            cacheControl: '3600',
+            upsert: false,
+          })
+
+        if (uploadError) throw uploadError
+
+        const { data: publicImage } = supabase.storage
+          .from('tournament-images')
+          .getPublicUrl(imagePath)
+
+        sponsorImageUrl = publicImage.publicUrl
+      }
+
+      const rpcArgs = {
+        p_name: name,
+        p_max_players: players,
+        p_format: form.format === 'Groups' ? 'Group+Knockout' : form.format,
+        p_rules: rules,
+        p_match_format: form.match_format,
+        p_match_rule: form.match_rule,
+        p_management: form.management,
+        p_setup_mode: form.setup_mode,
+        p_room_type: form.room_type,
+        p_creator_whatsapp: form.support_whatsapp.trim() || null,
+        p_is_sponsored: sponsored,
+        p_prize_pool: sponsored ? prizePool : 0,
+        p_first_prize: sponsored ? first : 0,
+        p_second_prize: sponsored ? second : 0,
+        p_third_prize: sponsored ? third : 0,
+        p_sponsor_name: sponsored ? form.sponsor_name.trim() : null,
+        p_sponsor_logo_url: sponsored ? sponsorImageUrl : null,
+      }
+
+      const { data, error: rpcError } = await supabase.rpc(
+        'veritas_v2_create_tournament',
+        rpcArgs
+      )
+
+      if (rpcError) throw rpcError
+      if (data?.success === false) {
+        throw new Error(data.message || data.error || 'Could not create tournament.')
+      }
+
+      const tournamentId = data?.tournament_id || data?.id
+      const tournamentCode = data?.tournament_code || data?.code
+
+      if (!tournamentId) {
+        throw new Error(
+          'The database returned no tournament ID. Check the veritas_v2_create_tournament function response in Supabase.'
+        )
+      }
+
+      setShowCreate(false)
+      setForm(initialForm)
+      setSponsorImageFile(null)
+      setSponsorImagePreview('')
+      setTab('all')
+
+      setMessage(
+        `Tournament created successfully.${tournamentCode ? ` Your tournament code is ${tournamentCode}.` : ''}`
+      )
+
+      await loadData()
+      navigate(`/tournaments/${tournamentId}`)
+    } catch (err) {
+      setError(err?.message || 'Could not create tournament.')
+    } finally {
+      setBusy(false)
+    }
   }
 
-  function shareLink(code) {
-    const link = getJoinLink(code)
+  async function joinTournament(event) {
+    event.preventDefault()
+    setError('')
+    setMessage('')
 
-    if (navigator.share) {
-      navigator.share({
-        title: 'VERITAS Football Tournament',
-        url: link,
-      })
-    } else {
-      copyLink(code)
+    if (!profile) {
+      setError('Your profile could not be found.')
+      return
+    }
+
+    const code = joinCode.trim().toUpperCase()
+
+    if (!code) {
+      setError('Enter a tournament code.')
+      return
+    }
+
+    setBusy(true)
+
+    try {
+      const { data, error: rpcError } = await supabase.rpc(
+        'veritas_v2_join_tournament',
+        {
+          p_tournament_code: code,
+          p_whatsapp: joinWhatsapp.trim() || null,
+        }
+      )
+
+      if (rpcError) throw rpcError
+
+      if (data?.success === false) {
+        throw new Error(data.message || data.error || 'Could not join tournament.')
+      }
+
+      const tournamentId = data?.tournament_id || data?.id
+
+      if (!tournamentId) {
+        throw new Error(data?.message || 'The database returned no tournament ID.')
+      }
+
+      setShowJoin(false)
+      setJoinCode('')
+      setJoinWhatsapp('')
+
+      setMessage('You joined the tournament successfully.')
+      await loadData()
+      navigate(`/tournaments/${tournamentId}`)
+    } catch (err) {
+      setError(err?.message || 'Could not join tournament.')
+    } finally {
+      setBusy(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-[#070b14] px-4 py-6 text-white md:px-8">
-      <div className="mx-auto max-w-7xl">
+    <>
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '12px 16px 0' }}>
+        <button
+          onClick={() => navigate('/')}
+          style={{
+            border: '1px solid #3b3b49',
+            borderRadius: 9,
+            padding: '10px 14px',
+            background: '#22222d',
+            color: '#fff',
+            fontWeight: 700,
+            cursor: 'pointer',
+          }}
+        >
+          ← Back to Dashboard
+        </button>
+      </div>
 
-        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-3xl font-black tracking-tight">
-              VERITAS FOOTBALL
-            </h1>
-<button
-  type="button"
-  onClick={() => navigate("/")}
-  className="mb-5 mt-3 rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-sm font-bold text-white hover:bg-white/10"
->
-  ← BACK TO DASHBOARD
-</button>
-            <p className="mt-1 text-sm text-gray-400">
-              Create, join and manage tournaments.
+      <div className="vt-page">
+        <style>{styles}</style>
+
+        <div className="vt-wrap">
+          <section className="vt-hero">
+            <div className="vt-kicker">VERITAS ESPORTS • COMPETE WITH HONOUR</div>
+            <h1 className="vt-title">Tournament Arena</h1>
+            <p className="vt-sub">
+              Create free Football tournaments, join using a code, and compete
+              in sponsored knockout tournaments. Creators start their tournaments
+              manually when they are ready.
             </p>
+
+            <div className="vt-actions">
+              <button className="vt-btn vt-btn-primary" onClick={() => openCreate('normal')}>
+                + Create Tournament
+              </button>
+              <button
+                className="vt-btn"
+                onClick={() => {
+                  setError('')
+                  setMessage('')
+                  setShowJoin(true)
+                }}
+              >
+                Join with Code
+              </button>
+              <button className="vt-btn" onClick={loadData}>
+                Refresh
+              </button>
+            </div>
+          </section>
+
+          {error && <div className="vt-error" role="alert">{error}</div>}
+          {message && <div className="vt-success" role="status">{message}</div>}
+
+          <div className="vt-card">
+            <div className="vt-form-grid">
+              <div className="vt-field">
+                <label htmlFor="vt-search">Search tournaments</label>
+                <input
+                  id="vt-search"
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  placeholder="Search tournaments, game or creator..."
+                />
+              </div>
+
+              <div className="vt-field">
+                <label htmlFor="vt-account">Your account</label>
+                <input
+                  id="vt-account"
+                  readOnly
+                  value={profile?.username ? `@${profile.username}` : 'Loading profile...'}
+                />
+                {profile?.kes_balance !== undefined && (
+                  <span className="vt-muted">KES balance: {money(profile.kes_balance)}</span>
+                )}
+              </div>
+            </div>
           </div>
 
-          <button
-            onClick={() => setShowCreate(true)}
-            className="rounded-xl bg-white px-5 py-3 font-black text-black transition hover:bg-gray-200"
-          >
-            + CREATE TOURNAMENT
-          </button>
-        </div>
+          <nav className="vt-tabs" aria-label="Tournament filters">
+            {[
+              ['all', 'All'],
+              ['normal', 'Normal'],
+              ['sponsored', 'Sponsored'],
+              ['open', 'Open'],
+              ['active', 'Ongoing'],
+              ['completed', 'Completed'],
+            ].map(([value, label]) => (
+              <button
+                key={value}
+                className={`vt-tab ${tab === value ? 'active' : ''}`}
+                onClick={() => setTab(value)}
+              >
+                {label}
+              </button>
+            ))}
+          </nav>
 
-        <div className="mb-6 flex gap-2 overflow-x-auto">
-          {['Open', 'Ongoing', 'Completed'].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`rounded-xl px-5 py-3 text-sm font-black ${
-                activeTab === tab
-                  ? 'bg-white text-black'
-                  : 'bg-[#111827] text-gray-400'
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
+          <h2 className="vt-section-title">Available tournaments</h2>
 
-        {loading ? (
-          <div className="rounded-2xl bg-[#0d1422] p-10 text-center text-gray-400">
-            Loading tournaments...
-          </div>
-        ) : visible.length === 0 ? (
-          <div className="rounded-2xl bg-[#0d1422] p-10 text-center">
-            <p className="font-bold">No {activeTab.toLowerCase()} tournaments.</p>
-          </div>
-        ) : (
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {visible.map((tournament) => {
-              const link = getJoinLink(tournament.tournament_code)
+          {loading ? (
+            <div className="vt-loading">Loading tournaments...</div>
+          ) : visibleTournaments.length === 0 ? (
+            <div className="vt-empty">
+              <h3>No tournaments found</h3>
+              <p>Create a tournament or try another filter.</p>
+            </div>
+          ) : (
+            <div className="vt-grid">
+              {visibleTournaments.map((item) => {
+                const creator = creators[item.creator_id]
+                const mine = item.creator_id === profile?.id
+                const sponsored = Boolean(item.is_sponsored)
+                const displayFormat =
+                  item.format === 'Group+Knockout' ? 'Groups' : item.format
 
-              return (
-                <div
-                  key={tournament.id}
-                  className="rounded-2xl border border-white/10 bg-[#0d1422] p-5 shadow-xl"
-                >
-                  <div className="mb-4 flex items-start justify-between gap-3">
+                return (
+                  <article className="vt-card" key={item.id}>
                     <div>
-                      <h2 className="text-xl font-black">
-                        {tournament.name}
-                      </h2>
-
-                      <p className="mt-1 text-xs font-bold text-gray-500">
-                        {tournament.game || 'Football'}
-                      </p>
+                      <span className={`vt-tag ${sponsored ? 'gold' : ''}`}>
+                        {sponsored ? 'SPONSORED' : 'NORMAL'}
+                      </span>
+                      <span className="vt-tag">{item.status}</span>
+                      <span className="vt-tag">Football</span>
                     </div>
 
-                    <span className="rounded-lg bg-white/10 px-2 py-1 text-xs font-black">
-                      {tournament.room_type}
-                    </span>
-                  </div>
+                    <h3>{item.name}</h3>
 
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div className="rounded-xl bg-black/20 p-3">
-                      <div className="text-xs text-gray-500">Players</div>
-                      <div className="mt-1 font-black">
-                        {tournament.players || 0}/{tournament.max_players}
+                    <p className="vt-muted">
+                      Created by <strong>{creator?.username ? `@${creator.username}` : 'VERITAS player'}</strong>
+                      {creator?.veritas_user_id ? ` · ID ${creator.veritas_user_id}` : ''}
+                    </p>
+
+                    {item.status === 'Completed' && (
+                      <div className="vt-notice">
+                        <strong>🏆 TOURNAMENT COMPLETE</strong>
+                        <p style={{ margin: '7px 0 0' }}>
+                          Champion:{' '}
+                          <strong>
+                            {creators[item.winner_id]?.username
+                              ? `@${creators[item.winner_id].username}`
+                              : 'Winner recorded'}
+                          </strong>
+                        </p>
+                        {item.completed_at && (
+                          <p className="vt-muted">
+                            Completed: {new Date(item.completed_at).toLocaleString()}
+                          </p>
+                        )}
+                        {item.expires_at && (
+                          <p className="vt-muted">
+                            Brackets and results available until:{' '}
+                            {new Date(item.expires_at).toLocaleString()}
+                          </p>
+                        )}
                       </div>
-                    </div>
-
-                    <div className="rounded-xl bg-black/20 p-3">
-                      <div className="text-xs text-gray-500">Format</div>
-                      <div className="mt-1 font-black">
-                        {tournament.format}
-                      </div>
-                    </div>
-
-                    <div className="rounded-xl bg-black/20 p-3">
-                      <div className="text-xs text-gray-500">Start Date</div>
-                      <div className="mt-1 font-black">
-                        {tournament.start_date || '-'}
-                      </div>
-                    </div>
-
-                    <div className="rounded-xl bg-black/20 p-3">
-                      <div className="text-xs text-gray-500">Start Time</div>
-                      <div className="mt-1 font-black">
-                        {tournament.start_time || '-'}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 rounded-xl border border-white/10 bg-black/20 p-3">
-                    <div className="mb-2 text-xs font-black text-gray-500">
-                      JOIN LINK
-                    </div>
-
-                    <div className="break-all text-xs font-bold text-gray-300">
-                      {link}
-                    </div>
-
-                    <div className="mt-3 flex gap-2">
-                      <button
-                        onClick={() => copyLink(tournament.tournament_code)}
-                        className="flex-1 rounded-lg bg-white px-3 py-2 text-xs font-black text-black"
-                      >
-                        COPY LINK
-                      </button>
-
-                      <button
-                        onClick={() => shareLink(tournament.tournament_code)}
-                        className="flex-1 rounded-lg bg-gray-800 px-3 py-2 text-xs font-black"
-                      >
-                        SHARE
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 flex gap-2">
-                    <button
-                      onClick={() =>
-                        navigate(`/tournaments/${tournament.id}`)
-                      }
-                      className="flex-1 rounded-xl bg-white py-3 text-sm font-black text-black"
-                    >
-                      VIEW TOURNAMENT
-                    </button>
-
-                    {user?.id === tournament.creator_id && (
-                      <button
-                        onClick={() =>
-                          navigate(
-                            `/tournaments/${tournament.id}?manage=1`
-                          )
-                        }
-                        className="rounded-xl border border-white/20 px-4 py-3 text-sm font-black"
-                      >
-                        MANAGE
-                      </button>
                     )}
+
+                    {sponsored && (
+                      <div className="vt-notice">
+                        {item.sponsor_logo_url && (
+                          <img
+                            className="vt-sponsor-image"
+                            src={item.sponsor_logo_url}
+                            alt={`${item.sponsor_name || 'Sponsor'} logo`}
+                            loading="lazy"
+                          />
+                        )}
+                        <p><strong>{item.sponsor_name || 'Tournament sponsor'}</strong></p>
+                        <p className="vt-muted">Prize pool: {money(item.prize_pool)}</p>
+                      </div>
+                    )}
+
+                    <p className="vt-muted">
+                      {displayFormat} · {item.match_format} · {item.match_rule}
+                    </p>
+
+                    <p className="vt-muted">
+                      Players: {counts[item.id] || 0}/{item.max_players || item.players}
+                    </p>
+
+                    <div className="vt-card-foot">
+                      <span className="vt-muted">{mine ? 'Creator access' : 'Tournament details'}</span>
+                      <button
+                        className="vt-btn vt-btn-primary"
+                        onClick={() => navigate(`/tournaments/${item.id}`)}
+                      >
+                        View Tournament
+                      </button>
+                    </div>
+
+                    {mine && item.tournament_code && (
+                      <p className="vt-muted" style={{ marginTop: 10 }}>
+                        Your tournament code: <strong>{item.tournament_code}</strong>
+                      </p>
+                    )}
+                  </article>
+                )
+              })}
+            </div>
+          )}
+
+          <h2 className="vt-section-title">Tournament history</h2>
+
+          <div className="vt-grid">
+            {[
+              ['Open', tournaments.filter((t) => t.status === 'Open').length],
+              ['Ongoing', tournaments.filter((t) => ['Live', 'Ongoing', 'In Progress'].includes(t.status)).length],
+              ['Completed', tournaments.filter((t) => t.status === 'Completed').length],
+            ].map(([label, total]) => (
+              <div className="vt-card" key={label}>
+                <div className="vt-muted">{label}</div>
+                <div style={{ fontSize: 30, fontWeight: 900, marginTop: 6 }}>{total}</div>
+                <div className="vt-muted">tournaments</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {showCreate && (
+          <div
+            className="vt-modal-backdrop"
+            onMouseDown={(event) => {
+              if (event.target === event.currentTarget && !busy) setShowCreate(false)
+            }}
+          >
+            <section className="vt-modal" role="dialog" aria-modal="true" aria-labelledby="vt-create-title">
+              <div className="vt-modal-head">
+                <h2 id="vt-create-title">Create tournament</h2>
+                <button className="vt-close" onClick={() => !busy && setShowCreate(false)} aria-label="Close">
+                  ×
+                </button>
+              </div>
+
+              <div className="vt-tabs">
+                <button
+                  type="button"
+                  className={`vt-tab ${creationType === 'normal' ? 'active' : ''}`}
+                  onClick={() => setCreationType('normal')}
+                >
+                  Normal · Free
+                </button>
+                <button
+                  type="button"
+                  className={`vt-tab ${creationType === 'sponsored' ? 'active' : ''}`}
+                  onClick={() => {
+                    setCreationType('sponsored')
+                    setForm((current) => ({ ...current, format: 'Knockout' }))
+                  }}
+                >
+                  Sponsored
+                </button>
+              </div>
+
+              {creationType === 'sponsored' && (
+                <div className="vt-notice">
+                  Sponsored tournaments are available only when enabled in the database settings.
+                  The full prize pool is reserved from your KES balance when creation succeeds.
+                </div>
+              )}
+
+              <form onSubmit={createTournament}>
+                <div className="vt-form-grid">
+                  <div className="vt-field full">
+                    <label htmlFor="vt-name">Tournament name *</label>
+                    <input
+                      id="vt-name"
+                      name="name"
+                      value={form.name}
+                      onChange={updateField}
+                      maxLength={80}
+                      required
+                      placeholder="e.g. Friday Night Cup"
+                    />
+                  </div>
+
+                  <div className="vt-field">
+                    <label>Game</label>
+                    <input value="Football" readOnly />
+                  </div>
+
+                  <div className="vt-field">
+                    <label htmlFor="vt-players">Maximum players *</label>
+                    <select id="vt-players" name="players" value={form.players} onChange={updateField} required>
+                      {PLAYER_COUNTS.map((count) => (
+                        <option key={count} value={count}>{count} players</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="vt-field">
+                    <label htmlFor="vt-format">Tournament format *</label>
+                    <select
+                      id="vt-format"
+                      name="format"
+                      value={form.format}
+                      onChange={updateField}
+                      required
+                    >
+                      <option>Knockout</option>
+                      {creationType === 'normal' && (
+                        <>
+                          <option>League</option>
+                          <option>Groups</option>
+                        </>
+                      )}
+                    </select>
+                  </div>
+
+                  <div className="vt-field">
+                    <label htmlFor="vt-match-format">Match format</label>
+                    <select id="vt-match-format" name="match_format" value={form.match_format} onChange={updateField}>
+                      <option>Bo1</option>
+                      <option>Bo3</option>
+                      <option>Bo5</option>
+                    </select>
+                  </div>
+
+                  <div className="vt-field">
+                    <label htmlFor="vt-match-rule">Draw resolution rule</label>
+                    <select id="vt-match-rule" name="match_rule" value={form.match_rule} onChange={updateField}>
+                      <option>Full Time</option>
+                      <option>Golden Goal</option>
+                      <option>Extra Time</option>
+                      <option>Penalties</option>
+                    </select>
+                  </div>
+
+                  <div className="vt-field">
+                    <label htmlFor="vt-management">Management</label>
+                    <select id="vt-management" name="management" value={form.management} onChange={updateField}>
+                      <option>Leader Managed</option>
+                      <option>VERITAS Managed</option>
+                    </select>
+                  </div>
+
+                  <div className="vt-field">
+                    <label htmlFor="vt-setup">Match setup mode</label>
+                    <select id="vt-setup" name="setup_mode" value={form.setup_mode} onChange={updateField}>
+                      <option>Automatic</option>
+                      <option>Manual</option>
+                      <option>Creator Assisted</option>
+                    </select>
+                  </div>
+
+                  <div className="vt-field">
+                    <label htmlFor="vt-room">Access</label>
+                    <select id="vt-room" name="room_type" value={form.room_type} onChange={updateField}>
+                      <option>Public</option>
+                      <option>Private</option>
+                    </select>
+                  </div>
+
+                  <div className="vt-field">
+                    <label htmlFor="vt-whatsapp">Creator WhatsApp</label>
+                    <input
+                      id="vt-whatsapp"
+                      name="support_whatsapp"
+                      value={form.support_whatsapp}
+                      onChange={updateField}
+                      placeholder="e.g. 2547..."
+                    />
+                  </div>
+
+                  <div className="vt-field full">
+                    <label htmlFor="vt-rules">Rules (maximum 100 words)</label>
+                    <textarea
+                      id="vt-rules"
+                      name="rules"
+                      value={form.rules}
+                      onChange={(event) => {
+                        const next = event.target.value
+                        if (countWords(next) <= 100) updateField(event)
+                      }}
+                      placeholder="Enter the tournament rules..."
+                    />
+                    <span className="vt-muted">{countWords(form.rules)}/100 words</span>
                   </div>
                 </div>
-              )
-            })}
+
+                {creationType === 'sponsored' && (
+                  <>
+                    <div className="vt-form-grid" style={{ marginTop: 14 }}>
+                      <div className="vt-field">
+                        <label htmlFor="vt-sponsor">Sponsor name *</label>
+                        <input
+                          id="vt-sponsor"
+                          name="sponsor_name"
+                          value={form.sponsor_name}
+                          onChange={updateField}
+                          required
+                        />
+                      </div>
+
+                      <div className="vt-field">
+                        <label htmlFor="vt-sponsor-image">Sponsor image *</label>
+                        <input
+                          id="vt-sponsor-image"
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp"
+                          onChange={handleSponsorImageChange}
+                          disabled={imageBusy || busy}
+                          required={!sponsorImageFile}
+                        />
+                        <span className="vt-muted">Square image, compressed automatically.</span>
+                        {imageBusy && <span className="vt-muted">Compressing image...</span>}
+                        {sponsorImagePreview && (
+                          <img
+                            src={sponsorImagePreview}
+                            alt="Sponsor preview"
+                            width="88"
+                            height="88"
+                            style={{ width: 88, height: 88, objectFit: 'cover', borderRadius: 12 }}
+                          />
+                        )}
+                      </div>
+
+                      <div className="vt-field full">
+                        <label htmlFor="vt-sponsor-url">Sponsor website/contact URL</label>
+                        <input
+                          id="vt-sponsor-url"
+                          type="url"
+                          name="sponsor_url"
+                          value={form.sponsor_url}
+                          onChange={updateField}
+                          placeholder="https://..."
+                        />
+                      </div>
+
+                      <div className="vt-field">
+                        <label htmlFor="vt-pool">Total prize pool (KES) *</label>
+                        <input
+                          id="vt-pool"
+                          type="number"
+                          min="1"
+                          step="0.01"
+                          name="prize_pool"
+                          value={form.prize_pool}
+                          onChange={updateField}
+                          required
+                        />
+                      </div>
+
+                      <div className="vt-field">
+                        <label htmlFor="vt-first">1st prize (KES)</label>
+                        <input
+                          id="vt-first"
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          name="first_prize"
+                          value={form.first_prize}
+                          onChange={updateField}
+                          required
+                        />
+                      </div>
+
+                      <div className="vt-field">
+                        <label htmlFor="vt-second">2nd prize (KES)</label>
+                        <input
+                          id="vt-second"
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          name="second_prize"
+                          value={form.second_prize}
+                          onChange={updateField}
+                          required
+                        />
+                      </div>
+
+                      <div className="vt-field">
+                        <label htmlFor="vt-third">3rd prize (KES)</label>
+                        <input
+                          id="vt-third"
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          name="third_prize"
+                          value={form.third_prize}
+                          onChange={updateField}
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <p className="vt-muted">
+                      The three prize amounts must equal the full prize pool. Sponsored tournaments use
+                      a database transaction to reserve the prize pool and prevent duplicate deductions.
+                    </p>
+                  </>
+                )}
+
+                <div className="vt-actions">
+                  <button className="vt-btn vt-btn-primary" type="submit" disabled={busy || imageBusy}>
+                    {busy ? 'Creating...' : 'Create tournament'}
+                  </button>
+                  <button className="vt-btn" type="button" disabled={busy} onClick={() => setShowCreate(false)}>
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </section>
+          </div>
+        )}
+
+        {showJoin && (
+          <div
+            className="vt-modal-backdrop"
+            onMouseDown={(event) => {
+              if (event.target === event.currentTarget && !busy) setShowJoin(false)
+            }}
+          >
+            <section className="vt-modal" role="dialog" aria-modal="true" aria-labelledby="vt-join-title">
+              <div className="vt-modal-head">
+                <h2 id="vt-join-title">Join tournament</h2>
+                <button className="vt-close" onClick={() => !busy && setShowJoin(false)} aria-label="Close">
+                  ×
+                </button>
+              </div>
+
+              <p className="vt-muted">
+                Enter the tournament code shared by the creator. Joining is free.
+              </p>
+
+              <form onSubmit={joinTournament}>
+                <div className="vt-field">
+                  <label htmlFor="vt-join-code">Tournament code</label>
+                  <input
+                    id="vt-join-code"
+                    value={joinCode}
+                    onChange={(event) => setJoinCode(event.target.value.toUpperCase())}
+                    maxLength={30}
+                    required
+                    placeholder="Enter code"
+                  />
+                </div>
+
+                <div className="vt-field" style={{ marginTop: 12 }}>
+                  <label htmlFor="vt-join-whatsapp">Your WhatsApp number (optional)</label>
+                  <input
+                    id="vt-join-whatsapp"
+                    value={joinWhatsapp}
+                    onChange={(event) => setJoinWhatsapp(event.target.value)}
+                    placeholder="e.g. 2547..."
+                  />
+                </div>
+
+                <div className="vt-notice">
+                  By joining, you agree to follow the tournament rules. Match results must be honest,
+                  and disputes for normal tournaments are handled through the tournament's own process.
+                </div>
+
+                <div className="vt-actions">
+                  <button className="vt-btn vt-btn-primary" type="submit" disabled={busy}>
+                    {busy ? 'Joining...' : 'Join tournament'}
+                  </button>
+                  <button className="vt-btn" type="button" disabled={busy} onClick={() => setShowJoin(false)}>
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </section>
           </div>
         )}
       </div>
-
-      {showCreate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
-          <form
-            onSubmit={createTournament}
-            className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl bg-[#0d1422] p-6"
-          >
-            <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-2xl font-black">
-                CREATE TOURNAMENT
-              </h2>
-
-              <button
-                type="button"
-                onClick={() => setShowCreate(false)}
-                className="text-gray-400"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <input
-                value={form.name}
-                onChange={(e) =>
-                  setForm({ ...form, name: e.target.value })
-                }
-                placeholder="Tournament Name"
-                className="w-full rounded-xl bg-black/30 px-4 py-3 outline-none"
-              />
-
-              <select
-                value={form.room_type}
-                onChange={(e) =>
-                  setForm({ ...form, room_type: e.target.value })
-                }
-                className="w-full rounded-xl bg-black/30 px-4 py-3"
-              >
-                <option value="Public">Public</option>
-                <option value="Private">Private</option>
-              </select>
-
-              <input
-                type="number"
-                min="2"
-                value={form.max_players}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    max_players: e.target.value,
-                  })
-                }
-                placeholder="Maximum Players"
-                className="w-full rounded-xl bg-black/30 px-4 py-3 outline-none"
-              />
-
-              <select
-                value={form.format}
-                onChange={(e) =>
-                  setForm({ ...form, format: e.target.value })
-                }
-                className="w-full rounded-xl bg-black/30 px-4 py-3"
-              >
-                <option>Knockout</option>
-                <option>League</option>
-                <option>Group + Knockout</option>
-              </select>
-
-              <textarea
-                value={form.rules}
-                onChange={(e) =>
-                  setForm({ ...form, rules: e.target.value })
-                }
-                placeholder="Rules (optional, max 200 words)"
-                rows="5"
-                className="w-full rounded-xl bg-black/30 px-4 py-3 outline-none"
-              />
-
-              <input
-                type="date"
-                value={form.start_date}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    start_date: e.target.value,
-                  })
-                }
-                className="w-full rounded-xl bg-black/30 px-4 py-3"
-              />
-
-              <input
-                type="time"
-                value={form.start_time}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    start_time: e.target.value,
-                  })
-                }
-                className="w-full rounded-xl bg-black/30 px-4 py-3"
-              />
-
-              <input
-                value={form.creator_whatsapp}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    creator_whatsapp: e.target.value,
-                  })
-                }
-                placeholder="Enter WhatsApp Number for Notifications"
-                className="w-full rounded-xl bg-black/30 px-4 py-3 outline-none"
-              />
-            </div>
-
-            <button
-              type="submit"
-              className="mt-6 w-full rounded-xl bg-white py-4 font-black text-black"
-            >
-              CREATE TOURNAMENT
-            </button>
-          </form>
-        </div>
-      )}
-    </div>
+    </>
   )
 }
-
-
-
-
-
 
 

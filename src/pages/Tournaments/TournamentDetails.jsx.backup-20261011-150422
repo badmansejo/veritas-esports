@@ -1,0 +1,624 @@
+import React, { useCallback, useEffect, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import { supabase } from '../../lib/supabase'
+
+const styles = `
+.td-page{min-height:100vh;background:#080c13;color:#f3f5f8;padding:20px 14px 50px;font-family:Inter,system-ui,sans-serif}
+.td-wrap{max-width:1100px;margin:auto}
+.td-card{background:#111721;border:1px solid #303a49;border-radius:15px;padding:18px;margin:14px 0}
+.td-title{font-size:clamp(25px,4vw,38px);font-weight:900;overflow-wrap:anywhere;margin:8px 0}
+.td-muted{color:#a7b1c0;font-size:13px;line-height:1.7}
+.td-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.td-btn{background:#1b2330;border:1px solid #465164;color:#f4f6f9;padding:10px 14px;border-radius:9px;cursor:pointer;font-weight:750}
+.td-primary{background:#d7b56d;border-color:#d7b56d;color:#11151b}
+.td-btn:disabled{opacity:.5;cursor:not-allowed}
+.td-tag{display:inline-block;padding:5px 9px;border:1px solid #485365;border-radius:999px;font-size:11px;margin:0 5px 5px 0}
+.td-gold{border-color:#a58a50;color:#e7cb8c}
+.td-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.td-stat{background:#0b111a;border:1px solid #303a49;border-radius:12px;padding:14px}
+.td-stat strong{display:block;font-size:23px;margin-top:6px}
+.td-section{font-size:21px;font-weight:850;margin:24px 0 12px}
+.td-error{background:#35191b;border:1px solid #7e3438;color:#ffc8c8;padding:12px;border-radius:9px;margin:12px 0;overflow-wrap:anywhere}
+.td-success{background:#14291f;border:1px solid #2d6a49;color:#b7f2ce;padding:12px;border-radius:9px;margin:12px 0}
+.td-person{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #28313e}
+.td-person:last-child{border-bottom:0}
+.td-input{width:100%;box-sizing:border-box;background:#090e16;color:white;border:1px solid #394251;border-radius:9px;padding:11px}
+.td-empty{padding:20px;text-align:center;color:#a7b1c0;border:1px dashed #414957;border-radius:12px}
+.td-prize{font-size:18px;font-weight:850;color:#e7cb8c}
+.td-logo{max-width:130px;max-height:100px;object-fit:contain}
+`
+
+function money(value) {
+  return `KES ${Number(value || 0).toLocaleString('en-KE')}`
+}
+
+function formatName(value) {
+  return value === 'Group+Knockout' ? 'Groups' : value || 'Knockout'
+}
+
+function getEquippedFontStyle(item) {
+  const data = item?.preview_data || {}
+  const css = data.css || data.style || {}
+
+  const rawFont = String(
+    data.fontFamily ||
+    data.font_family ||
+    data.family ||
+    data.googleFont ||
+    data.google_font ||
+    data.font ||
+    item?.name ||
+    item?.slug ||
+    ''
+  ).trim()
+
+  const normalized = rawFont
+    .toLowerCase()
+    .replace(/[_-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .replace(/\s+font$/i, '')
+    .trim()
+
+  const fontFamilies = {
+    orbitron: '"Orbitron", sans-serif',
+    rajdhani: '"Rajdhani", sans-serif',
+    audiowide: '"Audiowide", sans-serif',
+    'press start 2p': '"Press Start 2P", monospace',
+    'bebas neue': '"Bebas Neue", sans-serif',
+    roboto: '"Roboto", sans-serif',
+    'roboto mono': '"Roboto Mono", monospace',
+    oswald: '"Oswald", sans-serif',
+    montserrat: '"Montserrat", sans-serif',
+    poppins: '"Poppins", sans-serif',
+    teko: '"Teko", sans-serif',
+    exo: '"Exo", sans-serif',
+    titillium: '"Titillium Web", sans-serif',
+    impact: 'Impact, Haettenschweiler, sans-serif',
+    titan: 'Impact, Haettenschweiler, sans-serif',
+    serif: 'Georgia, "Times New Roman", serif',
+    mono: '"Courier New", monospace',
+    monospace: '"Courier New", monospace',
+    cursive: 'cursive',
+    default: 'inherit',
+  }
+
+  const family =
+    css.fontFamily ||
+    css.font_family ||
+    fontFamilies[normalized] ||
+    (rawFont ? `"${rawFont.replace(/["']/g, '')}", sans-serif` : undefined)
+
+  return {
+    ...(family ? { fontFamily: family } : {}),
+    color: css.color || data.color || undefined,
+    textShadow:
+      css.textShadow ||
+      data.textShadow ||
+      (String(data.effect || '').toLowerCase().includes('glow')
+        ? `0 0 10px ${data.glow_color || data.color || '#60a5fa'}`
+        : undefined),
+    fontWeight: css.fontWeight || data.weight || 'bold',
+    fontStyle: css.fontStyle || data.fontStyle || undefined,
+    letterSpacing: css.letterSpacing || data.letterSpacing || undefined,
+  }
+}
+
+export default function TournamentDetails() {
+  const { id } = useParams()
+  const navigate = useNavigate()
+
+  const [user, setUser] = useState(null)
+  const [profile, setProfile] = useState(null)
+  const [tournament, setTournament] = useState(null)
+  const [participants, setParticipants] = useState([])
+  const [starting, setStarting] = useState(false)
+  const [participantSearch, setParticipantSearch] = useState('')
+  const [participantProfiles, setParticipantProfiles] = useState({})
+  const [playerFonts, setPlayerFonts] = useState({})
+  const [matches, setMatches] = useState([])
+  const [creator, setCreator] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const [notice, setNotice] = useState('')
+
+  const loadDetails = useCallback(async () => {
+    setLoading(true)
+    setError('')
+
+    try {
+      const { data: authData, error: authError } = await supabase.auth.getUser()
+      if (authError) throw authError
+
+      const currentUser = authData?.user || null
+      setUser(currentUser)
+
+      if (currentUser) {
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('id,username,veritas_user_id,is_admin,kes_balance')
+          .eq('id', currentUser.id)
+          .maybeSingle()
+
+        if (profileError) throw profileError
+        setProfile(profileData || null)
+      } else {
+        setProfile(null)
+      }
+
+      const { data: tournamentData, error: tournamentError } = await supabase
+        .from('tournaments')
+        .select('*')
+        .eq('id', id)
+        .maybeSingle()
+
+      if (tournamentError) throw tournamentError
+      if (!tournamentData) throw new Error('Tournament not found or you do not have permission to view it.')
+
+      setTournament(tournamentData)
+
+      if (tournamentData.creator_id) {
+        const { data: creatorData } = await supabase
+          .from('profiles')
+          .select('id,username,veritas_user_id')
+          .eq('id', tournamentData.creator_id)
+          .maybeSingle()
+
+        setCreator(creatorData || null)
+      }
+
+      const { data: participantData, error: participantError } = await supabase
+        .from('tournament_participants')
+        .select('*')
+        .eq('tournament_id', id)
+        .order('joined_at', { ascending: true })
+
+      if (participantError) throw participantError
+
+      const participantRows = participantData || []
+      setParticipants(participantRows)
+
+      // Fetch participant profiles and cosmetics.
+      const participantUserIds = [
+        ...new Set(participantRows.map((p) => String(p.user_id || '')).filter(Boolean)),
+      ]
+
+      const profileMap = {}
+      const fontMap = {}
+
+      if (participantUserIds.length) {
+        const { data: playerProfileRows, error: playerProfilesError } = await supabase
+          .from('profiles')
+          .select('id, username, veritas_user_id')
+          .in('id', participantUserIds)
+
+        if (playerProfilesError) {
+          console.error('Could not load participant profiles:', playerProfilesError.message)
+        } else {
+          ;(playerProfileRows || []).forEach((row) => {
+            profileMap[String(row.id)] = row
+          })
+        }
+
+        const { data: equippedRows, error: equippedError } = await supabase
+          .from('equipped_items')
+          .select('user_id, slot_type, item:marketplace_items(name, item_type, preview_data, slug)')
+          .in('user_id', participantUserIds)
+
+        if (equippedError) {
+          console.warn('Could not load player cosmetics:', equippedError.message)
+        } else {
+          ;(equippedRows || []).forEach((row) => {
+            if (!row.item) return
+
+            const slot = String(row.slot_type || '').toLowerCase()
+            const item = row.item
+            const data = item.preview_data || {}
+            let itemStyle = {}
+
+            if (slot === 'font') {
+              itemStyle = getEquippedFontStyle(item)
+            } else {
+              const effect = String(
+                data.effect || data.name_effect || data.effect_type ||
+                slot || item.item_type || item.name || ''
+              ).toLowerCase()
+
+              if (slot === 'fire' || effect.includes('fire') || effect.includes('inferno')) {
+                itemStyle = {
+                  color: '#ffb000',
+                  textShadow: '0 0 4px #ff6a00, 0 0 10px #ff3d00, 0 0 18px #ff0000',
+                }
+              } else if (slot === 'ice' || effect.includes('ice')) {
+                itemStyle = {
+                  color: '#b9f4ff',
+                  textShadow: '0 0 5px #67e8f9, 0 0 12px #22d3ee, 0 0 20px #0284c7',
+                }
+              } else if (
+                slot === 'electric' || effect.includes('electric') ||
+                effect.includes('thunder') || effect.includes('lightning')
+              ) {
+                itemStyle = {
+                  color: '#fff700',
+                  textShadow: '0 0 5px #facc15, 0 0 12px #eab308, 0 0 20px #f59e0b',
+                }
+              }
+            }
+
+            fontMap[String(row.user_id)] = {
+              ...(fontMap[String(row.user_id)] || { fontWeight: 700 }),
+              ...itemStyle,
+            }
+          })
+        }
+      }
+
+      setParticipantProfiles(profileMap)
+      setPlayerFonts(fontMap)
+
+      const { data: matchData, error: matchError } = await supabase
+        .from('matches')
+        .select('*')
+        .eq('tournament_id', id)
+        .order('round_number', { ascending: true })
+        .order('match_number', { ascending: true })
+
+      if (matchError) {
+        // Some older tournaments may not have matches generated yet.
+        setMatches([])
+      } else {
+        setMatches(matchData || [])
+      }
+    } catch (err) {
+      setError(err?.message || 'Could not load tournament details.')
+    } finally {
+      setLoading(false)
+    }
+  }, [id])
+
+  useEffect(() => {
+    loadDetails()
+  }, [loadDetails])
+
+  const isCreator = Boolean(user && tournament && tournament.creator_id === user.id)
+  const activeParticipants = participants.filter(
+    (p) => !['Withdrawn', 'Disqualified', 'Removed'].includes(p.status)
+  )
+  const maximumPlayers = Number(tournament?.max_players || tournament?.players || 0)
+  const isFull = maximumPlayers > 0 && activeParticipants.length >= maximumPlayers
+  const canStart = isCreator &&
+    tournament?.status === 'Open' &&
+    activeParticipants.length >= 2 &&
+    (tournament?.format === 'League' || activeParticipants.length % 2 === 0) &&
+    !tournament?.creator_started
+
+  async function startTournament() {
+    if (activeParticipants.length < 2 || activeParticipants.length % 2 !== 0) {
+      alert('Start requires at least 2 joined players and an even number of active players.')
+      return
+    }
+    if (!tournament || !isCreator) return
+
+
+    const confirmed = window.confirm(
+      'Start this tournament now? Starting may lock the lineup and generate matches.'
+    )
+
+    if (!confirmed) return
+
+    setBusy(true)
+    setError('')
+    setNotice('')
+
+    try {
+      const { error: rpcError } = await supabase.rpc('start_tournament', {
+        p_tournament_id: tournament.id,
+      })
+
+      if (rpcError) throw rpcError
+
+      setNotice('Tournament start request completed.')
+      await loadDetails()
+    } catch (err) {
+      setError(err?.message || 'Could not start tournament. Check the start_tournament database function.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  function copyCode(code) {
+    if (!code) return
+    navigator.clipboard.writeText(code)
+      .then(() => setNotice('Tournament code copied.'))
+      .catch(() => setNotice(`Tournament code: ${code}`))
+  }
+
+  function displayPlayer(participant) {
+    const person =
+      participantProfiles[participant.user_id] ||
+      participant.profiles ||
+      participant.profile
+
+    return person?.username
+      ? `@${person.username}`
+      : 'Username unavailable'
+  }
+
+  function playerName(userId) {
+    if (!userId) return 'Waiting for player'
+
+    const person = participantProfiles[userId]
+    if (person?.username) return `@${person.username}`
+
+    const participant = participants.find((p) => p.user_id === userId)
+    if (participant?.username) return `@${participant.username}`
+
+    return 'Username unavailable'
+  }
+
+  function playerFont(userId) {
+    return playerFonts[userId] || { fontWeight: 700 }
+  }
+
+  if (loading) {
+    return (
+      <div className="td-page">
+        <style>{styles}</style>
+        <div className="td-wrap">
+          <button className="td-btn" onClick={() => navigate('/tournaments')}>← Tournaments</button>
+          <div className="td-card">Loading tournament details...</div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!tournament) {
+    return (
+      <div className="td-page">
+        <style>{styles}</style>
+        <div className="td-wrap">
+          <button className="td-btn" onClick={() => navigate('/tournaments')}>← Tournaments</button>
+          {error && <div className="td-error">{error}</div>}
+        </div>
+      </div>
+    )
+  }
+
+  const sponsored = Boolean(tournament.is_sponsored)
+  const prizes = [
+    ['1st place', tournament.first_prize],
+    ['2nd place', tournament.second_prize],
+    ['3rd place', tournament.third_prize],
+  ].filter(([, amount]) => Number(amount || 0) > 0)
+
+  return (
+    <div className="td-page">
+      <style>{styles}</style>
+
+      <div className="td-wrap">
+        <div className="td-row">
+          <button className="td-btn" onClick={() => navigate('/tournaments')}>← Tournaments</button>
+          <button className="td-btn" onClick={loadDetails}>Refresh</button>
+        </div>
+
+        {error && <div className="td-error" role="alert">{error}</div>}
+        {notice && <div className="td-success" role="status">{notice}</div>}
+
+        <section className="td-card">
+          <div>
+            <span className={`td-tag ${sponsored ? 'td-gold' : ''}`}>
+              {sponsored ? 'SPONSORED' : 'NORMAL'}
+            </span>
+            <span className="td-tag">{tournament.status || 'Open'}</span>
+            <span className="td-tag">Football</span>
+          </div>
+
+          <h1 className="td-title">{tournament.name}</h1>
+
+          <p className="td-muted">
+            Created by <strong>{creator?.username ? `@${creator.username}` : 'VERITAS player'}</strong>
+            {creator?.veritas_user_id ? ` · User ID ${creator.veritas_user_id}` : ''}
+          </p>
+
+          {sponsored && (
+            <div className="td-card">
+              <div className="td-row">
+                <div>
+                  <div className="td-muted">Tournament sponsor</div>
+                  <h3>{tournament.sponsor_name || 'Sponsor'}</h3>
+                  <div className="td-prize">Prize pool: {money(tournament.prize_pool)}</div>
+                </div>
+                {tournament.sponsor_logo_url && (
+                  <img
+                    className="td-logo"
+                    src={tournament.sponsor_logo_url}
+                    alt={`${tournament.sponsor_name || 'Sponsor'} logo`}
+                  />
+                )}
+              </div>
+
+              {prizes.length > 0 && (
+                <div className="td-grid" style={{ marginTop: 15 }}>
+                  {prizes.map(([label, amount]) => (
+                    <div className="td-stat" key={label}>
+                      <span className="td-muted">{label}</span>
+                      <strong>{money(amount)}</strong>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="td-grid">
+            <div className="td-stat">
+              <span className="td-muted">Players</span>
+              <strong>{activeParticipants.length}/{maximumPlayers || '—'}</strong>
+            </div>
+            <div className="td-stat">
+              <span className="td-muted">Format</span>
+              <strong>{formatName(tournament.format)}</strong>
+            </div>
+            <div className="td-stat">
+              <span className="td-muted">Match format</span>
+              <strong>{tournament.match_format || 'Bo1'}</strong>
+            </div>
+            <div className="td-stat">
+              <span className="td-muted">Draw rule</span>
+              <strong>{tournament.match_rule || 'Full Time'}</strong>
+            </div>
+          </div>
+
+          <div className="td-section">Tournament code</div>
+          <div className="td-row">
+            <div>
+              <strong>{tournament.tournament_code || 'Not available'}</strong>
+              <div className="td-muted">
+                Share this code with players if they need to join by code.
+              </div>
+            </div>
+            {tournament.tournament_code && (
+              <button className="td-btn" onClick={() => copyCode(tournament.tournament_code)}>
+                Copy code
+              </button>
+            )}
+          </div>
+
+          {isCreator && (
+            <div className="td-notice td-muted" style={{ marginTop: 15 }}>
+              You are the tournament creator. Review the lineup before starting.
+              Once started, the lineup and bracket should remain locked.
+            </div>
+          )}
+
+          {isCreator && (
+            <div className="td-row" style={{ marginTop: 18 }}>
+              <div className="td-muted">
+                {isFull
+                  ? 'The tournament can start with the current even number of players.'
+                  : `${activeParticipants.length < 2 ? "At least 2 players are needed." : activeParticipants.length % 2 !== 0 ? "An even number of players is required." : "Ready to start with " + activeParticipants.length + " players."}`}
+              </div>
+
+              <button
+                className="td-btn td-primary"
+                onClick={startTournament}
+               
+               disabled={starting || activeParticipants.length < 2 || activeParticipants.length % 2 !== 0}>
+                {busy ? 'Starting...' : 'Start Tournament'}
+              </button>
+            </div>
+          )}
+
+          {!isCreator && tournament.status === 'Open' && (
+            <p className="td-muted" style={{ marginTop: 15 }}>
+              This tournament has not started yet. Contact the creator if you need help joining.
+            </p>
+          )}
+        </section>
+
+        <h2 className="td-section">Tournament rules</h2>
+        <section className="td-card">
+          {tournament.rules ? (
+            <p style={{ whiteSpace: 'pre-wrap', lineHeight: 1.8, overflowWrap: 'anywhere' }}>
+              {tournament.rules}
+            </p>
+          ) : (
+            <p className="td-muted">The creator has not added custom rules.</p>
+          )}
+
+          <div className="td-muted" style={{ marginTop: 12 }}>
+            Management: {tournament.management || 'Leader Managed'} · Setup: {tournament.setup_mode || 'Automatic'}
+          </div>
+        </section>
+
+        <h2 className="td-section">Participants</h2>
+        <section className="td-card">
+          <div className="td-row">
+            <div>
+              <strong>Registered players</strong>
+              <div className="td-muted">The tournament creator can review the lineup before starting.</div>
+            </div>
+            <span className="td-tag">{activeParticipants.length}/{maximumPlayers || '—'}</span>
+          </div>
+
+          {activeParticipants.length === 0 ? (
+            <div className="td-empty" style={{ marginTop: 15 }}>No players have joined yet.</div>
+          ) : (
+            <div style={{ marginTop: 12 }}>
+              {activeParticipants.map((participant, index) => (
+                <div className="td-person" key={participant.id || participant.user_id || index}>
+                  <div>
+                    <strong style={playerFont(participant.user_id)}>
+                      {index + 1}. {displayPlayer(participant)}
+                    </strong>
+                    {participantProfiles[participant.user_id]?.veritas_user_id && (
+                      <div className="td-muted">
+                        User ID: {participantProfiles[participant.user_id].veritas_user_id}
+                      </div>
+                    )}
+                    <div className="td-muted">
+                      {participant.user_id === tournament.creator_id ? 'Tournament creator' : 'Participant'}
+                    </div>
+                  </div>
+                  <span className="td-tag">{participant.status || 'Joined'}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        <h2 className="td-section">Matches and results</h2>
+        <section className="td-card">
+          {matches.length === 0 ? (
+            <div className="td-empty">
+              {tournament.status === 'Open'
+                ? 'Matches will appear here after the creator starts the tournament.'
+                : 'No match records are available for this tournament yet.'}
+            </div>
+          ) : (
+            matches.map((match, index) => (
+              <div className="td-person" key={match.id}>
+                <div style={{ minWidth: 0 }}>
+                  <strong>
+                    Round {match.round_number || 1} · Match {match.match_number || index + 1}
+                  </strong>
+                  <div className="td-muted">
+                    <span style={playerFont(match.player_one_id)}>
+                      {playerName(match.player_one_id)}
+                    </span>
+                    {' vs '}
+                    <span style={playerFont(match.player_two_id)}>
+                      {playerName(match.player_two_id)}
+                    </span>
+                  </div>
+                  <div className="td-muted">Status: {match.status || 'Pending'}</div>
+                </div>
+
+                <div style={{ textAlign: 'right' }}>
+                  {match.player_one_score !== null && match.player_one_score !== undefined
+                    ? <strong>{match.player_one_score} - {match.player_two_score ?? 0}</strong>
+                    : <span className="td-muted">No score</span>}
+                  {match.winner_id && (
+                    <div className="td-muted">Winner: {playerName(match.winner_id)}</div>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </section>
+
+        <div className="td-muted" style={{ textAlign: 'center', marginTop: 25 }}>
+          VERITAS ESPORTS · Play fairly. Respect your opponents.
+        </div>
+      </div>
+    </div>
+  )
+}
+
+
+
+
+
+
+
+

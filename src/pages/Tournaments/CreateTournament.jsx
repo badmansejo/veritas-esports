@@ -171,9 +171,6 @@ export default function CreateTournament() {
                 onChange={handleChange}
               >
                 <option value="Football">Football</option>
-                <option value="PUBG">PUBG</option>
-                <option value="COD">COD</option>
-                <option value="Mini Militia">Mini Militia</option>
               </select>
             </label>
 
@@ -300,7 +297,6 @@ export default function CreateTournament() {
                 value={form.match_rule}
                 onChange={handleChange}
               >
-                <option value="Golden Goal">Golden Goal</option>
                 <option value="Extra Time">Extra Time</option>
                 <option value="Penalties">Penalties</option>
               </select>
@@ -421,3 +417,5 @@ export default function CreateTournament() {
     </div>
   );
 }
+
+

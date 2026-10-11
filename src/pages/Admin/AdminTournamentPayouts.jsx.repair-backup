@@ -1,0 +1,393 @@
+﻿import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { supabase } from '../../lib/supabaseClient'
+
+const money = (value) => "KES " + Number(value || 0).toFixed(2);
+
+const dateTime = (value) => {
+  if (!value) return '—'
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? '—' : date.toLocaleString()
+}
+
+const statusColor = (status) => {
+  const value = String(status || '').toLowerCase()
+
+  if (value === 'approved' || value === 'paid') return '#34d399'
+  if (value === 'pending') return '#fbbf24'
+  if (value === 'rejected' || value === 'failed') return '#fb7185'
+
+  return '#cbd5e1'
+}
+
+export default function AdminTournamentPayouts() {
+  const [tournamentCode, setTournamentCode] = useState('')
+  const [batches, setBatches] = useState([])
+  const [history, setHistory] = useState([])
+  const [history, setHistory] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [preparing, setPreparing] = useState(false)
+  const [approvingId, setApprovingId] = useState(null)
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
+  const [historySearch, setHistorySearch] = useState('')
+  const [historyFilter, setHistoryFilter] = useState('All')
+  const [historyOpen, setHistoryOpen] = useState(true)
+
+  const loadBatches = useCallback(async () => {
+    setLoading(true)
+    setError('')
+
+    try {
+      const { data, error: requestError } = await supabase.rpc(
+        'admin_get_tournament_payout_batches'
+      )
+
+      if (requestError) throw requestError
+
+      setBatches(Array.isArray(data) ? data : [])
+
+      const { data: historyData, error: historyError } = await supabase.rpc(
+        'admin_get_tournament_payout_history'
+      )
+
+      if (historyError) throw historyError
+      setHistory(Array.isArray(historyData) ? historyData : [])
+
+      const { data: historyData, error: historyError } = await supabase.rpc(
+  'admin_get_tournament_payout_history'
+)
+
+if (historyError) throw historyError
+
+setHistory(Array.isArray(historyData) ? historyData : [])}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => approveBatch(batch)}
+                    disabled={
+                      approvingId !== null || batch.status !== 'Pending'
+                    }
+                    style={{
+                      ...styles.button,
+                      marginTop: 18,
+                      padding: '14px 22px',
+                      background:
+                        approvingId === batch.id ? '#475569' : '#047857',
+                      borderColor: '#34d399',
+                      opacity:
+                        approvingId !== null || batch.status !== 'Pending'
+                          ? 0.65
+                          : 1,
+                      cursor:
+                        approvingId !== null || batch.status !== 'Pending'
+                          ? 'not-allowed'
+                          : 'pointer',
+                    }}
+                  >
+                    {approvingId === batch.id
+                      ? 'Approving…'
+                      : 'Approve & Credit Winners'}
+                  </button>
+                </article>
+              )
+            })}
+          </div>
+        )}
+      </section>
+
+      <section style={styles.panel}>
+        <button
+          type="button"
+          onClick={() => setHistoryOpen((open) => !open)}
+          style={{
+            ...styles.button,
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <span>Tournament payout history ({history.length} batches)</span>
+          <span>{historyOpen ? '−' : '+'}</span>
+        </button>
+
+        {historyOpen && (
+          <div style={{ marginTop: 20 }}>
+            <div
+              style={{
+                display: 'flex',
+                gap: 10,
+                flexWrap: 'wrap',
+                marginBottom: 18,
+              }}
+            >
+              <input
+                value={historySearch}
+                onChange={(event) => setHistorySearch(event.target.value)}
+                placeholder="Search tournament, batch, winner or User ID"
+                aria-label="Search payout history"
+                style={styles.input}
+              />
+
+              <select
+                value={historyFilter}
+                onChange={(event) => setHistoryFilter(event.target.value)}
+                aria-label="Filter payout history"
+                style={{
+                  ...styles.input,
+                  flex: '0 1 180px',
+                }}
+              >
+                <option value="All">All statuses</option>
+                <option value="Pending">Pending</option>
+                <option value="Approved">Approved</option>
+                <option value="Rejected">Rejected</option>
+              </select>
+            </div>
+
+            <div
+              style={{
+                display: 'flex',
+                gap: 12,
+                flexWrap: 'wrap',
+                marginBottom: 18,
+              }}
+            >
+              <div
+                style={{
+                  flex: '1 1 150px',
+                  padding: 14,
+                  background: '#0c1321',
+                  borderRadius: 12,
+                  border: '1px solid #30394b',
+                }}
+              >
+                <p style={styles.muted}>Batches shown</p>
+                <strong style={{ fontSize: 23 }}>
+                  {filteredHistory.length}
+                </strong>
+              </div>
+
+              <div
+                style={{
+                  flex: '1 1 150px',
+                  padding: 14,
+                  background: '#0c1321',
+                  borderRadius: 12,
+                  border: '1px solid #30394b',
+                }}
+              >
+                <p style={styles.muted}>Prize records shown</p>
+                <strong style={{ fontSize: 23 }}>
+                  {filteredHistory.reduce(
+                    (sum, batch) => sum + batch.items.length,
+                    0
+                  )}
+                </strong>
+              </div>
+
+              <div
+                style={{
+                  flex: '1 1 150px',
+                  padding: 14,
+                  background: '#0c1321',
+                  borderRadius: 12,
+                  border: '1px solid #30394b',
+                }}
+              >
+                <p style={styles.muted}>Prize total shown</p>
+                <strong style={{ fontSize: 23 }}>
+                  {money(historyTotal)}
+                </strong>
+              </div>
+            </div>
+
+            {loading ? (
+              <p>Loading history…</p>
+            ) : filteredHistory.length === 0 ? (
+              <p style={styles.muted}>
+                No payout history matches these filters.
+              </p>
+            ) : (
+              <div style={{ display: 'grid', gap: 14 }}>
+                {filteredHistory.map((batch) => {
+                  const total = batch.items.reduce(
+                    (sum, item) => sum + Number(item.amount || 0),
+                    0
+                  )
+
+                  return (
+                    <article
+                      key={batch.id}
+                      style={{
+                        padding: 16,
+                        borderRadius: 12,
+                        background: '#0c1321',
+                        border: '1px solid #30394b',
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'flex-start',
+                          gap: 12,
+                          flexWrap: 'wrap',
+                        }}
+                      >
+                        <div>
+                          <h3 style={{ margin: '0 0 6px' }}>
+                            {batch.tournament_name}
+                          </h3>
+                          <p style={styles.muted}>
+                            Code: {batch.tournament_code || '—'}
+                          </p>
+                          <p style={styles.muted}>
+                            Prepared: {dateTime(batch.prepared_at)}
+                          </p>
+                          <p style={styles.muted}>
+                            Approved: {dateTime(batch.approved_at)}
+                          </p>
+                          <p style={styles.muted}>
+                            Batch ID: {batch.id}
+                          </p>
+                        </div>
+
+                        <div style={{ textAlign: 'right' }}>
+                          <strong style={{ fontSize: 19 }}>
+                            {money(total)}
+                          </strong>
+                          <p
+                            style={{
+                              color: statusColor(batch.status),
+                              fontWeight: 800,
+                            }}
+                          >
+                            {batch.status}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div style={{ overflowX: 'auto' }}>
+                        <table style={styles.table}>
+                          <thead>
+                            <tr>
+                              <th style={styles.cell}>Position</th>
+                              <th style={styles.cell}>Recipient</th>
+                              <th style={styles.cell}>VERITAS ID</th>
+                              <th style={{ ...styles.cell, textAlign: 'right' }}>
+                                Amount
+                              </th>
+                              <th style={styles.cell}>Payment status</th>
+                              <th style={styles.cell}>Paid at</th>
+                            </tr>
+                          </thead>
+
+                          <tbody>
+                            {batch.items.length === 0 ? (
+                              <tr>
+                                <td style={styles.cell} colSpan={6}>
+                                  No individual prize records found.
+                                </td>
+                              </tr>
+                            ) : (
+                              batch.items.map((item) => (
+                                <tr key={item.id}>
+                                  <td style={styles.cell}>
+                                    {item.finishing_position}
+                                  </td>
+                                  <td style={styles.cell}>
+                                    {item.username || '—'}
+                                  </td>
+                                  <td style={styles.cell}>
+                                    {item.veritas_user_id || '—'}
+                                  </td>
+                                  <td
+                                    style={{
+                                      ...styles.cell,
+                                      textAlign: 'right',
+                                    }}
+                                  >
+                                    {money(item.amount)}
+                                  </td>
+                                  <td
+                                    style={{
+                                      ...styles.cell,
+                                      color: statusColor(item.status),
+                                    }}
+                                  >
+                                    {item.status}
+                                  </td>
+                                  <td style={styles.cell}>
+                                    {dateTime(item.paid_at)}
+                                  </td>
+                                </tr>
+                              ))
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </article>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        )}
+      </section>
+      <section style={{ marginTop: 28, padding: 20, border: '1px solid #444', borderRadius: 14 }}>
+        <h2>Tournament Payout History</h2>
+        {history.length === 0 ? (
+          <p>No payout history found.</p>
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr>
+                  <th align="left">Tournament</th>
+                  <th align="left">Status</th>
+                  <th align="left">Recipient</th>
+                  <th align="left">VERITAS ID</th>
+                  <th align="right">Prize</th>
+                  <th align="left">Paid At</th>
+                </tr>
+              </thead>
+              <tbody>
+                {history.flatMap((batch) =>
+                  (batch.items || []).length
+                    ? batch.items.map((item) => (
+                        <tr key={item.id}>
+                          <td style={{ padding: 10 }}>{batch.tournament_name}</td>
+                          <td style={{ padding: 10 }}>{batch.status}</td>
+                          <td style={{ padding: 10 }}>{item.username}</td>
+                          <td style={{ padding: 10 }}>{item.veritas_user_id}</td>
+                          <td align="right" style={{ padding: 10 }}>
+                            KES {Number(item.amount || 0).toFixed(2)}
+                          </td>
+                          <td style={{ padding: 10 }}>
+                            {item.paid_at ? new Date(item.paid_at).toLocaleString() : '—'}
+                          </td>
+                        </tr>
+                      ))
+                    : [(
+                        <tr key={batch.id}>
+                          <td style={{ padding: 10 }}>{batch.tournament_name}</td>
+                          <td style={{ padding: 10 }}>{batch.status}</td>
+                          <td colSpan={4} style={{ padding: 10 }}>No prize items</td>
+                        </tr>
+                      )]
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+    </main>
+  )
+}
+
+
+

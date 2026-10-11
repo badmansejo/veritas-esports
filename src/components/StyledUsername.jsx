@@ -1,4 +1,4 @@
-﻿import React from 'react'
+import React from 'react'
 
 export default function StyledUsername({
   profile = {},
@@ -7,25 +7,51 @@ export default function StyledUsername({
 }) {
   const items = Array.isArray(equippedItems) ? equippedItems : []
 
+  const getType = (item) =>
+    [
+      item?.item_type,
+      item?.slot_type,
+      item?.name,
+      item?.slug,
+      item?.preview_data?.type,
+      item?.preview_data?.item_type,
+      item?.preview_data?.category,
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase()
+      .replace(/[_-]+/g, ' ')
+
   const badge = items.find((item) =>
-    String(item.item_type || '').toLowerCase() === 'badge'
+    /\bbadge\b/.test(getType(item))
   )
 
-  const font = items.find((item) =>
-    String(item.item_type || '').toLowerCase() === 'name font'
-  )
+  const font = items.find((item) => {
+    const type = getType(item)
+    const data = item?.preview_data || {}
+
+    return (
+      /name font|font name|username font|profile font/.test(type) ||
+      data.font ||
+      data.name_font ||
+      data.fontFamily ||
+      data.font_family
+    )
+  })
 
   const effect = items.find((item) => {
-    const type = String(item.item_type || '').toLowerCase()
-    return [
-      'name glow',
-      'name fire',
-      'name ice',
-      'name electric',
-      'fire',
-      'ice',
-      'electric',
-    ].includes(type)
+    const type = getType(item)
+    const data = item?.preview_data || {}
+    const effectName = String(
+      data.effect || data.name_effect || data.effect_type || ''
+    ).toLowerCase()
+
+    return (
+      /name glow|name fire|name ice|name electric|username effect/.test(type) ||
+      ['fire', 'ice', 'electric', 'glow'].some((word) =>
+        effectName.includes(word)
+      )
+    )
   })
 
   const fontData = font?.preview_data || {}
@@ -37,50 +63,69 @@ export default function StyledUsername({
     rajdhani: 'Rajdhani, sans-serif',
     audiowide: 'Audiowide, sans-serif',
     press_start_2p: '"Press Start 2P", monospace',
-    'press-start-2p': '"Press Start 2P", monospace',
+    'press start 2p': '"Press Start 2P", monospace',
     bebas_neue: '"Bebas Neue", sans-serif',
-    'bebas-neue': '"Bebas Neue", sans-serif',
+    'bebas neue': '"Bebas Neue", sans-serif',
+    roboto: 'Roboto, sans-serif',
+    'roboto mono': '"Roboto Mono", monospace',
+    oswald: 'Oswald, sans-serif',
+    montserrat: 'Montserrat, sans-serif',
+    monospace: 'monospace',
+    cursive: 'cursive',
+    serif: 'serif',
+    'sans-serif': 'sans-serif',
   }
 
-  const fontName =
+  const fontName = String(
     fontData.font ||
     fontData.name_font ||
     fontData.fontFamily ||
+    fontData.font_family ||
+    fontData.family ||
+    fontData.googleFont ||
+    fontData.google_font ||
+    font?.name ||
     ''
+  ).trim()
 
-  const effectType =
-    effectData.effect ||
-    effectData.name_effect ||
-    String(effect?.item_type || '').toLowerCase()
+  const normalizedFont = fontName.toLowerCase().replace(/[_-]+/g, ' ')
+  const selectedFont =
+    fontMap[normalizedFont] ||
+    fontMap[fontName.toLowerCase()] ||
+    (fontName ? `"${fontName}", sans-serif` : 'inherit')
+
+  const effectType = [
+    getType(effect || {}),
+    effectData.effect,
+    effectData.name_effect,
+    effectData.effect_type,
+  ].join(' ').toLowerCase()
 
   let effectStyle = {}
 
   if (effectType.includes('fire')) {
     effectStyle = {
       color: '#ffb000',
-      textShadow:
-        '0 0 4px #ff6a00, 0 0 10px #ff3d00, 0 0 18px #ff0000',
+      textShadow: '0 0 4px #ff6a00, 0 0 10px #ff3d00, 0 0 18px #ff0000',
     }
   } else if (effectType.includes('ice')) {
     effectStyle = {
       color: '#b9f4ff',
-      textShadow:
-        '0 0 5px #67e8f9, 0 0 12px #22d3ee, 0 0 20px #0284c7',
+      textShadow: '0 0 5px #67e8f9, 0 0 12px #22d3ee, 0 0 20px #0284c7',
     }
   } else if (effectType.includes('electric')) {
     effectStyle = {
       color: '#fff700',
-      textShadow:
-        '0 0 5px #facc15, 0 0 12px #eab308, 0 0 20px #f59e0b',
+      textShadow: '0 0 5px #facc15, 0 0 12px #eab308, 0 0 20px #f59e0b',
     }
   } else if (effectType.includes('glow')) {
+    const glowColor =
+      effectData.glowColor || effectData.glow_color ||
+      effectData.color || '#60a5fa'
+
     effectStyle = {
       color: effectData.color || '#ffffff',
-      textShadow: `0 0 6px ${
-        effectData.glowColor || effectData.color || '#60a5fa'
-      }, 0 0 14px ${
-        effectData.glowColor || effectData.color || '#60a5fa'
-      }`,
+      textShadow: `0 0 6px ${glowColor}, 0 0 14px ${glowColor}`,
     }
   }
 
@@ -88,30 +133,30 @@ export default function StyledUsername({
     badgeData.shape || badgeData.design || ''
   ).toLowerCase()
 
+  const badgeSize = Number(badgeData.size) || 22
+
   const badgeStyle = {
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    width: badgeData.size || 22,
-    height: badgeData.size || 22,
+    width: badgeSize,
+    height: badgeSize,
     marginRight: 6,
     fontSize: 11,
     fontWeight: 800,
-    color: badgeData.iconColor || '#ffffff',
+    color: badgeData.iconColor || badgeData.icon_color || '#ffffff',
     background:
       badgeData.gradient ||
       badgeData.background ||
       badgeData.color ||
       'rgba(255,255,255,0.12)',
-    border:
-      badgeData.borderWidth
-        ? `${badgeData.borderWidth}px solid ${
-            badgeData.border || '#ffffff'
-          }`
-        : '1px solid rgba(255,255,255,0.25)',
+    border: badgeData.borderWidth
+      ? `${badgeData.borderWidth}px solid ${badgeData.border || '#ffffff'}`
+      : '1px solid rgba(255,255,255,0.25)',
     boxShadow: badgeData.glow
       ? `0 0 10px ${badgeData.glowColor || '#ffffff'}`
       : 'none',
+    flexShrink: 0,
   }
 
   if (badgeShape === 'circle') {
@@ -144,7 +189,7 @@ export default function StyledUsername({
   const combinedStyle = {
     display: 'inline-flex',
     alignItems: 'center',
-    fontFamily: fontMap[fontName] || fontName || 'inherit',
+    fontFamily: selectedFont,
     fontWeight: 800,
     ...effectStyle,
   }
@@ -164,8 +209,8 @@ export default function StyledUsername({
           </span>
         </span>
       )}
-
       <span>{username}</span>
     </span>
   )
 }
+

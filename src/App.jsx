@@ -31,12 +31,17 @@ import AdminWithdrawals from './pages/Admin/AdminWithdrawals'
 import AdminPayoutMethods from './pages/Admin/AdminPayoutMethods'
 import PayoutMethods from './pages/PayoutMethods/PayoutMethods'
 import AdminDashboard from './pages/Admin/AdminDashboard'
+import AdminTournaments from './pages/Admin/AdminTournaments'
 import AdminNotifications from './pages/Admin/AdminNotifications'
 import AdminTelegram from './pages/Admin/AdminTelegram'
 import AdminTelegramStats from './pages/Admin/AdminTelegramStats'
 import AdminVCoins from './pages/Admin/AdminVCoins'
-import AdminContactAgents from './pages/Admin/AdminContactAgents'
+import AdminContactAgents from './pages/Admin/AdminContactAgents'
+import AdminManageAgents from './pages/AdminManageAgents';
+import AdminAgentAssignments from './pages/AdminAgentAssignments';
 import AdminTransactions from './pages/Admin/AdminTransactions'
+import AdminTournamentPrizePools from './pages/Admin/AdminTournamentPrizePools'
+import AdminTournamentPayouts from './pages/Admin/AdminTournamentPayouts'
 import AdminMarketplace from './pages/Admin/AdminMarketplace'
 
 function ComingSoon({ title }) {
@@ -81,8 +86,10 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/tournaments" element={<Tournaments />} />
         <Route path="/tournaments/:id" element={<TournamentDetails />} />
-        <Route path="/matches" element={<ComingSoon title="Matches" />} />
-        <Route path="/wallet" element={<Wallet />} />`r`n        <Route path="/wallet/payout-methods" element={<WalletPayoutMethods />} />`r`n        <Route path="/payout-methods" element={<WalletPayoutMethods />} />
+        <Route path="/matches" element={<Matches />} />
+        <Route path="/wallet" element={<Wallet />} />
+        <Route path="/wallet/payout-methods" element={<WalletPayoutMethods />} />
+        <Route path="/payout-methods" element={<WalletPayoutMethods />} />
         <Route path="/vcoins" element={<VCoins />} />
         <Route path="/marketplace" element={<Marketplace />} />
         <Route path="/inventory" element={<Inventory />} />
@@ -95,7 +102,11 @@ export default function App() {
       </Route>
 
       <Route element={<AdminRoute />}>
-        <Route path="/admin" element={<AdminDashboard />} />`r`n  <Route path="/admin/marketplace" element={<AdminMarketplace />} />
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin/tournaments" element={<AdminTournaments />} />
+  <Route path="/admin/marketplace" element={<AdminMarketplace />} />
+        <Route path="/admin/tournament-prize-pools" element={<AdminTournamentPrizePools />} />
+          <Route path="/admin/tournament-payouts" element={<AdminTournamentPayouts />} />
           <Route
             path="/admin/transactions"
             element={<AdminTransactions />}
@@ -142,6 +153,10 @@ export default function App() {
           path="/admin/vcoins"
           element={<AdminVCoins />}
         />
+        <Route path="/admin/manage-agents" element={<AdminManageAgents />} />
+        <Route path="/admin/agent-assignments" element={<AdminAgentAssignments />} />
+        <Route path="/admin/manage-agents" element={<AdminManageAgents />} />
+        <Route path="/admin/agent-assignments" element={<AdminAgentAssignments />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
@@ -149,6 +164,17 @@ export default function App() {
   )
 }
 
+
+
+
+
+
+
+
+
+
+
+import Matches from './pages/Matches/Matches'
 
 
 

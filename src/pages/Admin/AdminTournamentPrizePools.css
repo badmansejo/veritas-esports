@@ -1,0 +1,159 @@
+﻿.atpp-page {
+  min-height: 100vh;
+  padding: 24px;
+  color: #f3f4f6;
+  background: #080b12;
+  font-family: Arial, Helvetica, sans-serif;
+}
+.atpp-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.atpp-eyebrow {
+  color: #38bdf8;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+}
+.atpp-header h1 {
+  margin: 0;
+  font-size: clamp(25px, 4vw, 36px);
+  font-weight: 950;
+}
+.atpp-header p {
+  color: #9ca3af;
+  font-size: 13px;
+}
+.atpp-header button, .atpp-copy {
+  border: 1px solid #334155;
+  border-radius: 9px;
+  padding: 10px 13px;
+  background: #111827;
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+}
+.atpp-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.atpp-summary article {
+  padding: 20px;
+  border: 1px solid #263548;
+  border-radius: 14px;
+  background: linear-gradient(145deg, #142031, #0b1019);
+}
+.atpp-summary span {
+  display: block;
+  margin-bottom: 10px;
+  color: #9ca3af;
+  font-size: 12px;
+}
+.atpp-summary strong {
+  color: #7dd3fc;
+  font-size: 24px;
+  font-weight: 950;
+}
+.atpp-note {
+  padding: 14px;
+  margin-bottom: 16px;
+  border: 1px solid #3b3524;
+  border-radius: 10px;
+  background: #17150f;
+  color: #d6c9a5;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.atpp-toolbar {
+  margin-bottom: 14px;
+}
+.atpp-toolbar input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 13px;
+  border: 1px solid #293142;
+  border-radius: 10px;
+  background: #0c111a;
+  color: #fff;
+  outline: none;
+}
+.atpp-table-wrap {
+  overflow-x: auto;
+  border: 1px solid #263142;
+  border-radius: 14px;
+  background: #0b1018;
+}
+.atpp-table {
+  width: 100%;
+  min-width: 1150px;
+  border-collapse: collapse;
+}
+.atpp-table th {
+  padding: 14px;
+  text-align: left;
+  color: #94a3b8;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  border-bottom: 1px solid #263142;
+}
+.atpp-table td {
+  padding: 14px;
+  border-bottom: 1px solid #1d2735;
+  color: #cbd5e1;
+  font-size: 12px;
+  vertical-align: top;
+}
+.atpp-table td strong, .atpp-table td small {
+  display: block;
+}
+.atpp-table td strong {
+  color: #fff;
+  margin-bottom: 4px;
+}
+.atpp-table td small {
+  color: #8290a3;
+  margin-top: 3px;
+}
+.atpp-amount {
+  color: #fbbf24 !important;
+  font-weight: 900;
+  white-space: nowrap;
+}
+.atpp-reference {
+  display: block;
+  max-width: 180px;
+  overflow-wrap: anywhere;
+}
+.atpp-copy {
+  padding: 5px 8px;
+  margin-top: 7px;
+  font-size: 10px;
+}
+.atpp-status {
+  display: inline-block;
+  padding: 6px 9px;
+  border: 1px solid #65501c;
+  border-radius: 20px;
+  background: #2b220d;
+  color: #fcd34d;
+  font-size: 10px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+.atpp-empty {
+  padding: 40px !important;
+  text-align: center;
+  color: #94a3b8 !important;
+}
+@media (max-width: 700px) {
+  .atpp-page { padding: 15px; }
+}
