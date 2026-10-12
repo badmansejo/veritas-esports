@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabaseClient";
 
@@ -16,16 +16,15 @@ export default function Register() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
+  const referralCode =
+    new URLSearchParams(window.location.search).get("ref")?.trim() || "";
+
   function handleChange(e) {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    });
+    setForm({ ...form, [e.target.name]: e.target.value });
   }
 
   async function handleRegister(e) {
     e.preventDefault();
-
     setError("");
     setMessage("");
 
@@ -54,31 +53,36 @@ export default function Register() {
 
     setLoading(true);
 
-    const { data, error: signUpError } = await supabase.auth.signUp({
-      email,
-      password: form.password,
-      options: {
-        data: {
-          username,
+    try {
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password: form.password,
+        options: {
+          data: {
+            username,
+            ...(referralCode ? { referral_code: referralCode } : {}),
+          },
         },
-      },
-    });
+      });
 
-    setLoading(false);
+      if (signUpError) {
+        setError(signUpError.message);
+        return;
+      }
 
-    if (signUpError) {
-      setError(signUpError.message);
-      return;
+      if (data.user && !data.session) {
+        setMessage(
+          "Account created successfully. Check your email and verify your account before logging in."
+        );
+        return;
+      }
+
+      navigate("/");
+    } catch {
+      setError("Registration failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
-
-    if (data.user && !data.session) {
-      setMessage(
-        "Account created successfully. Check your email and click the verification link before logging in."
-      );
-      return;
-    }
-
-    navigate("/");
   }
 
   return (
@@ -88,7 +92,7 @@ export default function Register() {
           <div className="brand-mark">V</div>
           <div>
             <h1>VERITAS</h1>
-            <p>eFootball Tournament Platform</p>
+            <p>Football Tournament Platform</p>
           </div>
         </div>
 
@@ -151,8 +155,13 @@ export default function Register() {
             />
           </label>
 
-          {error && <div className="auth-error">{error}</div>}
+          {referralCode && (
+            <div className="security-note">
+              Referral code applied: <strong>{referralCode}</strong>
+            </div>
+          )}
 
+          {error && <div className="auth-error">{error}</div>}
           {message && <div className="auth-success">{message}</div>}
 
           <button type="submit" className="primary-button" disabled={loading}>

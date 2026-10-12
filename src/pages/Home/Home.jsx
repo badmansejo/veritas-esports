@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+﻿import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabaseClient'
@@ -492,6 +492,7 @@ export default function Home() {
           <span>V</span>
           <strong>VERITAS</strong>
         </div>
+          
 
         <div className="topbar-actions">
 
@@ -658,7 +659,22 @@ export default function Home() {
             )}
           </button>
 
-          <div className="sidebar-divider" />
+          <div
+            className="sidebar-link"
+            role="button"
+            tabIndex={0}
+            onClick={() => navigate('/referrals')}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault()
+                navigate('/referrals')
+              }
+            }}
+          >
+            <span className="sidebar-link-icon">🎁</span>
+            <span>Referrals</span>
+          </div>
+<div className="sidebar-divider" />
 
           {isAdmin && (
             <button
@@ -1204,6 +1220,8 @@ export default function Home() {
     </div>
   )
 }
+
+
 
 
 

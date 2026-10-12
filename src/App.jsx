@@ -31,6 +31,9 @@ import AdminWithdrawals from './pages/Admin/AdminWithdrawals'
 import AdminPayoutMethods from './pages/Admin/AdminPayoutMethods'
 import PayoutMethods from './pages/PayoutMethods/PayoutMethods'
 import AdminDashboard from './pages/Admin/AdminDashboard'
+import AdminReferralSettings from './pages/Admin/AdminReferralSettings';
+import AdminReferralManagement from './pages/Admin/AdminReferralManagement';
+import AdminUsers from './pages/Admin/AdminUsers'
 import AdminTournaments from './pages/Admin/AdminTournaments'
 import AdminNotifications from './pages/Admin/AdminNotifications'
 import AdminTelegram from './pages/Admin/AdminTelegram'
@@ -103,6 +106,11 @@ export default function App() {
 
       <Route element={<AdminRoute />}>
         <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin/referrals/settings" element={<AdminReferralSettings />} />
+        <Route path="/admin/referrals/history" element={<AdminReferralManagement mode="history" />} />
+        <Route path="/admin/referrals/top" element={<AdminReferralManagement mode="top" />} />
+        <Route path="/admin/referrals/fraud" element={<AdminReferralManagement mode="fraud" />} />
+        <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/admin/tournaments" element={<AdminTournaments />} />
   <Route path="/admin/marketplace" element={<AdminMarketplace />} />
         <Route path="/admin/tournament-prize-pools" element={<AdminTournamentPrizePools />} />
@@ -160,7 +168,9 @@ export default function App() {
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    
+        <Route path="/referrals" element={<Referrals />} />
+      </Routes>
   )
 }
 
@@ -183,3 +193,11 @@ import Matches from './pages/Matches/Matches'
 
 
 
+
+
+
+
+
+
+
+import Referrals from './pages/Referrals/Referrals'

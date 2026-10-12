@@ -7,7 +7,7 @@ const sections = [
     title: 'Overview',
     items: [
       ['📊', 'Dashboard', 'Platform overview, activity and system alerts.', '/admin', true],
-      ['👥', 'Users', 'Manage users, accounts, wallets and V Coins.'],
+      ['👥', 'Users', 'Manage users, accounts, wallets and V Coins.', '/admin/users', true],
       ['🏆', 'Tournaments', 'View and delete tournaments.', '/admin/tournaments', true],
       ['⚽', 'Matches', 'Monitor matches, results, screenshots and disputes.'],
     ],
@@ -90,11 +90,11 @@ const sections = [
   {
     title: 'Referrals',
     items: [
-      ['🤝', 'Referral Settings', 'Enable and configure referrals.'],
-      ['🎁', 'Rewards', 'Manage referral reward values.'],
-      ['📋', 'Referral History', 'View referral activity.'],
-      ['🏅', 'Top Referrers', 'View successful referrers.'],
-      ['🛡️', 'Fraud / Abuse', 'Review suspicious referral activity.'],
+      ['🤝', 'Referral Settings', 'Configure qualification rules, minimum activity and programme limits.', '/admin/referrals/settings', true],
+      ['🎁', 'Rewards', 'Configure referrer and new-user KES and V Coins rewards.', '/admin/referrals/settings', true],
+      ['📋', 'Referral History', 'View referral activity and rewards.', '/admin/referrals/history', true],
+      ['🏅', 'Top Referrers', 'Rank successful referrers.', '/admin/referrals/top', true],
+      ['🛡️', 'Fraud / Abuse', 'Review suspicious referral activity.', '/admin/referrals/fraud', true],
     ],
   },
   {
@@ -517,6 +517,9 @@ const styles = {
     letterSpacing: '3px',
   },
 }
+
+
+
 
 
 
