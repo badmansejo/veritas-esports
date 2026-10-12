@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+﻿import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../context/AuthContext'
@@ -451,7 +451,7 @@ export default function Marketplace() {
               onClick={closeItem}
               disabled={buying}
             >
-              ×
+              Ã—
             </button>
 
             <div className="marketplace-modal-preview">
@@ -506,3 +506,5 @@ export default function Marketplace() {
     </div>
   )
 }
+
+

@@ -1,4 +1,4 @@
-import React from 'react'
+﻿import React from 'react'
 
 function slug(value) {
   return String(value || '')
@@ -303,41 +303,89 @@ function BadgePreview({ item }) {
   )
 }
 
-function getVisualClass(item) {
-  const preview = getPreview(item)
+const EFFECT_KEYS = [
+  'none','fire','ice','electric','inferno','frostbite','thunder','neon',
+  'galaxy','shadow','ember','flame','blaze','magma','storm','lightning',
+  'plasma','void','solar','lunar','ocean','crystal','diamond','phoenix',
+  'spectral','venom','toxic','aurora','cosmic','royal','ruby','emerald',
+  'sapphire','amethyst','obsidian','carbon','energy','pulse','radiant',
+  'nova','quantum','cyber','inferno-x','frost-x','thunder-x','galaxy-x',
+  'shadow-x','neon-x','titan','legend'
+];
 
-  const effect = slug(
-    preview.effect ||
-    preview.name_effect ||
-    item?.name
-  )
+const FONT_KEYS = [
+  'default','bold','elite','neon','royal','cyber','hacker','tech',
+  'digital','titan','warrior','gamer','champion','legend','hero',
+  'future','matrix','arcade','pixel','glitch','retro','luxury',
+  'heavy','ultra','sharp','speed','power','military','scifi',
+  'street','pro','master','supreme','king','queen','racer','battle',
+  'extreme','veritas','veritas-elite'
+];
 
-  const font = slug(
-    preview.font ||
-    preview.name_font ||
-    item?.name
-  )
+const FRAME_KEYS = [
+  'none','metallic','steel','gold','diamond','crystal','neon','royal',
+  'titan','champion','inferno','fire','frost','ice','cyber','shadow',
+  'obsidian','carbon','galaxy','cosmic','platinum','silver','chrome',
+  'ruby','emerald','sapphire','amethyst','legend','elite','mythic',
+  'phoenix','lightning','thunder','hologram','prism','glitch',
+  'quantum','energy','pulse','veritas'
+];
 
-  const frame = slug(
-    preview.frame ||
-    preview.profile_frame ||
-    item?.name
-  )
+const BACKGROUND_KEYS = [
+  'none','night','midnight','carbon','galaxy','arena','neon','cyber',
+  'inferno','volcano','frost','iceberg','storm','thunder','shadow',
+  'void','ocean','sunset','aurora','space','matrix','tech','city',
+  'cyber-city','desert','royal','diamond','purple','red','blue',
+  'green','gold','silver','platinum','chrome','ruby','emerald',
+  'sapphire','amethyst','cosmic','quantum','lightning','fire',
+  'crystal','phoenix','hologram','veritas-night','veritas-gold',
+  'veritas-elite'
+];
 
-  const background = slug(
-    preview.background ||
-    preview.profile_background ||
-    item?.name
-  )
+function resolveVisualKey(values, knownKeys) {
+  const candidates = values
+    .filter(Boolean)
+    .map(value => slug(String(value)));
 
-  return {
-    effect: `marketplace-effect-${effect}`,
-    font: `marketplace-font-${font}`,
-    frame: `marketplace-frame-${frame}`,
-    background: `marketplace-background-${background}`,
+  for (const candidate of candidates) {
+    if (knownKeys.includes(candidate)) return candidate;
   }
+
+  for (const candidate of candidates) {
+    const matches = knownKeys
+      .filter(key => candidate.includes(key))
+      .sort((a, b) => b.length - a.length);
+
+    if (matches.length) return matches[0];
+  }
+
+  return candidates[0] || 'none';
 }
 
+function getVisualClass(item) {
+  const preview = getPreview(item);
+  const type = getType(item);
+  const name = item?.name || '';
+
+  return {
+    effect: `marketplace-effect-${resolveVisualKey(
+      [preview.effect, preview.name_effect, name],
+      EFFECT_KEYS
+    )}`,
+    font: `marketplace-font-${resolveVisualKey(
+      [preview.font, preview.name_font, name],
+      FONT_KEYS
+    )}`,
+    frame: `marketplace-frame-${resolveVisualKey(
+      [preview.frame, preview.profile_frame, name],
+      FRAME_KEYS
+    )}`,
+    background: `marketplace-background-${resolveVisualKey(
+      [preview.background, preview.profile_background, name],
+      BACKGROUND_KEYS
+    )}`
+  };
+}
 function TextPreview({ item, previewUsername }) {
   const preview = getPreview(item)
   const classes = getVisualClass(item)
@@ -456,3 +504,4 @@ export default function MarketplaceItem({
     </article>
   )
 }
+

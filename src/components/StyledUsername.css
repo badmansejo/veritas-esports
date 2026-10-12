@@ -1,0 +1,10 @@
+﻿.veritas-username-effect-rainbow {
+  color: #ffffff;
+  text-shadow: 0 0 5px #ff3bdf, 0 0 12px #8b5cff, 0 0 22px #00eaff;
+  animation: veritas-rainbow-surge 2.5s linear infinite;
+}
+
+@keyframes veritas-rainbow-surge {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
+}

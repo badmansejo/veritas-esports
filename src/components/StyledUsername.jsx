@@ -1,4 +1,5 @@
-import React from 'react'
+﻿import React from 'react'
+import './StyledUsername.css'
 
 export default function StyledUsername({
   profile = {},
@@ -39,21 +40,33 @@ export default function StyledUsername({
     )
   })
 
+  const EFFECT_KEYS = [
+    'fire','ice','electric','inferno','frostbite','thunder','neon','galaxy',
+    'shadow','ember','flame','blaze','magma','storm','lightning','plasma',
+    'void','solar','lunar','ocean','crystal','diamond','phoenix','spectral',
+    'venom','rainbow','toxic','aurora','cosmic','royal','ruby','emerald',
+    'sapphire','amethyst','obsidian','carbon','energy','pulse','radiant',
+    'nova','quantum','cyber','inferno x','frost x','thunder x','galaxy x',
+    'shadow x','neon x','titan','legend'
+  ]
+
   const effect = items.find((item) => {
-    const type = getType(item)
     const data = item?.preview_data || {}
-    const effectName = String(
-      data.effect || data.name_effect || data.effect_type || ''
-    ).toLowerCase()
+    const text = [
+      getType(item),
+      item?.name,
+      item?.slug,
+      data.effect,
+      data.name_effect,
+      data.effect_type,
+      data.name,
+      data.category,
+      data.item_type,
+    ].filter(Boolean).join(' ').toLowerCase().replace(/[_-]+/g, ' ')
 
-    return (
-      /name glow|name fire|name ice|name electric|username effect/.test(type) ||
-      ['fire', 'ice', 'electric', 'glow'].some((word) =>
-        effectName.includes(word)
-      )
-    )
+    return /username effect|name effect|name glow/.test(text) ||
+      EFFECT_KEYS.some((key) => text.includes(key))
   })
-
   const fontData = font?.preview_data || {}
   const effectData = effect?.preview_data || {}
   const badgeData = badge?.preview_data || {}
@@ -101,7 +114,79 @@ export default function StyledUsername({
     effectData.effect_type,
   ].join(' ').toLowerCase()
 
+  const effectKey = EFFECT_KEYS
+    .slice()
+    .sort((a, b) => b.length - a.length)
+    .find((key) => effectType.includes(key)) || ''
+
   let effectStyle = {}
+
+  const effectStyles = {
+    fire: { color: '#ffb000', textShadow: '0 0 4px #ff6a00, 0 0 10px #ff3d00, 0 0 18px #ff0000' },
+    ice: { color: '#b9f4ff', textShadow: '0 0 5px #67e8f9, 0 0 12px #22d3ee, 0 0 20px #0284c7' },
+    electric: { color: '#fff700', textShadow: '0 0 5px #facc15, 0 0 12px #eab308, 0 0 20px #f59e0b' },
+    inferno: { color: '#ff5a1f', textShadow: '0 0 6px #ff2400, 0 0 18px #ff4500' },
+    frostbite: { color: '#d7fbff', textShadow: '0 0 6px #a5f3fc, 0 0 18px #38bdf8' },
+    thunder: { color: '#fff56b', textShadow: '0 0 6px #facc15, 0 0 18px #a855f7' },
+    neon: { color: '#ff4dff', textShadow: '0 0 6px #ff00ff, 0 0 18px #00eaff' },
+    galaxy: { color: '#d8b4fe', textShadow: '0 0 6px #a855f7, 0 0 18px #4f46e5' },
+    shadow: { color: '#c4b5fd', textShadow: '0 0 6px #6d28d9, 0 0 18px #111827' },
+    ember: { color: '#ffb36b', textShadow: '0 0 6px #f97316, 0 0 18px #dc2626' },
+    flame: { color: '#ffd166', textShadow: '0 0 6px #fb923c, 0 0 18px #ef4444' },
+    blaze: { color: '#ff7547', textShadow: '0 0 6px #f97316, 0 0 18px #dc2626' },
+    magma: { color: '#ff8a4c', textShadow: '0 0 6px #f97316, 0 0 18px #7f1d1d' },
+    storm: { color: '#bfdbfe', textShadow: '0 0 6px #60a5fa, 0 0 18px #64748b' },
+    lightning: { color: '#fff700', textShadow: '0 0 6px #fde047, 0 0 18px #38bdf8' },
+    plasma: { color: '#f0abfc', textShadow: '0 0 6px #e879f9, 0 0 18px #7c3aed' },
+    void: { color: '#c4b5fd', textShadow: '0 0 6px #7c3aed, 0 0 18px #312e81' },
+    solar: { color: '#fde68a', textShadow: '0 0 6px #fbbf24, 0 0 18px #f97316' },
+    lunar: { color: '#e0e7ff', textShadow: '0 0 6px #a5b4fc, 0 0 18px #818cf8' },
+    ocean: { color: '#67e8f9', textShadow: '0 0 6px #06b6d4, 0 0 18px #1d4ed8' },
+    crystal: { color: '#ccfbf1', textShadow: '0 0 6px #5eead4, 0 0 18px #22d3ee' },
+    diamond: { color: '#e0f2fe', textShadow: '0 0 6px #bae6fd, 0 0 18px #38bdf8' },
+    phoenix: { color: '#fda4af', textShadow: '0 0 6px #fb7185, 0 0 18px #f97316' },
+    spectral: { color: '#ddd6fe', textShadow: '0 0 6px #c084fc, 0 0 18px #22d3ee' },
+    venom: { color: '#89ff55', textShadow: '0 0 7px #4cff00, 0 0 25px #00a000' },
+    toxic: { color: '#e4ff42', textShadow: '0 0 7px #b8ff00, 0 0 25px #35b800' },
+    aurora: { color: '#a7f3d0', textShadow: '0 0 6px #34d399, 0 0 18px #818cf8' },
+    cosmic: { color: '#c4b5fd', textShadow: '0 0 6px #818cf8, 0 0 18px #ec4899' },
+    royal: { color: '#e9d5ff', textShadow: '0 0 6px #a855f7, 0 0 18px #7e22ce' },
+    ruby: { color: '#fda4af', textShadow: '0 0 6px #e11d48, 0 0 18px #9f1239' },
+    emerald: { color: '#86efac', textShadow: '0 0 6px #22c55e, 0 0 18px #166534' },
+    sapphire: { color: '#93c5fd', textShadow: '0 0 6px #3b82f6, 0 0 18px #1e3a8a' },
+    amethyst: { color: '#e9d5ff', textShadow: '0 0 6px #c084fc, 0 0 18px #7e22ce' },
+    obsidian: { color: '#d1d5db', textShadow: '0 0 6px #6b7280, 0 0 18px #111827' },
+    carbon: { color: '#e5e7eb', textShadow: '0 0 6px #9ca3af, 0 0 18px #374151' },
+    energy: { color: '#a5f3fc', textShadow: '0 0 6px #22d3ee, 0 0 18px #8b5cf6' },
+    pulse: { color: '#f9a8d4', textShadow: '0 0 6px #ec4899, 0 0 18px #8b5cf6' },
+    radiant: { color: '#fef08a', textShadow: '0 0 6px #fde047, 0 0 18px #fb923c' },
+    nova: { color: '#f5d0fe', textShadow: '0 0 6px #e879f9, 0 0 18px #6366f1' },
+    quantum: { color: '#a5b4fc', textShadow: '0 0 6px #6366f1, 0 0 18px #06b6d4' },
+    cyber: { color: '#67e8f9', textShadow: '0 0 6px #06b6d4, 0 0 18px #d946ef' },
+    titan: { color: '#e5e7eb', textShadow: '0 0 6px #9ca3af, 0 0 18px #64748b' },
+    legend: { color: '#fde68a', textShadow: '0 0 6px #fbbf24, 0 0 18px #b45309' },
+  }
+
+  effectStyle = effectStyles[effectKey.replace(/ x$/, '')] || {}
+
+  if (effectKey === 'rainbow') {
+    effectStyle = {}
+  } else if (effectKey.includes('frost')) {
+    effectStyle = effectStyles.frostbite
+  } else if (effectKey.includes('thunder')) {
+    effectStyle = effectStyles.thunder
+  } else if (effectKey.includes('inferno')) {
+    effectStyle = effectStyles.inferno
+  } else if (!effectKey && effectType.includes('glow')) {
+    const glowColor =
+      effectData.glowColor || effectData.glow_color ||
+      effectData.color || '#60a5fa'
+
+    effectStyle = {
+      color: effectData.color || '#ffffff',
+      textShadow: `0 0 6px ${glowColor}, 0 0 14px ${glowColor}`,
+    }
+  }
 
   if (effectType.includes('fire')) {
     effectStyle = {
@@ -205,12 +290,13 @@ export default function StyledUsername({
                 : undefined
             }
           >
-            {badgeData.icon || '★'}
+            {badgeData.icon || 'Γÿà'}
           </span>
         </span>
       )}
-      <span>{username}</span>
+      <span className={effectKey === 'rainbow' ? 'veritas-username-effect-rainbow' : ''}>{username}</span>
     </span>
   )
 }
+
 

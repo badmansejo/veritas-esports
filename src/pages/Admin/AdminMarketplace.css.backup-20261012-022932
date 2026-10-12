@@ -1,0 +1,3094 @@
+﻿.admin-marketplace-page {
+  min-height: 100vh;
+  padding: 28px;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(255,255,255,.07), transparent 30%),
+    linear-gradient(135deg,#050505,#0b0b0d 45%,#111114);
+  color:#fff;
+}
+
+.admin-marketplace-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap:20px;
+  margin-bottom:24px;
+}
+
+.admin-marketplace-kicker {
+  color:#aaa;
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:3px;
+}
+
+.admin-marketplace-header h1 {
+  margin:5px 0;
+  font-size:34px;
+  font-weight:950;
+}
+
+.admin-marketplace-header p {
+  margin:0;
+  color:#999;
+}
+
+.marketplace-total {
+  min-width:100px;
+  padding:16px;
+  border:1px solid #29292d;
+  border-radius:14px;
+  background:#101012;
+  text-align:center;
+}
+
+.marketplace-total strong {
+  display:block;
+  font-size:28px;
+}
+
+.marketplace-total span {
+  color:#888;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:1px;
+}
+
+.marketplace-message {
+  padding:14px 16px;
+  border-radius:12px;
+  margin-bottom:18px;
+  font-weight:800;
+}
+
+.marketplace-message.success {
+  background:rgba(30,150,80,.15);
+  border:1px solid rgba(70,220,130,.3);
+  color:#8ff0b4;
+}
+
+.marketplace-message.error {
+  background:rgba(200,40,40,.15);
+  border:1px solid rgba(255,80,80,.35);
+  color:#ff9b9b;
+}
+
+.marketplace-builder,
+.marketplace-catalogue {
+  border:1px solid #27272c;
+  border-radius:18px;
+  background:rgba(12,12,15,.9);
+  overflow:hidden;
+}
+
+.marketplace-step {
+  padding:24px;
+  border-bottom:1px solid #242429;
+}
+
+.step-heading {
+  display:flex;
+  align-items:center;
+  gap:14px;
+  margin-bottom:25px;
+}
+
+.step-heading > span {
+  width:38px;
+  height:38px;
+  display:grid;
+  place-items:center;
+  border-radius:10px;
+  background:#fff;
+  color:#000;
+  font-weight:950;
+}
+
+.step-heading strong {
+  display:block;
+  font-size:18px;
+}
+
+.step-heading small {
+  color:#777;
+}
+
+.picker-group {
+  margin-top:28px;
+}
+
+.picker-group h3 {
+  margin-bottom:14px;
+  font-size:14px;
+  letter-spacing:.5px;
+}
+
+.visual-options {
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:10px;
+}
+
+.visual-option {
+  min-height:105px;
+  padding:10px;
+  border:1px solid #29292e;
+  border-radius:12px;
+  background:linear-gradient(145deg,#111115,#18181d);
+  color:#fff;
+  cursor:pointer;
+  transition:.18s ease;
+  text-align:center;
+}
+
+.visual-option:hover {
+  transform:translateY(-2px);
+  border-color:#777;
+  background:#1d1d22;
+}
+
+.visual-option.selected {
+  border-color:#fff;
+  box-shadow:0 0 0 2px rgba(255,255,255,.12),0 8px 30px rgba(255,255,255,.08);
+}
+
+.visual-option strong {
+  display:block;
+  font-size:11px;
+  margin-top:7px;
+}
+
+.visual-option small {
+  display:block;
+  margin-top:3px;
+  color:#777;
+  font-size:9px;
+}
+
+.option-preview {
+  min-height:43px;
+  display:grid;
+  place-items:center;
+  border-radius:8px;
+  background:#08080a;
+  border:1px solid #27272b;
+  font-weight:950;
+  font-size:17px;
+  overflow:hidden;
+}
+
+.font-bold .option-preview,
+.preview-username.font-bold {
+  font-weight:950;
+}
+
+.font-elite .option-preview,
+.preview-username.font-elite {
+  font-weight:950;
+  letter-spacing:2px;
+  text-transform:uppercase;
+}
+
+.font-neon .option-preview,
+.preview-username.font-neon {
+  color:#fff;
+  text-shadow:0 0 8px #fff,0 0 20px #9ff;
+}
+
+.font-royal .option-preview,
+.preview-username.font-royal {
+  font-family:Georgia,serif;
+  font-weight:900;
+  letter-spacing:1px;
+}
+
+.font-cyber .option-preview,
+.preview-username.font-cyber {
+  letter-spacing:3px;
+  text-transform:uppercase;
+}
+
+.font-titan .option-preview,
+.preview-username.font-titan {
+  font-weight:1000;
+  transform:scaleX(1.05);
+}
+
+.font-warrior .option-preview,
+.preview-username.font-warrior {
+  font-weight:900;
+  letter-spacing:1px;
+}
+
+.font-gamer .option-preview,
+.preview-username.font-gamer {
+  font-family:monospace;
+  font-weight:900;
+}
+
+.font-champion .option-preview,
+.preview-username.font-champion {
+  font-weight:950;
+  letter-spacing:1.5px;
+}
+
+.font-legend .option-preview,
+.preview-username.font-legend {
+  font-family:Georgia,serif;
+  font-weight:950;
+}
+
+.font-future .option-preview,
+.preview-username.font-future {
+  letter-spacing:2px;
+  text-transform:uppercase;
+}
+
+.font-matrix .option-preview,
+.preview-username.font-matrix {
+  font-family:monospace;
+  letter-spacing:2px;
+}
+
+.font-pixel .option-preview,
+.preview-username.font-pixel {
+  font-family:monospace;
+  letter-spacing:-1px;
+}
+
+.effect-fire .option-preview,
+.effect-fire .preview-username {
+  color:#ffb36b;
+  text-shadow:0 0 8px #ff6a00,0 0 22px #ff2b00;
+}
+
+.effect-ice .option-preview,
+.effect-ice .preview-username {
+  color:#c9f5ff;
+  text-shadow:0 0 8px #52ddff,0 0 22px #168dff;
+}
+
+.effect-electric .option-preview,
+.effect-electric .preview-username {
+  color:#f5fbff;
+  text-shadow:0 0 7px #fff,0 0 22px #5db7ff;
+}
+
+.effect-inferno .option-preview,
+.effect-inferno .preview-username {
+  color:#ffd19a;
+  text-shadow:0 0 10px #ff3c00,0 0 28px #ff0000;
+}
+
+.effect-frostbite .option-preview,
+.effect-frostbite .preview-username {
+  color:#e9ffff;
+  text-shadow:0 0 8px #bfffff,0 0 24px #48cfff;
+}
+
+.effect-thunder .option-preview,
+.effect-thunder .preview-username {
+  color:#fff;
+  text-shadow:0 0 8px #fff,0 0 25px #7a75ff;
+}
+
+.effect-neon .option-preview,
+.effect-neon .preview-username {
+  color:#fff;
+  text-shadow:0 0 8px #fff,0 0 20px #ff4dff;
+}
+
+.effect-galaxy .option-preview,
+.effect-galaxy .preview-username {
+  color:#eee;
+  text-shadow:0 0 8px #fff,0 0 25px #8d6bff;
+}
+
+.effect-shadow .option-preview,
+.effect-shadow .preview-username {
+  color:#aaa;
+  text-shadow:0 0 12px #000;
+}
+
+.effect-none .option-preview {
+  color:#fff;
+}
+
+.frame-preview {
+  border:2px solid #444;
+}
+
+.frame-metallic .option-preview,
+.frame-metallic.frame-preview {
+  border:2px solid #b8b8bd;
+  box-shadow:inset 0 0 0 1px #555,0 0 10px rgba(255,255,255,.18);
+}
+
+.frame-gold .option-preview,
+.frame-gold.frame-preview {
+  border:2px solid #d5ad55;
+  box-shadow:0 0 14px rgba(255,200,70,.2);
+}
+
+.frame-diamond .option-preview,
+.frame-diamond.frame-preview {
+  border:2px solid #b9f8ff;
+  box-shadow:0 0 16px rgba(100,230,255,.35);
+}
+
+.frame-neon .option-preview,
+.frame-neon.frame-preview {
+  border:2px solid #ff4dff;
+  box-shadow:0 0 15px rgba(255,60,255,.4);
+}
+
+.frame-royal .option-preview,
+.frame-royal.frame-preview {
+  border:2px solid #a88cff;
+}
+
+.frame-titan .option-preview,
+.frame-titan.frame-preview {
+  border:3px solid #777;
+}
+
+.frame-champion .option-preview,
+.frame-champion.frame-preview {
+  border:2px solid #fff;
+  box-shadow:0 0 15px rgba(255,255,255,.35);
+}
+
+.frame-inferno .option-preview,
+.frame-inferno.frame-preview {
+  border:2px solid #ff5a22;
+  box-shadow:0 0 14px rgba(255,50,0,.4);
+}
+
+.frame-frost .option-preview,
+.frame-frost.frame-preview {
+  border:2px solid #72ddff;
+  box-shadow:0 0 14px rgba(70,210,255,.4);
+}
+
+.background-preview {
+  background:#08080a;
+}
+
+.bg-night .option-preview,
+.preview-bg-night {
+  background:radial-gradient(circle at 50% 20%,#20243b,#050508 65%);
+}
+
+.bg-carbon .option-preview,
+.preview-bg-carbon {
+  background:repeating-linear-gradient(45deg,#18181b 0 4px,#101012 4px 8px);
+}
+
+.bg-galaxy .option-preview,
+.preview-bg-galaxy {
+  background:radial-gradient(circle at 25% 25%,#754cff,transparent 10%),radial-gradient(circle at 70% 60%,#245cff,transparent 13%),#05030e;
+}
+
+.bg-arena .option-preview,
+.preview-bg-arena {
+  background:linear-gradient(135deg,#202020,#050505);
+}
+
+.bg-neon .option-preview,
+.preview-bg-neon {
+  background:linear-gradient(135deg,#16051d,#050b19);
+}
+
+.bg-cyber .option-preview,
+.preview-bg-cyber {
+  background:linear-gradient(135deg,#061b1d,#090913);
+}
+
+.bg-inferno .option-preview,
+.preview-bg-inferno {
+  background:radial-gradient(circle at 50% 100%,#8b2300,#080403 70%);
+}
+
+.bg-frost .option-preview,
+.preview-bg-frost {
+  background:radial-gradient(circle,#244e62,#05090c 70%);
+}
+
+.bg-storm .option-preview,
+.preview-bg-storm {
+  background:linear-gradient(135deg,#30343d,#07080b);
+}
+
+.bg-midnight .option-preview,
+.preview-bg-midnight {
+  background:linear-gradient(145deg,#15152b,#030306);
+}
+
+.bg-aurora .option-preview,
+.preview-bg-aurora {
+  background:linear-gradient(135deg,#071f20,#211044,#030406);
+}
+
+.bg-space .option-preview,
+.preview-bg-space {
+  background:radial-gradient(circle at 50% 20%,#38385b,#020206 70%);
+}
+
+.bg-volcano .option-preview,
+.preview-bg-volcano {
+  background:radial-gradient(circle at 50% 100%,#ff4d00,#100302 70%);
+}
+
+.bg-iceberg .option-preview,
+.preview-bg-iceberg {
+  background:linear-gradient(135deg,#0b3344,#05090c);
+}
+
+.bg-royal .option-preview,
+.preview-bg-royal {
+  background:linear-gradient(135deg,#29145d,#06030e);
+}
+
+.bg-gold .option-preview,
+.preview-bg-gold {
+  background:linear-gradient(135deg,#40351b,#090806);
+}
+
+.bg-red .option-preview,
+.preview-bg-red {
+  background:linear-gradient(135deg,#4c1010,#080303);
+}
+
+.bg-blue .option-preview,
+.preview-bg-blue {
+  background:linear-gradient(135deg,#0b2852,#03060c);
+}
+
+.bg-green .option-preview,
+.preview-bg-green {
+  background:linear-gradient(135deg,#0b3a28,#030806);
+}
+
+.builder-grid {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(360px,.85fr);
+  gap:28px;
+}
+
+.builder-fields {
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+
+.builder-fields label {
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+  color:#aaa;
+  font-size:12px;
+  font-weight:800;
+}
+
+.builder-fields input,
+.builder-fields textarea {
+  width:100%;
+  box-sizing:border-box;
+  border:1px solid #29292f;
+  border-radius:10px;
+  background:#09090c;
+  color:#fff;
+  padding:12px;
+  outline:none;
+}
+
+.builder-fields input:focus,
+.builder-fields textarea:focus {
+  border-color:#777;
+}
+
+.two-columns {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+
+.intensity-control {
+  margin-top:4px;
+}
+
+.range-heading {
+  display:flex;
+  justify-content:space-between;
+}
+
+.range-heading strong {
+  color:#fff;
+}
+
+.intensity-control input {
+  padding:0;
+}
+
+.switch-row {
+  display:flex;
+  gap:25px;
+}
+
+.switch-control {
+  flex-direction:row !important;
+  align-items:center;
+}
+
+.switch-control input {
+  width:auto;
+}
+
+.form-actions {
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+  margin-top:8px;
+}
+
+.clear-button,
+.create-button,
+.catalogue-actions button {
+  border:1px solid #303036;
+  border-radius:10px;
+  padding:11px 18px;
+  cursor:pointer;
+  font-weight:900;
+}
+
+.clear-button {
+  background:#151519;
+  color:#aaa;
+}
+
+.create-button {
+  background:#fff;
+  color:#000;
+}
+
+.create-button:disabled {
+  opacity:.5;
+  cursor:not-allowed;
+}
+
+.preview-column {
+  min-width:0;
+}
+
+.preview-heading {
+  margin-bottom:12px;
+}
+
+.preview-heading span {
+  display:block;
+  font-size:11px;
+  font-weight:950;
+  letter-spacing:2px;
+}
+
+.preview-heading small {
+  color:#777;
+}
+
+.market-preview {
+  min-height:440px;
+  position:relative;
+  overflow:hidden;
+  border-radius:20px;
+  border:1px solid #35353b;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:30px;
+  box-sizing:border-box;
+  background-color:#060608;
+}
+
+.preview-grid {
+  position:absolute;
+  inset:0;
+  opacity:.16;
+  background-image:
+    linear-gradient(#fff 1px,transparent 1px),
+    linear-gradient(90deg,#fff 1px,transparent 1px);
+  background-size:32px 32px;
+}
+
+.preview-noise {
+  position:absolute;
+  inset:0;
+  opacity:.05;
+  background-image:radial-gradient(#fff 1px,transparent 1px);
+  background-size:5px 5px;
+}
+
+.preview-avatar-shell {
+  position:relative;
+  z-index:2;
+  width:90px;
+  height:90px;
+  border-radius:50%;
+  padding:5px;
+  border:3px solid #555;
+  background:#09090b;
+}
+
+.preview-avatar {
+  width:100%;
+  height:100%;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  background:linear-gradient(145deg,#27272c,#09090b);
+  font-size:32px;
+  font-weight:950;
+}
+
+.preview-username-wrap {
+  position:relative;
+  z-index:2;
+  margin-top:20px;
+  text-align:center;
+}
+
+.preview-username {
+  position:relative;
+  font-size:30px;
+  font-weight:950;
+}
+
+.effect-aura {
+  position:absolute;
+  inset:-20px;
+  filter:blur(18px);
+  opacity:calc(var(--effect-intensity) * .6);
+  pointer-events:none;
+}
+
+.effect-fire .effect-aura {
+  background:radial-gradient(circle,#ff5a00,transparent 65%);
+}
+
+.effect-ice .effect-aura {
+  background:radial-gradient(circle,#35dfff,transparent 65%);
+}
+
+.effect-electric .effect-aura {
+  background:radial-gradient(circle,#fff,transparent 60%);
+}
+
+.effect-neon .effect-aura {
+  background:radial-gradient(circle,#ff3cff,transparent 65%);
+}
+
+.effect-galaxy .effect-aura {
+  background:radial-gradient(circle,#754cff,transparent 65%);
+}
+
+.effect-shadow .effect-aura {
+  background:radial-gradient(circle,#000,transparent 65%);
+}
+
+.preview-badge-wrap {
+  position:relative;
+  z-index:3;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-top:20px;
+}
+
+.preview-badge-wrap strong {
+  font-size:12px;
+  letter-spacing:1px;
+}
+
+.market-badge {
+  width:38px;
+  height:38px;
+  flex:none;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  border:2px solid #777;
+  background:#151519;
+  color:#fff;
+  font-weight:1000;
+  font-size:17px;
+  box-shadow:inset 0 0 8px rgba(255,255,255,.12),0 5px 18px rgba(0,0,0,.5);
+}
+
+.large-badge {
+  width:58px;
+  height:58px;
+  font-size:27px;
+  border-width:3px;
+}
+
+.badge-verified {
+  background: #16c75a !important;
+  background-image: linear-gradient(145deg, #65ff9b 0%, #16c75a 45%, #07913d 100%) !important;
+  border: 3px solid #baffd1 !important;
+  color: #ffffff !important;
+  font-family: Arial, sans-serif !important;
+  font-weight: 1000 !important;
+  text-shadow: 0 1px 2px rgba(0, 70, 30, 0.8);
+  box-shadow:
+    inset 0 2px 5px rgba(255,255,255,.7),
+    inset 0 -5px 8px rgba(0,70,30,.3),
+    0 0 0 2px rgba(22,199,90,.3),
+    0 0 22px rgba(22,199,90,.7) !important;
+}
+
+.badge-elite {
+  background:linear-gradient(145deg,#fff,#777,#e8e8e8);
+  color:#111;
+}
+
+.badge-founder {
+  background:linear-gradient(145deg,#ffe99a,#b17a17);
+  color:#fff;
+}
+
+.badge-legend {
+  background:linear-gradient(145deg,#fff1a8,#8e6b19);
+  color:#fff;
+}
+
+.badge-master {
+  background:linear-gradient(145deg,#ff7676,#841b1b);
+  color:#fff;
+}
+
+.badge-royal {
+  background:linear-gradient(145deg,#d5b8ff,#432276);
+  color:#fff;
+}
+
+.badge-diamond {
+  background:linear-gradient(145deg,#fff,#62e8ff);
+  color:#176d85;
+}
+
+.badge-platinum {
+  background:linear-gradient(145deg,#fff,#7d8794);
+  color:#222;
+}
+
+.badge-gold {
+  background:linear-gradient(145deg,#fff0a1,#c08a1e);
+  color:#fff;
+}
+
+.badge-silver {
+  background:linear-gradient(145deg,#fff,#777);
+  color:#222;
+}
+
+.badge-champion {
+  background:linear-gradient(145deg,#fff,#d0a33b);
+  color:#765400;
+}
+
+.badge-warrior {
+  background:linear-gradient(145deg,#e9e9e9,#3c3c40);
+  color:#111;
+}
+
+.badge-king,
+.badge-queen,
+.badge-crown {
+  background:linear-gradient(145deg,#ffd86b,#553b00);
+  color:#fff;
+}
+
+.badge-titan {
+  background:linear-gradient(145deg,#777,#17171a);
+  color:#fff;
+}
+
+.badge-phoenix,
+.badge-fire {
+  background:linear-gradient(145deg,#ff8a3d,#7b1100);
+  color:#fff;
+}
+
+.badge-lightning,
+.badge-thunder {
+  background:linear-gradient(145deg,#fff,#6f72ff);
+  color:#fff;
+}
+
+.badge-frost {
+  background:linear-gradient(145deg,#fff,#65dcff);
+  color:#fff;
+}
+
+.badge-cyber {
+  background:linear-gradient(145deg,#42ffe0,#063b38);
+  color:#fff;
+}
+
+.badge-galaxy,
+.badge-cosmic {
+  background:linear-gradient(145deg,#c0a4ff,#31106d);
+  color:#fff;
+}
+
+.badge-shadow {
+  background:linear-gradient(145deg,#555,#050505);
+  color:#fff;
+}
+
+.badge-neon {
+  background:linear-gradient(145deg,#ff4dff,#461050);
+  color:#fff;
+}
+
+.badge-storm {
+  background:linear-gradient(145deg,#aeb8c9,#252932);
+  color:#fff;
+}
+
+.badge-crystal,
+.badge-prism {
+  background:linear-gradient(145deg,#fff,#55d7ff,#9c70ff);
+  color:#fff;
+}
+
+.badge-ruby {
+  background:linear-gradient(145deg,#ff7070,#610000);
+  color:#fff;
+}
+
+.badge-emerald {
+  background:linear-gradient(145deg,#68ffb1,#005c31);
+  color:#fff;
+}
+
+.badge-sapphire {
+  background:linear-gradient(145deg,#73b9ff,#062c77);
+  color:#fff;
+}
+
+.badge-amethyst {
+  background:linear-gradient(145deg,#d17aff,#421060);
+  color:#fff;
+}
+
+.badge-obsidian,
+.badge-carbon {
+  background:linear-gradient(145deg,#555,#050505);
+  color:#ddd;
+}
+
+.badge-chrome {
+  background:linear-gradient(145deg,#fff,#555,#eee);
+  color:#222;
+}
+
+.badge-hologram {
+  background:linear-gradient(135deg,#5ff,#f5f,#ff5,#5ff);
+  color:#111;
+}
+
+.badge-vip,
+.badge-supreme,
+.badge-ultimate {
+  background:linear-gradient(145deg,#fff,#7560ff,#111);
+  color:#fff;
+}
+
+.badge-veritas {
+  background:linear-gradient(145deg,#fff,#333);
+  color:#fff;
+  border-color:#fff;
+}
+
+.badge-veritas-gold,
+.badge-veritas-elite,
+.badge-veritas-champion,
+.badge-veritas-legend {
+  background:linear-gradient(145deg,#fff1a3,#b3831c,#fff);
+  color:#fff;
+  border-color:#ffe070;
+  box-shadow:0 0 18px rgba(255,215,80,.45);
+}
+
+.catalogue-header {
+  padding:22px 24px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  border-bottom:1px solid #25252a;
+}
+
+.catalogue-header span {
+  font-size:10px;
+  letter-spacing:2px;
+  color:#777;
+}
+
+.catalogue-header h2 {
+  margin:3px 0 0;
+}
+
+.catalogue-header > strong {
+  color:#aaa;
+}
+
+.catalogue-list {
+  display:flex;
+  flex-direction:column;
+}
+
+.catalogue-item {
+  display:grid;
+  grid-template-columns:1fr auto auto;
+  gap:20px;
+  align-items:center;
+  padding:16px 24px;
+  border-bottom:1px solid #1f1f23;
+}
+
+.catalogue-item-main strong {
+  display:block;
+}
+
+.catalogue-item-main span {
+  color:#777;
+  font-size:11px;
+}
+
+.catalogue-status {
+  display:flex;
+  gap:7px;
+}
+
+.status-active,
+.status-paused,
+.status-limited {
+  padding:5px 8px;
+  border-radius:7px;
+  font-size:9px;
+  font-weight:900;
+  text-transform:uppercase;
+}
+
+.status-active {
+  background:rgba(60,220,120,.12);
+  color:#7ef0a5;
+}
+
+.status-paused {
+  background:rgba(255,170,50,.12);
+  color:#ffc36b;
+}
+
+.status-limited {
+  background:rgba(160,100,255,.12);
+  color:#c49bff;
+}
+
+.catalogue-actions {
+  display:flex;
+  gap:8px;
+}
+
+.catalogue-actions button {
+  background:#17171b;
+  color:#fff;
+}
+
+.catalogue-actions .delete-item {
+  color:#ff8888;
+}
+
+.empty-catalogue {
+  padding:40px;
+  text-align:center;
+  color:#777;
+}
+
+@media (max-width:1000px) {
+  .visual-options {
+    grid-template-columns:repeat(4,minmax(0,1fr));
+  }
+
+  .builder-grid {
+    grid-template-columns:1fr;
+  }
+}
+
+@media (max-width:700px) {
+  .admin-marketplace-page {
+    padding:14px;
+  }
+
+  .admin-marketplace-header {
+    align-items:flex-start;
+  }
+
+  .visual-options {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+
+  .two-columns {
+    grid-template-columns:1fr;
+  }
+
+  .catalogue-item {
+    grid-template-columns:1fr;
+  }
+}
+
+
+
+/* =========================================================
+   CUSTOM BADGE DESIGNER
+   ========================================================= */
+
+.badge-designer {
+  margin-top:30px;
+  padding:22px;
+  border:1px solid #29292f;
+  border-radius:18px;
+  background:
+    radial-gradient(circle at 85% 10%,rgba(22,199,90,.08),transparent 35%),
+    linear-gradient(145deg,#0d0d10,#151519);
+}
+
+.badge-designer-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:20px;
+  margin-bottom:22px;
+}
+
+.badge-designer-header h3 {
+  margin:0 0 5px;
+  font-size:18px;
+  font-weight:950;
+}
+
+.badge-designer-header p {
+  margin:0;
+  color:#777;
+  font-size:12px;
+}
+
+.badge-designer-layout {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(300px,.8fr);
+  gap:24px;
+}
+
+.badge-designer-controls {
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+.badge-designer-controls label {
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+  color:#aaa;
+  font-size:11px;
+  font-weight:900;
+}
+
+.badge-designer-controls input,
+.badge-designer-controls select {
+  width:100%;
+  min-height:42px;
+  box-sizing:border-box;
+  border:1px solid #303037;
+  border-radius:10px;
+  background:#08080b;
+  color:#fff;
+  padding:10px 12px;
+  outline:none;
+}
+
+.badge-designer-controls input:focus,
+.badge-designer-controls select:focus {
+  border-color:#16c75a;
+  box-shadow:0 0 0 2px rgba(22,199,90,.12);
+}
+
+.badge-designer-controls input[type="color"] {
+  height:44px;
+  padding:4px;
+  cursor:pointer;
+}
+
+.badge-designer-controls input[type="range"] {
+  padding:0;
+  accent-color:#16c75a;
+}
+
+.badge-designer-controls .two-columns {
+  gap:12px;
+}
+
+.badge-designer-controls .switch-row {
+  margin-top:2px;
+}
+
+.badge-designer-controls .create-button {
+  margin-top:5px;
+  width:100%;
+  background:linear-gradient(135deg,#5cff9b,#16c75a);
+  color:#03130a;
+  border-color:#6cffaa;
+  box-shadow:0 8px 25px rgba(22,199,90,.2);
+}
+
+.badge-designer-controls .create-button:hover {
+  transform:translateY(-1px);
+  box-shadow:0 10px 30px rgba(22,199,90,.3);
+}
+
+.badge-designer-preview {
+  min-width:0;
+}
+
+.badge-designer-label {
+  display:block;
+  margin-bottom:10px;
+  color:#777;
+  font-size:10px;
+  font-weight:950;
+  letter-spacing:2px;
+}
+
+.badge-designer-preview > div {
+  box-shadow:
+    inset 0 0 50px rgba(0,0,0,.35),
+    0 15px 45px rgba(0,0,0,.25);
+}
+
+.badge-designer-preview strong {
+  text-shadow:0 2px 10px rgba(0,0,0,.7);
+}
+
+/* Custom badge selected state */
+.badge-option.custom-selected {
+  border-color:#16c75a;
+  box-shadow:
+    0 0 0 2px rgba(22,199,90,.15),
+    0 8px 30px rgba(22,199,90,.12);
+}
+
+/* Better badge option previews */
+.badge-option-preview {
+  min-height:48px;
+  display:grid;
+  place-items:center;
+}
+
+.badge-option-preview .market-badge {
+  transition:.18s ease;
+}
+
+.visual-option:hover .badge-option-preview .market-badge {
+  transform:scale(1.08);
+}
+
+/* Green verified badge */
+.badge-verified {
+  background:#16c75a !important;
+  background-image:
+    linear-gradient(
+      145deg,
+      #78ffad 0%,
+      #20d46c 35%,
+      #0ca64b 70%,
+      #067535 100%
+    ) !important;
+  border:3px solid #c4ffd8 !important;
+  color:#fff !important;
+  text-shadow:0 1px 2px rgba(0,60,25,.8);
+  box-shadow:
+    inset 0 2px 5px rgba(255,255,255,.75),
+    inset 0 -5px 9px rgba(0,70,30,.35),
+    0 0 0 2px rgba(22,199,90,.25),
+    0 0 24px rgba(22,230,110,.7) !important;
+}
+
+.large-badge.badge-verified {
+  width:62px;
+  height:62px;
+  font-size:30px;
+  border-width:3px;
+}
+
+/* Responsive designer */
+@media (max-width:900px) {
+  .badge-designer-layout {
+    grid-template-columns:1fr;
+  }
+
+  .badge-designer-preview {
+    order:-1;
+  }
+}
+
+@media (max-width:600px) {
+  .badge-designer {
+    padding:16px;
+  }
+
+  .badge-designer-header {
+    flex-direction:column;
+  }
+
+  .badge-designer-header .clear-button {
+    width:100%;
+  }
+}
+
+/* VERITAS: complete name-effect styling */
+/* ruby */
+.effect-ruby .option-preview,
+.effect-ruby .preview-username {
+  color: #ff4664;
+  text-shadow: 0 0 7px #ff4664, 0 0 16px #ff4664, 0 0 30px #ff4664;
+}
+.effect-ruby .effect-aura {
+  background: radial-gradient(circle, #ff4664, transparent 68%);
+}
+.effect-ruby .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #ff4664 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* lunar */
+.effect-lunar .option-preview,
+.effect-lunar .preview-username {
+  color: #c5d5ff;
+  text-shadow: 0 0 7px #c5d5ff, 0 0 16px #c5d5ff, 0 0 30px #c5d5ff;
+}
+.effect-lunar .effect-aura {
+  background: radial-gradient(circle, #c5d5ff, transparent 68%);
+}
+.effect-lunar .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #c5d5ff 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* frostbite */
+.effect-frostbite .option-preview,
+.effect-frostbite .preview-username {
+  color: #b5ffff;
+  text-shadow: 0 0 7px #b5ffff, 0 0 16px #b5ffff, 0 0 30px #b5ffff;
+}
+.effect-frostbite .effect-aura {
+  background: radial-gradient(circle, #b5ffff, transparent 68%);
+}
+.effect-frostbite .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #b5ffff 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* fire */
+.effect-fire .option-preview,
+.effect-fire .preview-username {
+  color: #ff7b22;
+  text-shadow: 0 0 7px #ff7b22, 0 0 16px #ff7b22, 0 0 30px #ff7b22;
+}
+.effect-fire .effect-aura {
+  background: radial-gradient(circle, #ff7b22, transparent 68%);
+}
+.effect-fire .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #ff7b22 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* neon */
+.effect-neon .option-preview,
+.effect-neon .preview-username {
+  color: #ff4dff;
+  text-shadow: 0 0 7px #ff4dff, 0 0 16px #ff4dff, 0 0 30px #ff4dff;
+}
+.effect-neon .effect-aura {
+  background: radial-gradient(circle, #ff4dff, transparent 68%);
+}
+.effect-neon .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #ff4dff 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* galaxy */
+.effect-galaxy .option-preview,
+.effect-galaxy .preview-username {
+  color: #9c70ff;
+  text-shadow: 0 0 7px #9c70ff, 0 0 16px #9c70ff, 0 0 30px #9c70ff;
+}
+.effect-galaxy .effect-aura {
+  background: radial-gradient(circle, #9c70ff, transparent 68%);
+}
+.effect-galaxy .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #9c70ff 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* phoenix */
+.effect-phoenix .option-preview,
+.effect-phoenix .preview-username {
+  color: #ff7733;
+  text-shadow: 0 0 7px #ff7733, 0 0 16px #ff7733, 0 0 30px #ff7733;
+}
+.effect-phoenix .effect-aura {
+  background: radial-gradient(circle, #ff7733, transparent 68%);
+}
+.effect-phoenix .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #ff7733 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* cyber */
+.effect-cyber .option-preview,
+.effect-cyber .preview-username {
+  color: #42ffe0;
+  text-shadow: 0 0 7px #42ffe0, 0 0 16px #42ffe0, 0 0 30px #42ffe0;
+}
+.effect-cyber .effect-aura {
+  background: radial-gradient(circle, #42ffe0, transparent 68%);
+}
+.effect-cyber .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #42ffe0 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* shadow-x */
+.effect-shadow-x .option-preview,
+.effect-shadow-x .preview-username {
+  color: #c0c0d8;
+  text-shadow: 0 0 7px #c0c0d8, 0 0 16px #c0c0d8, 0 0 30px #c0c0d8;
+}
+.effect-shadow-x .effect-aura {
+  background: radial-gradient(circle, #c0c0d8, transparent 68%);
+}
+.effect-shadow-x .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #c0c0d8 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* magma */
+.effect-magma .option-preview,
+.effect-magma .preview-username {
+  color: #ff4500;
+  text-shadow: 0 0 7px #ff4500, 0 0 16px #ff4500, 0 0 30px #ff4500;
+}
+.effect-magma .effect-aura {
+  background: radial-gradient(circle, #ff4500, transparent 68%);
+}
+.effect-magma .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #ff4500 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* pulse */
+.effect-pulse .option-preview,
+.effect-pulse .preview-username {
+  color: #ff66aa;
+  text-shadow: 0 0 7px #ff66aa, 0 0 16px #ff66aa, 0 0 30px #ff66aa;
+}
+.effect-pulse .effect-aura {
+  background: radial-gradient(circle, #ff66aa, transparent 68%);
+}
+.effect-pulse .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #ff66aa 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* aurora */
+.effect-aurora .option-preview,
+.effect-aurora .preview-username {
+  color: #5dffcf;
+  text-shadow: 0 0 7px #5dffcf, 0 0 16px #5dffcf, 0 0 30px #5dffcf;
+}
+.effect-aurora .effect-aura {
+  background: radial-gradient(circle, #5dffcf, transparent 68%);
+}
+.effect-aurora .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #5dffcf 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* flame */
+.effect-flame .option-preview,
+.effect-flame .preview-username {
+  color: #ff8a00;
+  text-shadow: 0 0 7px #ff8a00, 0 0 16px #ff8a00, 0 0 30px #ff8a00;
+}
+.effect-flame .effect-aura {
+  background: radial-gradient(circle, #ff8a00, transparent 68%);
+}
+.effect-flame .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #ff8a00 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* ice */
+.effect-ice .option-preview,
+.effect-ice .preview-username {
+  color: #65e5ff;
+  text-shadow: 0 0 7px #65e5ff, 0 0 16px #65e5ff, 0 0 30px #65e5ff;
+}
+.effect-ice .effect-aura {
+  background: radial-gradient(circle, #65e5ff, transparent 68%);
+}
+.effect-ice .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #65e5ff 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* electric */
+.effect-electric .option-preview,
+.effect-electric .preview-username {
+  color: #8bbcff;
+  text-shadow: 0 0 7px #8bbcff, 0 0 16px #8bbcff, 0 0 30px #8bbcff;
+}
+.effect-electric .effect-aura {
+  background: radial-gradient(circle, #8bbcff, transparent 68%);
+}
+.effect-electric .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #8bbcff 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* quantum */
+.effect-quantum .option-preview,
+.effect-quantum .preview-username {
+  color: #6ef7ff;
+  text-shadow: 0 0 7px #6ef7ff, 0 0 16px #6ef7ff, 0 0 30px #6ef7ff;
+}
+.effect-quantum .effect-aura {
+  background: radial-gradient(circle, #6ef7ff, transparent 68%);
+}
+.effect-quantum .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #6ef7ff 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* solar */
+.effect-solar .option-preview,
+.effect-solar .preview-username {
+  color: #ffd54f;
+  text-shadow: 0 0 7px #ffd54f, 0 0 16px #ffd54f, 0 0 30px #ffd54f;
+}
+.effect-solar .effect-aura {
+  background: radial-gradient(circle, #ffd54f, transparent 68%);
+}
+.effect-solar .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #ffd54f 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* sapphire */
+.effect-sapphire .option-preview,
+.effect-sapphire .preview-username {
+  color: #458bff;
+  text-shadow: 0 0 7px #458bff, 0 0 16px #458bff, 0 0 30px #458bff;
+}
+.effect-sapphire .effect-aura {
+  background: radial-gradient(circle, #458bff, transparent 68%);
+}
+.effect-sapphire .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #458bff 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* obsidian */
+.effect-obsidian .option-preview,
+.effect-obsidian .preview-username {
+  color: #9da0b0;
+  text-shadow: 0 0 7px #9da0b0, 0 0 16px #9da0b0, 0 0 30px #9da0b0;
+}
+.effect-obsidian .effect-aura {
+  background: radial-gradient(circle, #9da0b0, transparent 68%);
+}
+.effect-obsidian .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #9da0b0 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* shadow */
+.effect-shadow .option-preview,
+.effect-shadow .preview-username {
+  color: #888899;
+  text-shadow: 0 0 7px #888899, 0 0 16px #888899, 0 0 30px #888899;
+}
+.effect-shadow .effect-aura {
+  background: radial-gradient(circle, #888899, transparent 68%);
+}
+.effect-shadow .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #888899 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* thunder */
+.effect-thunder .option-preview,
+.effect-thunder .preview-username {
+  color: #a49bff;
+  text-shadow: 0 0 7px #a49bff, 0 0 16px #a49bff, 0 0 30px #a49bff;
+}
+.effect-thunder .effect-aura {
+  background: radial-gradient(circle, #a49bff, transparent 68%);
+}
+.effect-thunder .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #a49bff 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* galaxy-x */
+.effect-galaxy-x .option-preview,
+.effect-galaxy-x .preview-username {
+  color: #d08bff;
+  text-shadow: 0 0 7px #d08bff, 0 0 16px #d08bff, 0 0 30px #d08bff;
+}
+.effect-galaxy-x .effect-aura {
+  background: radial-gradient(circle, #d08bff, transparent 68%);
+}
+.effect-galaxy-x .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #d08bff 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* emerald */
+.effect-emerald .option-preview,
+.effect-emerald .preview-username {
+  color: #36ff9b;
+  text-shadow: 0 0 7px #36ff9b, 0 0 16px #36ff9b, 0 0 30px #36ff9b;
+}
+.effect-emerald .effect-aura {
+  background: radial-gradient(circle, #36ff9b, transparent 68%);
+}
+.effect-emerald .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #36ff9b 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* royal */
+.effect-royal .option-preview,
+.effect-royal .preview-username {
+  color: #b99aff;
+  text-shadow: 0 0 7px #b99aff, 0 0 16px #b99aff, 0 0 30px #b99aff;
+}
+.effect-royal .effect-aura {
+  background: radial-gradient(circle, #b99aff, transparent 68%);
+}
+.effect-royal .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #b99aff 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* toxic */
+.effect-toxic .option-preview,
+.effect-toxic .preview-username {
+  color: #b5ff00;
+  text-shadow: 0 0 7px #b5ff00, 0 0 16px #b5ff00, 0 0 30px #b5ff00;
+}
+.effect-toxic .effect-aura {
+  background: radial-gradient(circle, #b5ff00, transparent 68%);
+}
+.effect-toxic .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #b5ff00 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* inferno */
+.effect-inferno .option-preview,
+.effect-inferno .preview-username {
+  color: #ff3100;
+  text-shadow: 0 0 7px #ff3100, 0 0 16px #ff3100, 0 0 30px #ff3100;
+}
+.effect-inferno .effect-aura {
+  background: radial-gradient(circle, #ff3100, transparent 68%);
+}
+.effect-inferno .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #ff3100 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* inferno-x */
+.effect-inferno-x .option-preview,
+.effect-inferno-x .preview-username {
+  color: #ff1800;
+  text-shadow: 0 0 7px #ff1800, 0 0 16px #ff1800, 0 0 30px #ff1800;
+}
+.effect-inferno-x .effect-aura {
+  background: radial-gradient(circle, #ff1800, transparent 68%);
+}
+.effect-inferno-x .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #ff1800 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* crystal */
+.effect-crystal .option-preview,
+.effect-crystal .preview-username {
+  color: #8fffea;
+  text-shadow: 0 0 7px #8fffea, 0 0 16px #8fffea, 0 0 30px #8fffea;
+}
+.effect-crystal .effect-aura {
+  background: radial-gradient(circle, #8fffea, transparent 68%);
+}
+.effect-crystal .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #8fffea 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* venom */
+.effect-venom .option-preview,
+.effect-venom .preview-username {
+  color: #9cff33;
+  text-shadow: 0 0 7px #9cff33, 0 0 16px #9cff33, 0 0 30px #9cff33;
+}
+.effect-venom .effect-aura {
+  background: radial-gradient(circle, #9cff33, transparent 68%);
+}
+.effect-venom .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #9cff33 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* nova */
+.effect-nova .option-preview,
+.effect-nova .preview-username {
+  color: #ff9f43;
+  text-shadow: 0 0 7px #ff9f43, 0 0 16px #ff9f43, 0 0 30px #ff9f43;
+}
+.effect-nova .effect-aura {
+  background: radial-gradient(circle, #ff9f43, transparent 68%);
+}
+.effect-nova .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #ff9f43 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* spectral */
+.effect-spectral .option-preview,
+.effect-spectral .preview-username {
+  color: #bca5ff;
+  text-shadow: 0 0 7px #bca5ff, 0 0 16px #bca5ff, 0 0 30px #bca5ff;
+}
+.effect-spectral .effect-aura {
+  background: radial-gradient(circle, #bca5ff, transparent 68%);
+}
+.effect-spectral .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #bca5ff 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* energy */
+.effect-energy .option-preview,
+.effect-energy .preview-username {
+  color: #ffe866;
+  text-shadow: 0 0 7px #ffe866, 0 0 16px #ffe866, 0 0 30px #ffe866;
+}
+.effect-energy .effect-aura {
+  background: radial-gradient(circle, #ffe866, transparent 68%);
+}
+.effect-energy .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #ffe866 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* carbon */
+.effect-carbon .option-preview,
+.effect-carbon .preview-username {
+  color: #aeb5c4;
+  text-shadow: 0 0 7px #aeb5c4, 0 0 16px #aeb5c4, 0 0 30px #aeb5c4;
+}
+.effect-carbon .effect-aura {
+  background: radial-gradient(circle, #aeb5c4, transparent 68%);
+}
+.effect-carbon .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #aeb5c4 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* neon-x */
+.effect-neon-x .option-preview,
+.effect-neon-x .preview-username {
+  color: #ff00e6;
+  text-shadow: 0 0 7px #ff00e6, 0 0 16px #ff00e6, 0 0 30px #ff00e6;
+}
+.effect-neon-x .effect-aura {
+  background: radial-gradient(circle, #ff00e6, transparent 68%);
+}
+.effect-neon-x .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #ff00e6 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* radiant */
+.effect-radiant .option-preview,
+.effect-radiant .preview-username {
+  color: #fff1a8;
+  text-shadow: 0 0 7px #fff1a8, 0 0 16px #fff1a8, 0 0 30px #fff1a8;
+}
+.effect-radiant .effect-aura {
+  background: radial-gradient(circle, #fff1a8, transparent 68%);
+}
+.effect-radiant .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #fff1a8 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* blaze */
+.effect-blaze .option-preview,
+.effect-blaze .preview-username {
+  color: #ff2929;
+  text-shadow: 0 0 7px #ff2929, 0 0 16px #ff2929, 0 0 30px #ff2929;
+}
+.effect-blaze .effect-aura {
+  background: radial-gradient(circle, #ff2929, transparent 68%);
+}
+.effect-blaze .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #ff2929 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* titan */
+.effect-titan .option-preview,
+.effect-titan .preview-username {
+  color: #d4d9e4;
+  text-shadow: 0 0 7px #d4d9e4, 0 0 16px #d4d9e4, 0 0 30px #d4d9e4;
+}
+.effect-titan .effect-aura {
+  background: radial-gradient(circle, #d4d9e4, transparent 68%);
+}
+.effect-titan .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #d4d9e4 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* ocean */
+.effect-ocean .option-preview,
+.effect-ocean .preview-username {
+  color: #00c8ff;
+  text-shadow: 0 0 7px #00c8ff, 0 0 16px #00c8ff, 0 0 30px #00c8ff;
+}
+.effect-ocean .effect-aura {
+  background: radial-gradient(circle, #00c8ff, transparent 68%);
+}
+.effect-ocean .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #00c8ff 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* lightning */
+.effect-lightning .option-preview,
+.effect-lightning .preview-username {
+  color: #fff36b;
+  text-shadow: 0 0 7px #fff36b, 0 0 16px #fff36b, 0 0 30px #fff36b;
+}
+.effect-lightning .effect-aura {
+  background: radial-gradient(circle, #fff36b, transparent 68%);
+}
+.effect-lightning .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #fff36b 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* diamond */
+.effect-diamond .option-preview,
+.effect-diamond .preview-username {
+  color: #d7ffff;
+  text-shadow: 0 0 7px #d7ffff, 0 0 16px #d7ffff, 0 0 30px #d7ffff;
+}
+.effect-diamond .effect-aura {
+  background: radial-gradient(circle, #d7ffff, transparent 68%);
+}
+.effect-diamond .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #d7ffff 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* frost-x */
+.effect-frost-x .option-preview,
+.effect-frost-x .preview-username {
+  color: #80f4ff;
+  text-shadow: 0 0 7px #80f4ff, 0 0 16px #80f4ff, 0 0 30px #80f4ff;
+}
+.effect-frost-x .effect-aura {
+  background: radial-gradient(circle, #80f4ff, transparent 68%);
+}
+.effect-frost-x .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #80f4ff 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* ember */
+.effect-ember .option-preview,
+.effect-ember .preview-username {
+  color: #ff5722;
+  text-shadow: 0 0 7px #ff5722, 0 0 16px #ff5722, 0 0 30px #ff5722;
+}
+.effect-ember .effect-aura {
+  background: radial-gradient(circle, #ff5722, transparent 68%);
+}
+.effect-ember .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #ff5722 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* cosmic */
+.effect-cosmic .option-preview,
+.effect-cosmic .preview-username {
+  color: #c084fc;
+  text-shadow: 0 0 7px #c084fc, 0 0 16px #c084fc, 0 0 30px #c084fc;
+}
+.effect-cosmic .effect-aura {
+  background: radial-gradient(circle, #c084fc, transparent 68%);
+}
+.effect-cosmic .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #c084fc 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* plasma */
+.effect-plasma .option-preview,
+.effect-plasma .preview-username {
+  color: #e75bff;
+  text-shadow: 0 0 7px #e75bff, 0 0 16px #e75bff, 0 0 30px #e75bff;
+}
+.effect-plasma .effect-aura {
+  background: radial-gradient(circle, #e75bff, transparent 68%);
+}
+.effect-plasma .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #e75bff 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* void */
+.effect-void .option-preview,
+.effect-void .preview-username {
+  color: #8b5cf6;
+  text-shadow: 0 0 7px #8b5cf6, 0 0 16px #8b5cf6, 0 0 30px #8b5cf6;
+}
+.effect-void .effect-aura {
+  background: radial-gradient(circle, #8b5cf6, transparent 68%);
+}
+.effect-void .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #8b5cf6 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* thunder-x */
+.effect-thunder-x .option-preview,
+.effect-thunder-x .preview-username {
+  color: #fff06b;
+  text-shadow: 0 0 7px #fff06b, 0 0 16px #fff06b, 0 0 30px #fff06b;
+}
+.effect-thunder-x .effect-aura {
+  background: radial-gradient(circle, #fff06b, transparent 68%);
+}
+.effect-thunder-x .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #fff06b 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* legend */
+.effect-legend .option-preview,
+.effect-legend .preview-username {
+  color: #ffdc70;
+  text-shadow: 0 0 7px #ffdc70, 0 0 16px #ffdc70, 0 0 30px #ffdc70;
+}
+.effect-legend .effect-aura {
+  background: radial-gradient(circle, #ffdc70, transparent 68%);
+}
+.effect-legend .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #ffdc70 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* amethyst */
+.effect-amethyst .option-preview,
+.effect-amethyst .preview-username {
+  color: #d879ff;
+  text-shadow: 0 0 7px #d879ff, 0 0 16px #d879ff, 0 0 30px #d879ff;
+}
+.effect-amethyst .effect-aura {
+  background: radial-gradient(circle, #d879ff, transparent 68%);
+}
+.effect-amethyst .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #d879ff 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+/* storm */
+.effect-storm .option-preview,
+.effect-storm .preview-username {
+  color: #8c9bb5;
+  text-shadow: 0 0 7px #8c9bb5, 0 0 16px #8c9bb5, 0 0 30px #8c9bb5;
+}
+.effect-storm .effect-aura {
+  background: radial-gradient(circle, #8c9bb5, transparent 68%);
+}
+.effect-storm .effect-particles {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  background: radial-gradient(circle, #8c9bb5 1px, transparent 2px);
+  background-size: 13px 13px;
+  opacity: .35;
+  filter: blur(.3px);
+}
+
+/* VERITAS-20-UNIQUE-ANIMATED-EFFECTS */
+
+/* Fire family */
+.effect-blazing-fire .preview-username,
+.effect-blazing-fire .option-preview,
+.effect-inferno-storm .preview-username,
+.effect-inferno-storm .option-preview,
+.effect-shadow-flame .preview-username,
+.effect-shadow-flame .option-preview {
+  color: #ff6a00;
+  text-shadow: 0 0 8px #ff3300, 0 0 20px #ff6a00, 0 0 38px #ff0000;
+  animation: vFire 1s ease-in-out infinite alternate;
+}
+
+.effect-ember-sparks .preview-username,
+.effect-ember-sparks .option-preview {
+  color: #ffbd59;
+  text-shadow: 0 0 8px #ff7b00, 0 0 20px #ff3300;
+}
+
+.effect-phoenix-rebirth .preview-username,
+.effect-phoenix-rebirth .option-preview {
+  color: #ffbd59;
+  text-shadow: 0 0 10px #ff5c00, 0 0 24px #ff2600, 0 0 40px #ffb000;
+  animation: vPhoenix 2s ease-in-out infinite;
+}
+
+.effect-blazing-fire .effect-aura,
+.effect-ember-sparks .effect-aura,
+.effect-inferno-storm .effect-aura,
+.effect-phoenix-rebirth .effect-aura,
+.effect-shadow-flame .effect-aura {
+  background: radial-gradient(ellipse, #ff6500, #ff1800 35%, transparent 72%);
+  animation: vAura 1.2s ease-in-out infinite alternate;
+}
+
+.effect-blazing-fire .effect-particles,
+.effect-ember-sparks .effect-particles,
+.effect-inferno-storm .effect-particles,
+.effect-phoenix-rebirth .effect-particles {
+  background:
+    radial-gradient(circle, #fff1a8 1px, transparent 2px),
+    radial-gradient(circle, #ff9a00 2px, transparent 3px),
+    radial-gradient(circle, #ff3c00 1px, transparent 3px);
+  background-size: 13px 17px, 19px 23px, 27px 21px;
+  animation: vSparks .8s linear infinite;
+}
+
+/* Electricity */
+.effect-electric-arc .preview-username,
+.effect-electric-arc .option-preview,
+.effect-thunder-strike .preview-username,
+.effect-thunder-strike .option-preview {
+  color: #d9f7ff;
+  text-shadow: 0 0 6px #00d9ff, 0 0 18px #008cff, 0 0 32px #ffffff;
+  animation: vFlash 1.3s steps(2) infinite;
+}
+
+.effect-electric-arc .effect-aura,
+.effect-thunder-strike .effect-aura {
+  background: radial-gradient(ellipse, #8b5cff, #00d9ff 30%, transparent 72%);
+  animation: vFlash .8s infinite;
+}
+
+/* Plasma and neon */
+.effect-plasma-core .preview-username,
+.effect-plasma-core .option-preview {
+  color: #ff8cff;
+  text-shadow: 0 0 8px #ff00dd, 0 0 20px #9d00ff, 0 0 35px #ff00aa;
+  animation: vPulse 1.4s ease-in-out infinite;
+}
+
+.effect-neon-pulse .preview-username,
+.effect-neon-pulse .option-preview {
+  color: #00fff0;
+  text-shadow: 0 0 5px #00fff0, 0 0 14px #00aaff, 0 0 28px #00fff0;
+  animation: vPulse .9s ease-in-out infinite;
+}
+
+.effect-plasma-core .effect-aura,
+.effect-neon-pulse .effect-aura {
+  background: radial-gradient(ellipse, #ff00dd, #6a00ff 35%, transparent 72%);
+  animation: vAura 1.5s ease-in-out infinite alternate;
+}
+
+/* Space effects */
+.effect-galaxy-orbit .preview-username,
+.effect-galaxy-orbit .option-preview {
+  color: #d5a6ff;
+  text-shadow: 0 0 8px #9b5cff, 0 0 20px #633cff;
+}
+
+.effect-cosmic-dust .preview-username,
+.effect-cosmic-dust .option-preview {
+  color: #c4b5fd;
+  text-shadow: 0 0 8px #8b5cf6, 0 0 22px #4c1d95;
+}
+
+.effect-galaxy-orbit .effect-particles,
+.effect-cosmic-dust .effect-particles {
+  background: radial-gradient(circle, #ffffff 1.5px, transparent 3px);
+  background-size: 19px 13px;
+  animation: vDust 3s linear infinite;
+}
+
+/* Ice effects */
+.effect-arctic-shards .preview-username,
+.effect-arctic-shards .option-preview {
+  color: #b9f5ff;
+  text-shadow: 0 0 8px #00cfff, 0 0 20px #008cff;
+}
+
+.effect-frost-nova .preview-username,
+.effect-frost-nova .option-preview {
+  color: #ffffff;
+  text-shadow: 0 0 8px #7dd3fc, 0 0 20px #38bdf8, 0 0 35px #ffffff;
+  animation: vFrost 2s ease-in-out infinite;
+}
+
+.effect-arctic-shards .effect-particles {
+  background: linear-gradient(135deg, transparent 43%, #b9f5ff 47%, transparent 53%);
+  background-size: 15px 18px;
+  animation: vShards 1.8s linear infinite;
+}
+
+.effect-arctic-shards .effect-aura,
+.effect-frost-nova .effect-aura {
+  background: radial-gradient(ellipse, #8be9ff, #008cff 30%, transparent 72%);
+  animation: vAura 2s ease-in-out infinite alternate;
+}
+
+/* Toxic effects */
+.effect-venom-drip .preview-username,
+.effect-venom-drip .option-preview {
+  color: #b6ff39;
+  text-shadow: 0 0 8px #65ff00, 0 0 20px #22c55e;
+  animation: vPulse 1.8s infinite;
+}
+
+.effect-toxic-reactor .preview-username,
+.effect-toxic-reactor .option-preview {
+  color: #d9ff00;
+  text-shadow: 0 0 8px #a3ff00, 0 0 20px #55ff00;
+  animation: vFlash 2.3s infinite;
+}
+
+/* Solar flare */
+.effect-solar-flare .preview-username,
+.effect-solar-flare .option-preview {
+  color: #fff1a8;
+  text-shadow: 0 0 10px #ffd000, 0 0 24px #ff7b00, 0 0 40px #ff3300;
+  animation: vSolar 2s ease-in-out infinite;
+}
+
+/* Diamond glint */
+.effect-diamond-glint .preview-username,
+.effect-diamond-glint .option-preview {
+  color: #efffff;
+  text-shadow: 0 0 5px #ffffff, 0 0 15px #9dfcff, 0 0 28px #57bfff;
+  animation: vGlint 2s ease-in-out infinite;
+}
+
+/* Rainbow surge */
+.effect-rainbow-surge .preview-username,
+.effect-rainbow-surge .option-preview {
+  background: linear-gradient(90deg, #ff416c, #ffd166, #00f5d4, #6c63ff, #ff416c);
+  background-size: 300% 100%;
+  color: transparent;
+  background-clip: text;
+  -webkit-background-clip: text;
+  animation: vRainbow 3s linear infinite;
+}
+
+/* Cyber glitch */
+.effect-cyber-glitch .preview-username,
+.effect-cyber-glitch .option-preview {
+  color: #00ffe1;
+  text-shadow: 2px 0 #ff00a8, -2px 0 #00aaff;
+  animation: vGlitch .6s steps(2) infinite;
+}
+
+/* Titan energy */
+.effect-titan-energy .preview-username,
+.effect-titan-energy .option-preview {
+  color: #e8f1ff;
+  text-shadow: 0 0 8px #ffffff, 0 0 18px #7d9cff, 0 0 35px #3455ff;
+  animation: vTitan 2s ease-in-out infinite;
+}
+
+/* Animation keyframes */
+@keyframes vFire {
+  from { filter: brightness(1); transform: translateY(0); }
+  to { filter: brightness(1.45); transform: translateY(-1px); }
+}
+@keyframes vSparks {
+  0% { transform: translateY(8px); opacity: .2; }
+  50% { opacity: .95; }
+  100% { transform: translateY(-10px); opacity: .3; }
+}
+@keyframes vPhoenix {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.7); }
+}
+@keyframes vFlash {
+  0%, 45%, 48%, 100% { opacity: 1; }
+  46%, 47% { opacity: .45; }
+}
+@keyframes vPulse {
+  0%, 100% { filter: brightness(.9); }
+  50% { filter: brightness(1.6); }
+}
+@keyframes vDust {
+  from { background-position: 0 0; opacity: .25; }
+  to { background-position: 40px -60px; opacity: .8; }
+}
+@keyframes vShards {
+  from { background-position: 0 -30px; opacity: .2; }
+  to { background-position: 0 30px; opacity: .8; }
+}
+@keyframes vFrost {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.5); }
+}
+@keyframes vSolar {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.7) saturate(1.4); }
+}
+@keyframes vGlint {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.8); }
+}
+@keyframes vRainbow {
+  from { background-position: 0% 50%; }
+  to { background-position: 300% 50%; }
+}
+@keyframes vGlitch {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-1px); }
+  75% { transform: translateX(1px); }
+}
+@keyframes vTitan {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.6); }
+}
+@keyframes vAura {
+  from { opacity: .35; transform: scale(.94); }
+  to { opacity: .85; transform: scale(1.08); }
+}
+
+/* VERITAS-20-UNIQUE-FONT-STYLES */
+
+/* These classes can be used by the font picker and preview. */
+.font-cyberpunk { font-family: "Orbitron", sans-serif; letter-spacing: 2px; font-weight: 900; }
+.font-arcade { font-family: "Press Start 2P", monospace; letter-spacing: 1px; }
+.font-pixel { font-family: "Press Start 2P", monospace; }
+.font-sci-fi { font-family: "Orbitron", sans-serif; letter-spacing: 2px; }
+.font-hacker { font-family: "Share Tech Mono", monospace; letter-spacing: 1px; }
+.font-glitch { font-family: "Rajdhani", sans-serif; font-weight: 900; letter-spacing: 2px; }
+.font-neon { font-family: "Audiowide", sans-serif; letter-spacing: 2px; }
+.font-mecha { font-family: "Orbitron", sans-serif; font-weight: 900; letter-spacing: 1px; }
+.font-titan { font-family: "Teko", sans-serif; font-weight: 700; letter-spacing: 1px; }
+.font-warrior { font-family: "Cinzel", serif; font-weight: 900; letter-spacing: 1px; }
+.font-phantom { font-family: "Rajdhani", sans-serif; font-weight: 700; letter-spacing: 3px; }
+.font-royal { font-family: "Cinzel", serif; font-weight: 700; letter-spacing: 2px; }
+.font-legend { font-family: "Russo One", sans-serif; letter-spacing: 1px; }
+.font-inferno { font-family: "Bebas Neue", sans-serif; font-weight: 900; letter-spacing: 2px; }
+.font-frost { font-family: "Exo 2", sans-serif; font-weight: 800; letter-spacing: 2px; }
+.font-electric { font-family: "Audiowide", sans-serif; letter-spacing: 1px; }
+.font-space { font-family: "Orbitron", sans-serif; font-weight: 700; letter-spacing: 3px; }
+.font-racing { font-family: "Teko", sans-serif; font-weight: 700; font-style: italic; letter-spacing: 2px; }
+.font-stealth { font-family: "Share Tech Mono", monospace; letter-spacing: 2px; }
+.font-champion { font-family: "Russo One", sans-serif; font-weight: 900; letter-spacing: 1px; }
+
+/* Font selection preview helpers */
+.font-cyberpunk .preview-username,
+.font-cyberpunk .option-preview { font-family: "Orbitron", sans-serif; letter-spacing: 2px; font-weight: 900; }
+.font-arcade .preview-username,
+.font-arcade .option-preview,
+.font-pixel .preview-username,
+.font-pixel .option-preview { font-family: "Press Start 2P", monospace; }
+.font-hacker .preview-username,
+.font-hacker .option-preview,
+.font-stealth .preview-username,
+.font-stealth .option-preview { font-family: "Share Tech Mono", monospace; }
+.font-neon .preview-username,
+.font-neon .option-preview,
+.font-electric .preview-username,
+.font-electric .option-preview { font-family: "Audiowide", sans-serif; }
+.font-warrior .preview-username,
+.font-warrior .option-preview,
+.font-royal .preview-username,
+.font-royal .option-preview { font-family: "Cinzel", serif; }
+.font-legend .preview-username,
+.font-legend .option-preview,
+.font-champion .preview-username,
+.font-champion .option-preview { font-family: "Russo One", sans-serif; }
+
+
+/* VERITAS-DISTINCT-FONT-PRESETS */
+@import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Bungee&family=Cabin+Sketch:wght@700&family=Cinzel:wght@700;900&family=Comfortaa:wght@700&family=Courier+Prime:wght@700&family=DM+Mono&family=Monoton&family=Nosifer&family=Orbitron:wght@700;900&family=Permanent+Marker&family=Press+Start+2P&family=Racing+Sans+One&family=Russo+One&family=Special+Elite&family=UnifrakturCook:wght@700&family=VT323&display=swap');
+
+.font-cyberpunk { font-family: "Orbitron", sans-serif; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; }
+.font-arcade { font-family: "Press Start 2P", monospace; letter-spacing: 1px; text-transform: uppercase; }
+.font-stencil { font-family: "Black Ops One", sans-serif; letter-spacing: 2px; text-transform: uppercase; }
+.font-medieval { font-family: "Cinzel", serif; font-weight: 900; letter-spacing: 1px; }
+.font-graffiti { font-family: "Permanent Marker", cursive; letter-spacing: 1px; transform: rotate(-2deg); }
+.font-racing { font-family: "Racing Sans One", sans-serif; font-style: italic; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; }
+.font-horror { font-family: "Nosifer", cursive; letter-spacing: 1px; }
+.font-digital { font-family: "VT323", monospace; letter-spacing: 3px; }
+.font-typewriter { font-family: "Special Elite", cursive; letter-spacing: 1px; }
+.font-luxury { font-family: "Cinzel", serif; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; }
+.font-comic { font-family: "Bungee", cursive; letter-spacing: 1px; }
+.font-military { font-family: "Black Ops One", sans-serif; letter-spacing: 3px; text-transform: uppercase; }
+.font-minimal { font-family: "Comfortaa", sans-serif; font-weight: 700; letter-spacing: 1px; }
+.font-gladiator { font-family: "Russo One", sans-serif; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; }
+.font-retro { font-family: "Monoton", cursive; letter-spacing: 2px; }
+.font-mecha { font-family: "Orbitron", sans-serif; font-weight: 900; letter-spacing: 4px; }
+.font-gothic { font-family: "UnifrakturCook", cursive; font-weight: 700; }
+.font-sports { font-family: "Bungee", cursive; font-style: italic; letter-spacing: 2px; text-transform: uppercase; }
+.font-terminal { font-family: "DM Mono", monospace; letter-spacing: 2px; }
+.font-display { font-family: "Cabin Sketch", cursive; font-weight: 700; letter-spacing: 2px; }
+
+/* Apply presets to the name in the preview and effect selector. */
+.font-cyberpunk .preview-username, .font-cyberpunk .option-preview { font-family: "Orbitron", sans-serif; font-weight: 900; letter-spacing: 2px; }
+.font-arcade .preview-username, .font-arcade .option-preview { font-family: "Press Start 2P", monospace; }
+.font-stencil .preview-username, .font-stencil .option-preview, .font-military .preview-username, .font-military .option-preview { font-family: "Black Ops One", sans-serif; }
+.font-medieval .preview-username, .font-medieval .option-preview, .font-luxury .preview-username, .font-luxury .option-preview { font-family: "Cinzel", serif; }
+.font-graffiti .preview-username, .font-graffiti .option-preview { font-family: "Permanent Marker", cursive; }
+.font-racing .preview-username, .font-racing .option-preview { font-family: "Racing Sans One", sans-serif; font-style: italic; }
+.font-horror .preview-username, .font-horror .option-preview { font-family: "Nosifer", cursive; }
+.font-digital .preview-username, .font-digital .option-preview { font-family: "VT323", monospace; }
+.font-typewriter .preview-username, .font-typewriter .option-preview { font-family: "Special Elite", cursive; }
+.font-comic .preview-username, .font-comic .option-preview, .font-sports .preview-username, .font-sports .option-preview { font-family: "Bungee", cursive; }
+.font-minimal .preview-username, .font-minimal .option-preview { font-family: "Comfortaa", sans-serif; }
+.font-gladiator .preview-username, .font-gladiator .option-preview { font-family: "Russo One", sans-serif; }
+.font-retro .preview-username, .font-retro .option-preview { font-family: "Monoton", cursive; }
+.font-gothic .preview-username, .font-gothic .option-preview { font-family: "UnifrakturCook", cursive; }
+.font-terminal .preview-username, .font-terminal .option-preview { font-family: "DM Mono", monospace; }
+.font-display .preview-username, .font-display .option-preview { font-family: "Cabin Sketch", cursive; }
+
+
+/* VERITAS-20-COLORFUL-FRAMES */
+
+/* Apply to the existing frame preview and equipped item wrapper. */
+.frame-rainbow-prism {
+  border: 3px solid transparent !important;
+  background: linear-gradient(#10101c,#10101c) padding-box,
+    conic-gradient(red, orange, yellow, lime, cyan, blue, magenta, red) border-box !important;
+  box-shadow: 0 0 12px #ff00dd, 0 0 26px #00eaff;
+  animation: vfRainbow 3s linear infinite;
+}
+.frame-blazing-inferno {
+  border: 3px solid #ff4a00 !important;
+  box-shadow: 0 0 8px #ff2400, 0 0 20px #ff6a00, inset 0 0 12px #ff2400;
+  animation: vfFire 1s ease-in-out infinite alternate;
+}
+.frame-electric-storm {
+  border: 2px solid #64f7ff !important;
+  box-shadow: 0 0 8px #00eaff, 0 0 22px #0066ff, inset 0 0 10px #00eaff;
+  animation: vfElectric .8s steps(2) infinite;
+}
+.frame-galaxy-portal {
+  border: 3px solid #a855f7 !important;
+  box-shadow: 0 0 12px #a855f7, 0 0 28px #5420c9, inset 0 0 14px #d946ef;
+  animation: vfGalaxy 4s linear infinite;
+}
+.frame-holographic-chrome {
+  border: 3px solid transparent !important;
+  background: linear-gradient(#11111b,#11111b) padding-box,
+    linear-gradient(135deg,#fff,#6dfcff,#ff71ce,#fff7a8,#8f8fff,#fff) border-box !important;
+  box-shadow: 0 0 15px #7df9ff;
+  animation: vfChrome 3s linear infinite;
+}
+.frame-toxic-reactor {
+  border: 3px solid #b6ff00 !important;
+  box-shadow: 0 0 12px #b6ff00, 0 0 26px #39ff14, inset 0 0 10px #65ff00;
+  animation: vfToxic 1.5s ease-in-out infinite alternate;
+}
+.frame-royal-gold {
+  border: 3px solid #ffd700 !important;
+  box-shadow: 0 0 8px #ffd700, 0 0 22px #ff9d00, inset 0 0 10px #fff0a0;
+}
+.frame-cyber-neon {
+  border: 3px solid #ff00e6 !important;
+  box-shadow: 0 0 10px #ff00e6, 0 0 25px #00f6ff, inset 0 0 12px #8b00ff;
+  animation: vfCyber 1.8s ease-in-out infinite alternate;
+}
+.frame-frozen-crystal {
+  border: 3px solid #aaf6ff !important;
+  box-shadow: 0 0 10px #00d9ff, 0 0 24px #8bffff, inset 0 0 12px #b7f7ff;
+}
+.frame-emerald-dragon {
+  border: 3px solid #00ff87 !important;
+  box-shadow: 0 0 10px #00ff87, 0 0 25px #00a85a, inset 0 0 10px #39ff14;
+}
+.frame-ruby-explosion {
+  border: 3px solid #ff1744 !important;
+  box-shadow: 0 0 10px #ff1744, 0 0 25px #ff0055, inset 0 0 12px #ff6b81;
+  animation: vfFire 1.1s ease-in-out infinite alternate;
+}
+.frame-sapphire-wave {
+  border: 3px solid #278cff !important;
+  box-shadow: 0 0 10px #278cff, 0 0 25px #004cff, inset 0 0 12px #5de0ff;
+  animation: vfGalaxy 3s ease-in-out infinite alternate;
+}
+.frame-sunset-spectrum {
+  border: 3px solid transparent !important;
+  background: linear-gradient(#15101c,#15101c) padding-box,
+    linear-gradient(135deg,#ff006e,#ff7b00,#ffd166,#ff006e) border-box !important;
+  box-shadow: 0 0 18px #ff5e00;
+}
+.frame-aurora-lights {
+  border: 3px solid transparent !important;
+  background: linear-gradient(#101827,#101827) padding-box,
+    linear-gradient(120deg,#00ffb3,#00c3ff,#b967ff,#00ffb3) border-box !important;
+  box-shadow: 0 0 15px #00ffb3, 0 0 26px #7c4dff;
+  animation: vfAurora 4s linear infinite;
+}
+.frame-cosmic-ring {
+  border: 3px solid #cf83ff !important;
+  box-shadow: 0 0 9px #cf83ff, 0 0 20px #652cff, 0 0 32px #00d9ff;
+  animation: vfGalaxy 5s linear infinite;
+}
+.frame-diamond-luxury {
+  border: 3px solid #f3ffff !important;
+  box-shadow: 0 0 8px #fff, 0 0 20px #a7f8ff, 0 0 30px #8aaaff;
+}
+.frame-candy-pop {
+  border: 3px solid #ff7de9 !important;
+  box-shadow: 0 0 10px #ff7de9, 0 0 22px #ff45b5, inset 0 0 12px #8b5cf6;
+  animation: vfCandy 2s ease-in-out infinite alternate;
+}
+.frame-shadow-flame {
+  border: 3px solid #8d36ff !important;
+  box-shadow: 0 0 10px #5d00b5, 0 0 24px #ff3b00, inset 0 0 12px #26003e;
+  animation: vfFire 1.4s ease-in-out infinite alternate;
+}
+.frame-plasma-vortex {
+  border: 3px solid #ff5cf4 !important;
+  box-shadow: 0 0 12px #ff5cf4, 0 0 28px #6a00ff, inset 0 0 15px #00eaff;
+  animation: vfAurora 2s linear infinite;
+}
+.frame-champion-aura {
+  border: 3px solid #ffe082 !important;
+  box-shadow: 0 0 8px #ffd700, 0 0 18px #ff8f00, 0 0 30px #fff3b0;
+  animation: vfChampion 2s ease-in-out infinite alternate;
+}
+
+@keyframes vfRainbow {
+  to { filter: hue-rotate(360deg); }
+}
+@keyframes vfFire {
+  from { filter: brightness(1); }
+  to { filter: brightness(1.45); }
+}
+@keyframes vfElectric {
+  0%, 45%, 48%, 100% { filter: brightness(1); }
+  46%, 47% { filter: brightness(1.8); }
+}
+@keyframes vfGalaxy {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(90deg); }
+}
+@keyframes vfChrome {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.5); }
+}
+@keyframes vfToxic {
+  from { box-shadow: 0 0 6px #65ff00; }
+  to { box-shadow: 0 0 22px #b6ff00, 0 0 35px #39ff14; }
+}
+@keyframes vfCyber {
+  from { filter: hue-rotate(0deg); }
+  to { filter: hue-rotate(120deg); }
+}
+@keyframes vfAurora {
+  from { filter: hue-rotate(0deg) brightness(1); }
+  to { filter: hue-rotate(180deg) brightness(1.3); }
+}
+@keyframes vfCandy {
+  from { filter: saturate(1); }
+  to { filter: saturate(1.8); }
+}
+@keyframes vfChampion {
+  from { filter: brightness(1); }
+  to { filter: brightness(1.5); }
+}
+
+/* VERITAS-20-DISTINCT-BACKGROUNDS */
+
+/* Apply these classes to the background preview containers. */
+.background-aurora-dream {
+  background: radial-gradient(ellipse at 15% 20%, #00ffc8aa, transparent 40%),
+              radial-gradient(ellipse at 85% 25%, #a855f7bb, transparent 40%),
+              linear-gradient(135deg, #020617, #071b35, #16072b);
+  background-size: 200% 200%;
+  animation: vbAurora 7s ease infinite;
+}
+.background-cyberpunk-city {
+  background: linear-gradient(180deg, #09001b, #250047 55%, #060016);
+  background-image: linear-gradient(90deg, #ff00e622 1px, transparent 1px),
+                    linear-gradient(#00eaff22 1px, transparent 1px),
+                    linear-gradient(180deg, #09001b, #250047 55%, #060016);
+  background-size: 24px 24px, 24px 24px, cover;
+}
+.background-molten-lava {
+  background: radial-gradient(ellipse at 25% 90%, #ffea00, transparent 20%),
+              radial-gradient(ellipse at 70% 75%, #ff3c00, transparent 35%),
+              linear-gradient(145deg, #160000, #710c00, #ff3c00);
+  animation: vbLava 4s ease-in-out infinite alternate;
+}
+.background-deep-galaxy {
+  background: radial-gradient(circle at 30% 30%, #ff80ff77, transparent 25%),
+              radial-gradient(circle at 75% 65%, #4f46e577, transparent 30%),
+              linear-gradient(135deg, #020014, #160b45, #020014);
+}
+.background-rainbow-rush {
+  background: linear-gradient(120deg, #ff005d, #ff9d00, #ffee00, #00ff9d, #00aaff, #a100ff, #ff005d);
+  background-size: 300% 300%;
+  animation: vbRainbow 5s linear infinite;
+}
+.background-underwater-world {
+  background: radial-gradient(ellipse at 30% 10%, #33e7ff88, transparent 35%),
+              radial-gradient(ellipse at 80% 85%, #00ffbb44, transparent 35%),
+              linear-gradient(180deg, #001d46, #005b83, #001a37);
+}
+.background-holographic-space {
+  background: linear-gradient(135deg, #f0abfc, #67e8f9, #c4b5fd, #fef08a, #f0abfc);
+  background-size: 300% 300%;
+  animation: vbRainbow 8s linear infinite;
+}
+.background-neon-grid {
+  background-color: #050510;
+  background-image: linear-gradient(#ff00e633 1px, transparent 1px),
+                    linear-gradient(90deg, #00eaff33 1px, transparent 1px);
+  background-size: 22px 22px;
+  box-shadow: inset 0 0 45px #5b00ff66;
+}
+.background-sunset-horizon {
+  background: linear-gradient(180deg, #25115e, #d63384 38%, #ff7b32 65%, #ffdc7a 78%, #172554 79%, #020617);
+}
+.background-arctic-storm {
+  background: radial-gradient(ellipse at 20% 20%, #c9ffff66, transparent 35%),
+              linear-gradient(145deg, #001b41, #0087bd, #c6ffff);
+}
+.background-toxic-jungle {
+  background: radial-gradient(ellipse at 20% 80%, #a3ff00aa, transparent 35%),
+              radial-gradient(ellipse at 80% 20%, #00ff8755, transparent 35%),
+              linear-gradient(135deg, #001b13, #064e3b, #071a0b);
+}
+.background-golden-nebula {
+  background: radial-gradient(ellipse at 65% 40%, #ffd70088, transparent 35%),
+              radial-gradient(ellipse at 25% 70%, #ff8c0044, transparent 35%),
+              linear-gradient(135deg, #10091f, #30200a, #090617);
+}
+.background-cherry-blossom {
+  background: radial-gradient(circle at 20% 25%, #ffb7d588, transparent 25%),
+              radial-gradient(circle at 80% 70%, #ffc9e288, transparent 30%),
+              linear-gradient(135deg, #3a1234, #9d3674, #240b30);
+}
+.background-electric-ocean {
+  background: radial-gradient(ellipse at 30% 30%, #00f5ff88, transparent 30%),
+              radial-gradient(ellipse at 80% 70%, #245bff99, transparent 35%),
+              linear-gradient(135deg, #020617, #003b73, #07133c);
+  animation: vbOcean 4s ease-in-out infinite alternate;
+}
+.background-digital-matrix {
+  background-color: #010b07;
+  background-image: repeating-linear-gradient(0deg, transparent 0 12px, #00ff4120 13px),
+                    linear-gradient(90deg, #00ff4115 1px, transparent 1px);
+  background-size: 100% 14px, 18px 100%;
+}
+.background-crystal-cave {
+  background: conic-gradient(from 35deg at 30% 30%, #062c50, #6d28d9, #22d3ee, #0f172a, #062c50);
+}
+.background-cosmic-eclipse {
+  background: radial-gradient(circle at 50% 50%, #ffddaa 0 8%, #ff7b00 9% 12%, #110b31 13% 26%, transparent 27%),
+              linear-gradient(135deg, #020617, #1e1b4b, #030712);
+}
+.background-candy-galaxy {
+  background: radial-gradient(ellipse at 20% 30%, #ff59d688, transparent 30%),
+              radial-gradient(ellipse at 80% 70%, #5b8cff99, transparent 35%),
+              linear-gradient(135deg, #220046, #5b176b, #001d54);
+}
+.background-emerald-dimension {
+  background: conic-gradient(from 180deg at 50% 50%, #022c22, #059669, #00ff9d, #064e3b, #022c22);
+}
+.background-midnight-fire {
+  background: radial-gradient(ellipse at 50% 100%, #ff4d00aa, transparent 40%),
+              radial-gradient(ellipse at 70% 80%, #ffcc0044, transparent 30%),
+              linear-gradient(180deg, #02020b, #16051e, #3a0903);
+  animation: vbLava 3s ease-in-out infinite alternate;
+}
+
+@keyframes vbAurora {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+@keyframes vbLava {
+  from { filter: brightness(.85) saturate(1); }
+  to { filter: brightness(1.25) saturate(1.4); }
+}
+@keyframes vbRainbow {
+  from { background-position: 0% 50%; }
+  to { background-position: 100% 50%; }
+}
+@keyframes vbOcean {
+  from { filter: hue-rotate(0deg) brightness(.9); }
+  to { filter: hue-rotate(25deg) brightness(1.25); }
+}
+ 
+/* VERITAS-30-RED-SYMBOL-BADGES */
+.badge-crimson-crown,
+.badge-inferno-skull,
+.badge-blood-dragon,
+.badge-red-phoenix,
+.badge-demon-horns,
+.badge-warrior-shield,
+.badge-blazing-star,
+.badge-crimson-wolf,
+.badge-battle-axe,
+.badge-red-lightning,
+.badge-ruby-diamond,
+.badge-blood-moon,
+.badge-fire-serpent,
+.badge-champion-fist,
+.badge-war-eagle,
+.badge-doom-emblem,
+.badge-red-vortex,
+.badge-flame-heart,
+.badge-rage-mark,
+.badge-elite-cross,
+.badge-ruby-wolf,
+.badge-inferno-eye,
+.badge-skull-king,
+.badge-red-comet,
+.badge-crimson-claw,
+.badge-war-crown,
+.badge-phoenix-crest,
+.badge-blood-knight,
+.badge-fire-rune,
+.badge-apex-emblem {
+  background: radial-gradient(circle at 30% 20%, #ff7777 0%, #e50924 38%, #65000d 100%);
+  color: #fff;
+  border: 2px solid #ff4545;
+  box-shadow: 0 0 12px rgba(255, 0, 40, .65), inset 0 0 10px rgba(255, 255, 255, .15);
+}
+
+/* VERITAS-10-NEON-RED-BADGES */
+@keyframes veritasBadgePulse {
+  0%, 100% { filter: drop-shadow(0 0 3px #ff001e); }
+  50% { filter: drop-shadow(0 0 12px #ff1744) drop-shadow(0 0 22px #a00018); }
+}
+@keyframes veritasBadgeSweep {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+@keyframes veritasBadgeOrbit {
+  0%, 100% { box-shadow: 0 0 7px #ff002f, inset 0 0 8px #ff334d; }
+  50% { box-shadow: 0 0 18px #ff1744, 0 0 32px #920018, inset 0 0 14px #ff6b81; }
+}
+
+.badge-crimson-crown,
+.badge-inferno-skull,
+.badge-blood-dragon,
+.badge-red-phoenix,
+.badge-demon-horns,
+.badge-warrior-shield,
+.badge-blazing-star,
+.badge-crimson-wolf,
+.badge-battle-axe,
+.badge-red-lightning {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff !important;
+  background: linear-gradient(135deg, #ff526b, #b50020 42%, #3b000d) !important;
+  border: 1px solid #ff7188 !important;
+  border-radius: 12px;
+  text-shadow: 0 0 5px #fff, 0 0 12px #ff001e;
+  animation: veritasBadgePulse 1.8s ease-in-out infinite;
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+
+.badge-crimson-crown { border-radius: 50% 50% 12px 12px; }
+.badge-inferno-skull { border-radius: 50%; }
+.badge-blood-dragon { clip-path: polygon(10% 0, 90% 0, 100% 50%, 90% 100%, 10% 100%, 0 50%); }
+.badge-red-phoenix { border-radius: 50% 10% 50% 10%; }
+.badge-demon-horns { border-radius: 4px 16px 4px 16px; }
+.badge-warrior-shield { clip-path: polygon(0 0, 100% 0, 90% 72%, 50% 100%, 10% 72%); }
+.badge-blazing-star { border-radius: 50%; }
+.badge-crimson-wolf { border-radius: 18px 5px 18px 5px; }
+.badge-battle-axe { border-radius: 4px 18px 4px 18px; }
+.badge-red-lightning { border-radius: 6px; background-size: 200% 200% !important; animation: veritasBadgeSweep 2s linear infinite, veritasBadgePulse 1.8s ease-in-out infinite; }
+
+.badge-crimson-crown:hover,
+.badge-inferno-skull:hover,
+.badge-blood-dragon:hover,
+.badge-red-phoenix:hover,
+.badge-demon-horns:hover,
+.badge-warrior-shield:hover,
+.badge-blazing-star:hover,
+.badge-crimson-wolf:hover,
+.badge-battle-axe:hover,
+.badge-red-lightning:hover {
+  transform: translateY(-3px) scale(1.08);
+  box-shadow: 0 0 20px #ff1744, 0 0 38px rgba(255, 0, 45, .75);
+}
+
+
+/* VERITAS-30-RED-GLOW-BADGES */
+@keyframes veritasRedBadgeGlow {
+  0%, 100% {
+    box-shadow: 0 0 5px #ff1838, 0 0 12px rgba(255, 0, 40, .55),
+      inset 0 0 7px rgba(255, 95, 115, .3);
+    filter: brightness(1);
+  }
+  50% {
+    box-shadow: 0 0 10px #ff2448, 0 0 23px rgba(255, 0, 40, .9),
+      0 0 35px rgba(190, 0, 35, .5), inset 0 0 12px rgba(255, 140, 155, .5);
+    filter: brightness(1.2);
+  }
+}
+
+.market-badge.badge-crimson-crown,
+.market-badge.badge-inferno-skull,
+.market-badge.badge-blood-dragon,
+.market-badge.badge-red-phoenix,
+.market-badge.badge-demon-horns,
+.market-badge.badge-warrior-shield,
+.market-badge.badge-blazing-star,
+.market-badge.badge-crimson-wolf,
+.market-badge.badge-battle-axe,
+.market-badge.badge-red-lightning,
+.market-badge.badge-ruby-diamond,
+.market-badge.badge-blood-moon,
+.market-badge.badge-fire-serpent,
+.market-badge.badge-champion-fist,
+.market-badge.badge-war-eagle,
+.market-badge.badge-doom-emblem,
+.market-badge.badge-red-vortex,
+.market-badge.badge-flame-heart,
+.market-badge.badge-rage-mark,
+.market-badge.badge-elite-cross,
+.market-badge.badge-ruby-wolf,
+.market-badge.badge-inferno-eye,
+.market-badge.badge-skull-king,
+.market-badge.badge-red-comet,
+.market-badge.badge-crimson-claw,
+.market-badge.badge-war-crown,
+.market-badge.badge-phoenix-crest,
+.market-badge.badge-blood-knight,
+.market-badge.badge-fire-rune,
+.market-badge.badge-apex-emblem {
+  color: #fff !important;
+  background: linear-gradient(145deg, #ff526d 0%, #d6002b 42%, #650014 100%) !important;
+  border: 2px solid #ff687e !important;
+  text-shadow: 0 0 5px #fff, 0 0 12px #ff002f;
+  animation: veritasRedBadgeGlow 1.8s ease-in-out infinite;
+  transition: transform .2s ease, filter .2s ease;
+}
+
+.market-badge.badge-crimson-crown { border-radius: 50% 50% 12% 12% !important; }
+.market-badge.badge-inferno-skull { border-radius: 50% !important; }
+.market-badge.badge-blood-dragon { border-radius: 7px 20px 7px 20px !important; }
+.market-badge.badge-red-phoenix { border-radius: 50% 12% 50% 12% !important; }
+.market-badge.badge-demon-horns { border-radius: 4px 18px 4px 18px !important; }
+.market-badge.badge-warrior-shield { clip-path: polygon(0 0,100% 0,90% 72%,50% 100%,10% 72%); }
+.market-badge.badge-blazing-star { border-radius: 50% !important; }
+.market-badge.badge-crimson-wolf { border-radius: 18px 5px 18px 5px !important; }
+.market-badge.badge-battle-axe { border-radius: 4px 18px !important; }
+.market-badge.badge-red-lightning { background-size: 200% 200% !important; }
+.market-badge.badge-ruby-diamond { border-radius: 5px !important; transform: rotate(45deg) scale(.85); }
+.market-badge.badge-blood-moon { border-radius: 50% !important; background: radial-gradient(circle at 35% 30%, #ff8293, #b00022 60%, #35000a) !important; }
+.market-badge.badge-fire-serpent { border-radius: 50% 8px !important; }
+.market-badge.badge-champion-fist { border-radius: 12px !important; }
+.market-badge.badge-war-eagle { border-radius: 50% 50% 8px 8px !important; }
+.market-badge.badge-doom-emblem { border-radius: 4px !important; }
+.market-badge.badge-red-vortex { border-radius: 50% 10% !important; }
+.market-badge.badge-flame-heart { border-radius: 50% !important; }
+.market-badge.badge-rage-mark { border-radius: 50% 5px !important; }
+.market-badge.badge-elite-cross { border-radius: 8px !important; }
+.market-badge.badge-ruby-wolf { border-radius: 50% 8px !important; }
+.market-badge.badge-inferno-eye { border-radius: 50% !important; }
+.market-badge.badge-skull-king { border-radius: 12px 12px 50% 50% !important; }
+.market-badge.badge-red-comet { border-radius: 50% 8px 50% 8px !important; }
+.market-badge.badge-crimson-claw { border-radius: 5px 18px !important; }
+.market-badge.badge-war-crown { border-radius: 12px 12px 50% 50% !important; }
+.market-badge.badge-phoenix-crest { border-radius: 50% 10% !important; }
+.market-badge.badge-blood-knight { border-radius: 8px !important; }
+.market-badge.badge-fire-rune { border-radius: 50% 5px !important; }
+.market-badge.badge-apex-emblem { border-radius: 50% 50% 8px 8px !important; }
+
+.badge-option:hover .market-badge {
+  transform: translateY(-2px) scale(1.08);
+  filter: brightness(1.25);
+}
+
+/* VERITAS-MULTICOLOR-GLOW-BADGES */
+.market-badge.badge-crimson-crown {
+  background: linear-gradient(135deg,#fff0a6,#ffb300,#8b3900) !important;
+  border-color: #ffe17a !important;
+  text-shadow: 0 0 8px #fff4bc,0 0 16px #ffb300;
+  filter: drop-shadow(0 0 10px #ffb300);
+}
+.market-badge.badge-inferno-skull {
+  background: linear-gradient(135deg,#ffad5c,#ff1744,#650020) !important;
+  border-color: #ff6177 !important;
+  filter: drop-shadow(0 0 10px #ff1744);
+}
+.market-badge.badge-blood-dragon {
+  background: linear-gradient(135deg,#ff5e00,#b000ff,#31005e) !important;
+  border-color: #e879ff !important;
+  filter: drop-shadow(0 0 10px #b000ff);
+}
+.market-badge.badge-red-phoenix {
+  background: linear-gradient(135deg,#ff7a18,#ff1744,#ffb000) !important;
+  border-color: #ffad62 !important;
+  filter: drop-shadow(0 0 10px #ff5c00);
+}
+.market-badge.badge-demon-horns {
+  background: linear-gradient(135deg,#ff3155,#8a00ff,#240044) !important;
+  border-color: #d39aff !important;
+  filter: drop-shadow(0 0 10px #a000ff);
+}
+.market-badge.badge-warrior-shield {
+  background: linear-gradient(135deg,#b6fff4,#00c9b7,#004b76) !important;
+  border-color: #8affef !important;
+  filter: drop-shadow(0 0 10px #00ffe1);
+}
+.market-badge.badge-blazing-star {
+  background: linear-gradient(135deg,#fff7ad,#ffb300,#ff4d00) !important;
+  border-color: #fff0a0 !important;
+  filter: drop-shadow(0 0 12px #ffb300);
+}
+.market-badge.badge-crimson-wolf {
+  background: linear-gradient(135deg,#e4c7ff,#923dff,#32006d) !important;
+  border-color: #d4aaff !important;
+  filter: drop-shadow(0 0 10px #a34dff);
+}
+.market-badge.badge-battle-axe {
+  background: linear-gradient(135deg,#f0ffff,#9db8cc,#34495e) !important;
+  border-color: #d4f4ff !important;
+  filter: drop-shadow(0 0 10px #8be7ff);
+}
+.market-badge.badge-red-lightning {
+  background: linear-gradient(120deg,#00f5ff,#4169ff,#d000ff,#00f5ff) !important;
+  border-color: #83faff !important;
+  background-size: 250% 250% !important;
+  filter: drop-shadow(0 0 12px #00eaff);
+}
+.market-badge.badge-ruby-diamond {
+  background: linear-gradient(135deg,#ffb4f4,#ff3d9a,#7500b8) !important;
+  border-color: #ffc4f3 !important;
+  filter: drop-shadow(0 0 10px #ff38b8);
+}
+.market-badge.badge-blood-moon {
+  background: radial-gradient(circle at 35% 30%,#fff0f8,#d400ff 45%,#37005e) !important;
+  border-color: #f2a4ff !important;
+  filter: drop-shadow(0 0 10px #d000ff);
+}
+.market-badge.badge-fire-serpent {
+  background: linear-gradient(135deg,#d6ff65,#49e000,#075000) !important;
+  border-color: #b9ff70 !important;
+  filter: drop-shadow(0 0 10px #6cff00);
+}
+.market-badge.badge-champion-fist {
+  background: linear-gradient(135deg,#fff6ca,#ffce44,#9b6500) !important;
+  border-color: #fff0a0 !important;
+  filter: drop-shadow(0 0 10px #ffca28);
+}
+.market-badge.badge-war-eagle {
+  background: linear-gradient(135deg,#9bfaff,#008cff,#062b88) !important;
+  border-color: #a8f5ff !important;
+  filter: drop-shadow(0 0 10px #00bfff);
+}
+.market-badge.badge-doom-emblem {
+  background: linear-gradient(135deg,#ff7b7b,#e00035,#44000d) !important;
+  border-color: #ff9292 !important;
+  filter: drop-shadow(0 0 10px #ff1744);
+}
+.market-badge.badge-red-vortex {
+  background: conic-gradient(#00f5ff,#3b5bff,#d000ff,#ff36a8,#00f5ff) !important;
+  border-color: #e9d1ff !important;
+  filter: drop-shadow(0 0 12px #8a4dff);
+}
+.market-badge.badge-flame-heart {
+  background: linear-gradient(135deg,#ffb6d9,#ff3d81,#a00050) !important;
+  border-color: #ffc2e2 !important;
+  filter: drop-shadow(0 0 10px #ff4d9d);
+}
+.market-badge.badge-rage-mark {
+  background: linear-gradient(135deg,#fff,#8bfffb,#008d9b) !important;
+  border-color: #c9ffff !important;
+  filter: drop-shadow(0 0 10px #00f5ff);
+}
+.market-badge.badge-elite-cross {
+  background: linear-gradient(135deg,#d9e7ff,#658dff,#162f88) !important;
+  border-color: #c2d8ff !important;
+  filter: drop-shadow(0 0 10px #648cff);
+}
+.market-badge.badge-ruby-wolf {
+  background: linear-gradient(135deg,#ffb2d9,#ff2277,#6a003b) !important;
+  border-color: #ffadd6 !important;
+  filter: drop-shadow(0 0 10px #ff2288);
+}
+.market-badge.badge-inferno-eye {
+  background: radial-gradient(circle,#fff7a8,#ff7300 45%,#a00000) !important;
+  border-color: #ffdb8b !important;
+  filter: drop-shadow(0 0 12px #ff7300);
+}
+.market-badge.badge-skull-king {
+  background: linear-gradient(135deg,#fff,#9ba8c7,#3d4266) !important;
+  border-color: #edf4ff !important;
+  filter: drop-shadow(0 0 10px #a8c4ff);
+}
+.market-badge.badge-red-comet {
+  background: linear-gradient(135deg,#b9ffcf,#00c875,#00583c) !important;
+  border-color: #9dffd0 !important;
+  filter: drop-shadow(0 0 10px #00ff9d);
+}
+.market-badge.badge-crimson-claw {
+  background: linear-gradient(135deg,#ffc1a1,#ff5b24,#851500) !important;
+  border-color: #ffd0ae !important;
+  filter: drop-shadow(0 0 10px #ff612b);
+}
+.market-badge.badge-war-crown {
+  background: linear-gradient(135deg,#d4fff8,#00b6a8,#004d67) !important;
+  border-color: #b3fff5 !important;
+  filter: drop-shadow(0 0 10px #00e5d4);
+}
+.market-badge.badge-phoenix-crest {
+  background: linear-gradient(135deg,#fff2b3,#ff8c00,#ff2670) !important;
+  border-color: #ffe7a0 !important;
+  filter: drop-shadow(0 0 10px #ff8c00);
+}
+.market-badge.badge-blood-knight {
+  background: linear-gradient(135deg,#e8caff,#8d46ff,#32106f) !important;
+  border-color: #e2c4ff !important;
+  filter: drop-shadow(0 0 10px #a64dff);
+}
+.market-badge.badge-fire-rune {
+  background: linear-gradient(135deg,#d7ff8a,#76d900,#174b00) !important;
+  border-color: #d5ff9b !important;
+  filter: drop-shadow(0 0 10px #8cff00);
+}
+.market-badge.badge-apex-emblem {
+  background: linear-gradient(135deg,#fff,#9feaff,#2860ff,#7500ff) !important;
+  border-color: #d4f8ff !important;
+  filter: drop-shadow(0 0 12px #4bbdff);
+}

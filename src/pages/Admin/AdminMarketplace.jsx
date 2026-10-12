@@ -7,7 +7,27 @@ const EFFECTS = [
   'Ember','Flame','Blaze','Magma','Storm','Lightning','Plasma','Void','Solar','Lunar',
   'Ocean','Crystal','Diamond','Phoenix','Spectral','Venom','Toxic','Aurora','Cosmic','Royal',
   'Ruby','Emerald','Sapphire','Amethyst','Obsidian','Carbon','Energy','Pulse','Radiant','Nova',
-  'Quantum','Cyber','Inferno X','Frost X','Thunder X','Galaxy X','Shadow X','Neon X','Titan','Legend'
+  'Quantum','Cyber','Inferno X','Frost X','Thunder X','Galaxy X','Shadow X','Neon X','Titan','Legend',
+  'Blazing Fire',
+  'Ember Sparks',
+  'Inferno Storm',
+  'Phoenix Rebirth',
+  'Electric Arc',
+  'Thunder Strike',
+  'Plasma Core',
+  'Neon Pulse',
+  'Galaxy Orbit',
+  'Cosmic Dust',
+  'Arctic Shards',
+  'Frost Nova',
+  'Venom Drip',
+  'Toxic Reactor',
+  'Shadow Flame',
+  'Solar Flare',
+  'Diamond Glint',
+  'Rainbow Surge',
+  'Cyber Glitch',
+  'Titan Energy'
 ]
 
 const FONTS = [
@@ -15,7 +35,29 @@ const FONTS = [
   'Legend','Hero','Future','Matrix','Arcade','Hacker','Tech','Glitch','Digital','Retro',
   'Luxury','Heavy','Sharp','Speed','Power','Military','SciFi','Pixel','Ultra','Street',
   'Pro','Master','Supreme','King','Queen','Racer','Battle','Extreme','Fireline','Icebound',
-  'Thunder','Galaxy','Shadow','Cosmic','Royal X','Titan X','Legend X','Champion X','VERITAS','VERITAS Elite'
+  'Thunder','Galaxy','Shadow','Cosmic','Royal X','Titan X','Legend X','Champion X','VERITAS','VERITAS Elite',
+  'Cyberpunk',
+  'Sci-Fi',
+  'Mecha',
+  'Phantom',
+  'Inferno',
+  'Frost',
+  'Electric',
+  'Space',
+  'Racing',
+  'Stealth',
+  'Stencil',
+  'Medieval',
+  'Graffiti',
+  'Horror',
+  'Typewriter',
+  'Comic',
+  'Minimal',
+  'Gladiator',
+  'Gothic',
+  'Sports',
+  'Terminal',
+  'Display'
 ]
 
 const FRAMES = [
@@ -23,7 +65,27 @@ const FRAMES = [
   'Cyber','Shadow','Galaxy','Platinum','Chrome','Ruby','Emerald','Sapphire','Amethyst','Obsidian',
   'Crystal','Phoenix','Lightning','Carbon','Steel','Copper','Pearl','Legend','Elite','Mythic',
   'Void','Solar','Lunar','Storm','Thunder','Fire','Ice','Ocean','Cosmic','Aurora',
-  'Quantum','Energy','Pulse','Glitch','Hologram','Prism','Crown','King','Warrior','VERITAS'
+  'Quantum','Energy','Pulse','Glitch','Hologram','Prism','Crown','King','Warrior','VERITAS',
+  'Rainbow Prism',
+  'Blazing Inferno',
+  'Electric Storm',
+  'Galaxy Portal',
+  'Holographic Chrome',
+  'Toxic Reactor',
+  'Royal Gold',
+  'Cyber Neon',
+  'Frozen Crystal',
+  'Emerald Dragon',
+  'Ruby Explosion',
+  'Sapphire Wave',
+  'Sunset Spectrum',
+  'Aurora Lights',
+  'Cosmic Ring',
+  'Diamond Luxury',
+  'Candy Pop',
+  'Shadow Flame',
+  'Plasma Vortex',
+  'Champion Aura'
 ]
 
 const BACKGROUNDS = [
@@ -31,7 +93,27 @@ const BACKGROUNDS = [
   'Shadow','Void','Ocean','Sunset','Midnight','Aurora','Space','Matrix','Tech','City',
   'Desert','Volcano','Iceberg','Royal','Diamond','Purple','Red','Blue','Green','Gold',
   'Silver','Platinum','Chrome','Ruby','Emerald','Sapphire','Amethyst','Cosmic','Quantum','Lightning',
-  'Thunder','Fire','Crystal','Phoenix','Hologram','Cyber City','Dark Arena','VERITAS Night','VERITAS Gold','VERITAS Elite'
+  'Thunder','Fire','Crystal','Phoenix','Hologram','Cyber City','Dark Arena','VERITAS Night','VERITAS Gold','VERITAS Elite',
+  'Aurora Dream',
+  'Cyberpunk City',
+  'Molten Lava',
+  'Deep Galaxy',
+  'Rainbow Rush',
+  'Underwater World',
+  'Holographic Space',
+  'Neon Grid',
+  'Sunset Horizon',
+  'Arctic Storm',
+  'Toxic Jungle',
+  'Golden Nebula',
+  'Cherry Blossom',
+  'Electric Ocean',
+  'Digital Matrix',
+  'Crystal Cave',
+  'Cosmic Eclipse',
+  'Candy Galaxy',
+  'Emerald Dimension',
+  'Midnight Fire'
 ]
 
 const BADGES = [
@@ -89,6 +171,37 @@ const BADGES = [
   { name:'VERITAS Champion', icon:'V', style:'veritas-champion' },
   { name:'VERITAS Legend', icon:'V', style:'veritas-legend' },
   { name:'Ultimate', icon:'U', style:'ultimate' },
+  // VERITAS-30-RED-GLOW-BADGES
+  { name:'Crimson Crown', icon:'♛', style:'crimson-crown' },
+  { name:'Inferno Skull', icon:'☠', style:'inferno-skull' },
+  { name:'Blood Dragon', icon:'🐉', style:'blood-dragon' },
+  { name:'Red Phoenix', icon:'♨', style:'red-phoenix' },
+  { name:'Demon Horns', icon:'♆', style:'demon-horns' },
+  { name:'Warrior Shield', icon:'⬟', style:'warrior-shield' },
+  { name:'Blazing Star', icon:'✹', style:'blazing-star' },
+  { name:'Crimson Wolf', icon:'🐺', style:'crimson-wolf' },
+  { name:'Battle Axe', icon:'⚒', style:'battle-axe' },
+  { name:'Red Lightning', icon:'ϟ', style:'red-lightning' },
+  { name:'Ruby Diamond', icon:'♦', style:'ruby-diamond' },
+  { name:'Blood Moon', icon:'☾', style:'blood-moon' },
+  { name:'Fire Serpent', icon:'♧', style:'fire-serpent' },
+  { name:'Champion Fist', icon:'✊', style:'champion-fist' },
+  { name:'War Eagle', icon:'🦅', style:'war-eagle' },
+  { name:'Doom Emblem', icon:'✖', style:'doom-emblem' },
+  { name:'Red Vortex', icon:'✥', style:'red-vortex' },
+  { name:'Flame Heart', icon:'♥', style:'flame-heart' },
+  { name:'Rage Mark', icon:'✹', style:'rage-mark' },
+  { name:'Elite Cross', icon:'✠', style:'elite-cross' },
+  { name:'Ruby Wolf', icon:'◆', style:'ruby-wolf' },
+  { name:'Inferno Eye', icon:'◉', style:'inferno-eye' },
+  { name:'Skull King', icon:'☠', style:'skull-king' },
+  { name:'Red Comet', icon:'☄', style:'red-comet' },
+  { name:'Crimson Claw', icon:'爪', style:'crimson-claw' },
+  { name:'War Crown', icon:'♕', style:'war-crown' },
+  { name:'Phoenix Crest', icon:'✺', style:'phoenix-crest' },
+  { name:'Blood Knight', icon:'⚔', style:'blood-knight' },
+  { name:'Fire Rune', icon:'ᚱ', style:'fire-rune' },
+  { name:'Apex Emblem', icon:'▲', style:'apex-emblem' },
 ]
 
 const slugify = (value = '') =>
@@ -126,7 +239,7 @@ export default function AdminMarketplace() {
     slug:'',
     description:'',
     category_id:'',
-    item_type:'Name Effect',
+    item_type:'Name Glow',
     price_vcoins:'',
     price_kes:'',
     image_url:'',
@@ -208,19 +321,15 @@ export default function AdminMarketplace() {
 
   function selectEffect(effect) {
     let category = 'Name Effects'
-    let type = 'Name Effect'
+    let type = 'Name Glow'
 
     if (['Fire','Inferno','Ember','Flame','Blaze','Magma','Inferno X'].includes(effect)) {
       category = 'Fire'
       type = 'Name Fire'
-    }
-
-    if (['Ice','Frostbite','Frost','Frost X'].includes(effect)) {
+    } else if (['Ice','Frostbite','Frost','Frost X'].includes(effect)) {
       category = 'Ice'
       type = 'Name Ice'
-    }
-
-    if (['Electric','Thunder','Lightning','Storm','Thunder X'].includes(effect)) {
+    } else if (['Electric','Thunder','Lightning','Storm','Thunder X'].includes(effect)) {
       category = 'Electric'
       type = 'Name Electric'
     }
@@ -531,7 +640,7 @@ const previewData = useMemo(() => ({
       slug:'',
       description:'',
       category_id:'',
-      item_type:'Name Effect',
+      item_type:'Name Glow',
       price_vcoins:'',
       price_kes:'',
       image_url:'',
@@ -706,7 +815,7 @@ const previewData = useMemo(() => ({
           </div>
 
           <div className="picker-group">
-            <h3>Marketplace Badges · 50</h3>
+            <h3>Marketplace Badges · {BADGES.length}</h3>
 
             <div className="visual-options">
               {BADGES.map(badge => (
@@ -1452,5 +1561,14 @@ const previewData = useMemo(() => ({
     </div>
   )
 }
+
+
+
+
+
+
+
+
+
 
 
