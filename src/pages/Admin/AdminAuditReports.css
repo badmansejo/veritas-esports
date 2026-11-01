@@ -1,0 +1,55 @@
+﻿.admin-audit-page {
+  padding: 24px;
+  color: #fff;
+}
+.admin-audit-header, .admin-audit-card-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.admin-audit-header { margin-bottom: 24px; }
+.admin-audit-eyebrow {
+  color: #999;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 2px;
+}
+.admin-audit-header h1 { margin: 8px 0; font-size: 30px; font-weight: 950; }
+.admin-audit-header p, .admin-audit-card p, .admin-audit-report p {
+  color: #999;
+  font-size: 13px;
+}
+.admin-audit-header button, .admin-audit-card button, .admin-audit-tabs button {
+  border: 1px solid #333;
+  border-radius: 9px;
+  padding: 10px 14px;
+  background: #171717;
+  color: #eee;
+  font-weight: 800;
+  cursor: pointer;
+}
+.admin-audit-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+.admin-audit-tabs button.active { background: #eee; color: #111; border-color: #eee; }
+.admin-audit-card { background: #0c0c0c; border: 1px solid #292929; border-radius: 14px; padding: 20px; }
+.admin-audit-card h2 { margin: 0 0 8px; font-size: 19px; }
+.admin-audit-card-heading { margin-bottom: 16px; }
+.admin-audit-report-list { display: grid; gap: 10px; margin-top: 18px; }
+.admin-audit-report { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 15px; background: #141414; border: 1px solid #292929; border-radius: 10px; }
+.admin-audit-report strong { font-size: 14px; }
+.admin-audit-report p { margin: 5px 0 0; }
+.admin-audit-report button { flex-shrink: 0; }
+.admin-audit-table-wrap { overflow-x: auto; }
+.admin-audit-table-wrap table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.admin-audit-table-wrap th, .admin-audit-table-wrap td { padding: 12px; border-bottom: 1px solid #292929; text-align: left; vertical-align: top; }
+.admin-audit-table-wrap th { color: #aaa; }
+.admin-audit-error, .admin-audit-message, .admin-audit-empty { padding: 12px; border-radius: 8px; background: #151515; color: #aaa; overflow-wrap: anywhere; }
+.admin-audit-error { color: #ffaaaa; }
+.admin-audit-message { color: #c9c9c9; }
+.admin-audit-page button:disabled { opacity: .55; cursor: not-allowed; }
+@media (max-width: 640px) {
+  .admin-audit-page { padding: 14px; }
+  .admin-audit-header h1 { font-size: 24px; }
+  .admin-audit-report { align-items: flex-start; flex-direction: column; }
+}

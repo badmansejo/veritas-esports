@@ -31,7 +31,10 @@ import AdminWithdrawals from './pages/Admin/AdminWithdrawals'
 import AdminPayoutMethods from './pages/Admin/AdminPayoutMethods'
 import PayoutMethods from './pages/PayoutMethods/PayoutMethods'
 import AdminDashboard from './pages/Admin/AdminDashboard'
+import AdminSystemSettings from './pages/Admin/AdminSystemSettings'
+import AdminAuditReports from './pages/Admin/AdminAuditReports'
 import AdminReferralSettings from './pages/Admin/AdminReferralSettings';
+import AdminReferralEarnings from './pages/Admin/AdminReferralEarnings';
 import AdminReferralManagement from './pages/Admin/AdminReferralManagement';
 import AdminUsers from './pages/Admin/AdminUsers'
 import AdminTournaments from './pages/Admin/AdminTournaments'
@@ -106,7 +109,11 @@ export default function App() {
 
       <Route element={<AdminRoute />}>
         <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin/system-settings" element={<AdminSystemSettings />} />
+        <Route path="/admin/audit-reports" element={<AdminAuditReports />} />
         <Route path="/admin/referrals/settings" element={<AdminReferralSettings />} />
+          <Route path="/admin/referrals/earnings" element={<AdminReferralEarnings />} />
+          <Route path="/admin/referrals/earnings" element={<AdminReferralEarnings />} />
         <Route path="/admin/referrals/history" element={<AdminReferralManagement mode="history" />} />
         <Route path="/admin/referrals/top" element={<AdminReferralManagement mode="top" />} />
         <Route path="/admin/referrals/fraud" element={<AdminReferralManagement mode="fraud" />} />
@@ -201,3 +208,9 @@ import Matches from './pages/Matches/Matches'
 
 
 import Referrals from './pages/Referrals/Referrals'
+
+
+
+
+
+

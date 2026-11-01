@@ -201,3 +201,18 @@
     align-items: flex-start;
   }
 }
+
+.profile-identity h2 {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.profile-equipped-username {
+  display: inline-flex;
+  align-items: center;
+  font-size: inherit;
+  line-height: 1.25;
+  min-width: 0;
+}
+

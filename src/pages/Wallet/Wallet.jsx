@@ -1093,7 +1093,7 @@ setWithdrawals(withdrawalsWithBatch)
               <button
                 type="button"
                 onClick={() =>
-                  navigate('/marketplace')
+                  navigate('/vcoins')
                 }
               >
                 + Buy V Coins
@@ -1248,7 +1248,7 @@ setWithdrawals(withdrawalsWithBatch)
               <button
                 type="button"
                 onClick={() =>
-                  navigate('/marketplace')
+                  navigate('/vcoins')
                 }
               >
                 <strong>
@@ -2455,18 +2455,23 @@ setWithdrawals(withdrawalsWithBatch)
                     value={
                       selectedPayoutMethod
                     }
-                    onChange={(
-                      event
-                    ) =>
-                      setSelectedPayoutMethod(
-                        event.target.value
-                      )
-                    }
+                    onChange={(event) => {
+                      const value = event.target.value
+
+                      if (value === '__create_payment_method__') {
+                        navigate('/wallet/payout-methods')
+                        return
+                      }
+
+                      setSelectedPayoutMethod(value)
+                    }}
                     required
                   >
 
                     <option value="">
-                      Select payout method
+                      {payoutMethods.length === 0
+                        ? 'No saved payment methods — create one'
+                        : 'Select payment method'}
                     </option>
 
                     {payoutMethods.map(
@@ -2490,6 +2495,12 @@ setWithdrawals(withdrawalsWithBatch)
                       )
                     )}
 
+                    {payoutMethods.length === 0 && (
+                      <option value="__create_payment_method__">
+                        + Create Payment Method
+                      </option>
+                    )}
+
                   </select>
 
                   <div
@@ -2509,11 +2520,13 @@ setWithdrawals(withdrawalsWithBatch)
                       }
                     >
                       <strong>
-                        Manage Payout Methods
+                        {payoutMethods.length === 0 ? 'Create Payment Method' : 'Manage Payout Methods'}
                       </strong>
 
                       <span>
-                        Choose, add or edit an available payout account.
+                        {payoutMethods.length === 0
+                          ? 'Add a payment method to continue with your withdrawal.'
+                          : 'Choose, add or edit an available payout account.'}
                       </span>
                     </button>
 
@@ -2626,6 +2639,10 @@ setWithdrawals(withdrawalsWithBatch)
 }
 
 export default Wallet
+
+
+
+
 
 
 

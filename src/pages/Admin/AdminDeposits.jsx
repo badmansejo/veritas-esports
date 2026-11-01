@@ -250,49 +250,62 @@ export default function AdminDeposits() {
   async function updateDepositStatus(deposit, newStatus) {
     if (!deposit?.id) return
 
-    setProcessingId(deposit.id)
     setError('')
     setSuccess('')
 
+    let rejectionNote = ''
+
+    if (String(newStatus).toLowerCase() === 'rejected') {
+      const enteredNote = window.prompt(
+        'Optional note for rejecting this deposit (maximum 300 characters):',
+        ''
+      )
+
+      if (enteredNote === null) return
+
+      rejectionNote = enteredNote.trim().slice(0, 300)
+    }
+
+    setProcessingId(deposit.id)
+
     try {
-      if (
-        newStatus === 'Confirmed' ||
-        newStatus === 'Approved'
-      ) {
+      const isApproval = ['confirmed', 'approved'].includes(
+        String(newStatus).toLowerCase()
+      )
+
+      if (isApproval) {
         const { data, error } = await supabase.rpc(
           'approve_manual_deposit',
-          {
-            p_deposit_id: deposit.id
-          }
+          { p_deposit_id: deposit.id }
         )
 
-        if (error) {
-          throw new Error(
-            `Approval function is not available: ${error.message}`
-          )
-        }
+        if (error) throw error
 
         setSuccess(
           data?.message ||
           `Deposit for ${getUsername(deposit)} approved successfully.`
         )
       } else {
-        const { error } = await supabase
-          .from('deposits')
-          .update({
-            status: newStatus
-          })
-          .eq('id', deposit.id)
+        const { data, error } = await supabase.rpc(
+          'admin_reject_deposit',
+          {
+            p_deposit_id: deposit.id,
+            p_note: rejectionNote || null
+          }
+        )
 
         if (error) throw error
 
-        setSuccess(
-          `Deposit marked ${newStatus.toLowerCase()}.`
-        )
+        if (!data?.success) {
+          throw new Error('The database did not confirm the rejection.')
+        }
+
+        setSuccess('Deposit rejected successfully.')
       }
 
       await loadDeposits()
     } catch (err) {
+      console.error('Deposit status update failed:', err)
       setError(err.message || 'Unable to update deposit.')
     } finally {
       setProcessingId(null)
@@ -751,3 +764,6 @@ export default function AdminDeposits() {
     </div>
   )
 }
+
+
+

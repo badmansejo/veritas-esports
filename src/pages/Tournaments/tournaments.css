@@ -461,3 +461,29 @@
     grid-template-columns: 1fr;
   }
 }
+/* Clickable WhatsApp contacts in tournament player list */
+.td-person a,
+.td-muted a {
+  color: #25D366;
+  text-decoration: underline;
+  cursor: pointer;
+  pointer-events: auto;
+  position: relative;
+  z-index: 2;
+}
+
+/* WhatsApp links: clearly clickable */
+.td-person a,
+.td-muted a {
+  color: #25D366;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.td-person a:hover,
+.td-muted a:hover {
+  color: #6BFF9B;
+}

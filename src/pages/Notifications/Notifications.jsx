@@ -60,6 +60,34 @@ function iconFor(category) {
   }
 }
 
+function renderMessageWithLinks(message) {
+  const text = String(message || '')
+  const parts = text.split(/(https?:\/\/[^\s<>\]]+)/g)
+
+  return parts.map((part, index) => {
+    const url = part.replace(/[),.!?]+$/, '')
+    const trailing = part.slice(url.length)
+
+    if (!/^https?:\/\/\S+$/i.test(url)) {
+      return part
+    }
+
+    return (
+      <React.Fragment key={`${index}-${url}`}>
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={event => event.stopPropagation()}
+        >
+          {url}
+        </a>
+        {trailing}
+      </React.Fragment>
+    )
+  })
+}
+
 function normalizeContactLink(value) {
   const trimmed = String(value || '').trim()
 
@@ -523,7 +551,7 @@ export default function Notifications() {
                         </div>
 
                         <p>
-                          {item.message}
+                          {renderMessageWithLinks(item.message)}
                         </p>
 
                         <small>
@@ -655,3 +683,4 @@ export default function Notifications() {
     </div>
   )
 }
+

@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabaseClient'
 
 export default function DepositPanel({ user, onBalanceRefresh }) {
@@ -251,7 +251,7 @@ return ( <div className="wallet-deposit-panel"> <div className="wallet-section">
       </div>
 
       <div className="wallet-form-group">
-        <label>Payment Method</label>
+        <label>Scroll down and choose payment method</label>
 
         <div className="wallet-deposit-method-grid">
           <button
@@ -268,7 +268,7 @@ return ( <div className="wallet-deposit-panel"> <div className="wallet-section">
             disabled={loading}
           >
             <span className="wallet-deposit-method-icon">
-              ðŸ“²
+              📲
             </span>
 
             <strong>Manual Deposit</strong>
@@ -292,7 +292,7 @@ return ( <div className="wallet-deposit-panel"> <div className="wallet-section">
             disabled={loading}
           >
             <span className="wallet-deposit-method-icon">
-              ðŸ’³
+              💳
             </span>
 
             <strong>Paystack</strong>
@@ -437,4 +437,5 @@ return ( <div className="wallet-deposit-panel"> <div className="wallet-section">
 
 )
 }
+
 

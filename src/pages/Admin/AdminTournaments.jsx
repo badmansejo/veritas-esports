@@ -82,56 +82,6 @@ export default function AdminTournaments() {
     }
   }
 
-  async function deleteTournament(tournament) {
-    setBusyId(tournament.id)
-    setMessage('Checking tournament records...')
-
-    try {
-      const financialHistory = await hasFinancialHistory(tournament.id)
-
-      if (financialHistory) {
-        const archive = window.confirm(
-          `"${tournament.name}" has payout history.\n\nArchive it instead of permanently deleting it?`
-        )
-
-        if (archive) {
-          await archiveTournament(tournament)
-        } else {
-          setMessage('Deletion cancelled. Financial history was preserved.')
-        }
-        return
-      }
-
-      if (!window.confirm(
-        `Permanently delete "${tournament.name}"? This cannot be undone.`
-      )) {
-        setMessage('Deletion cancelled.')
-        return
-      }
-
-      const { data, error } = await supabase
-        .from('tournaments')
-        .delete()
-        .eq('id', tournament.id)
-        .select('id')
-
-      if (error) throw error
-
-      if (!data?.length) {
-        throw new Error('Nothing was deleted. Check admin DELETE permissions and RLS.')
-      }
-
-      setMessage(`"${tournament.name}" deleted successfully.`)
-      await loadTournaments()
-    } catch (error) {
-      setMessage(
-        `Could not delete tournament: ${error.message}. Archive it to preserve its history.`
-      )
-    } finally {
-      setBusyId('')
-    }
-  }
-
   const filtered = tournaments.filter(t => {
     const query = search.toLowerCase()
     return `${t.name || ''} ${t.tournament_code || ''} ${t.status || ''}`
@@ -255,13 +205,6 @@ export default function AdminTournaments() {
                     Archive
                   </button>
                 )}
-                <button
-                  style={styles.deleteButton}
-                  disabled={busyId === tournament.id}
-                  onClick={() => deleteTournament(tournament)}
-                >
-                  {busyId === tournament.id ? 'Working...' : 'Delete'}
-                </button>
               </div>
             </article>
           ))
@@ -270,4 +213,5 @@ export default function AdminTournaments() {
     </main>
   )
 }
+
 

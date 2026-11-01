@@ -23,9 +23,7 @@ export default function StyledUsername({
       .toLowerCase()
       .replace(/[_-]+/g, ' ')
 
-  const badge = items.find((item) =>
-    /\bbadge\b/.test(getType(item))
-  )
+  const badge = items.find((item) => /\bbadge\b/.test(getType(item)))
 
   const font = items.find((item) => {
     const type = getType(item)
@@ -69,7 +67,11 @@ export default function StyledUsername({
   })
   const fontData = font?.preview_data || {}
   const effectData = effect?.preview_data || {}
-  const badgeData = badge?.preview_data || {}
+  const badgePreview = badge?.preview_data || {}
+  const badgeData = {
+    ...badgePreview,
+    ...(badgePreview.badge_design || badgePreview.badgeDesign || {}),
+  }
 
   const fontMap = {
     orbitron: 'Orbitron, sans-serif',
@@ -218,7 +220,7 @@ export default function StyledUsername({
     badgeData.shape || badgeData.design || ''
   ).toLowerCase()
 
-  const badgeSize = Number(badgeData.size) || 22
+  const badgeSize = Math.max(18, Math.min(28, Math.round((Number(badgeData.size) || 62) * 0.36)))
 
   const badgeStyle = {
     display: 'inline-flex',
@@ -226,15 +228,13 @@ export default function StyledUsername({
     justifyContent: 'center',
     width: badgeSize,
     height: badgeSize,
-    marginRight: 6,
-    fontSize: 11,
+    marginLeft: 5,
+    fontSize: 10,
     fontWeight: 800,
     color: badgeData.iconColor || badgeData.icon_color || '#ffffff',
-    background:
-      badgeData.gradient ||
-      badgeData.background ||
-      badgeData.color ||
-      'rgba(255,255,255,0.12)',
+    background: badgeData.metallic
+      ? `linear-gradient(145deg, #ffffff 0%, ${badgeData.color || '#16c75a'} 20%, ${badgeData.gradient || '#087b3d'} 65%, ${badgeData.color || '#16c75a'} 100%)`
+      : `linear-gradient(145deg, ${badgeData.color || '#16c75a'}, ${badgeData.gradient || '#087b3d'})`,
     border: badgeData.borderWidth
       ? `${badgeData.borderWidth}px solid ${badgeData.border || '#ffffff'}`
       : '1px solid rgba(255,255,255,0.25)',
@@ -281,22 +281,20 @@ export default function StyledUsername({
 
   return (
     <span className={className} style={combinedStyle}>
+      <span className={effectKey === 'rainbow' ? 'veritas-username-effect-rainbow' : ''}>{username}</span>
       {badge && (
         <span style={badgeStyle}>
-          <span
-            style={
-              badgeShape === 'diamond'
-                ? { transform: 'rotate(-45deg)' }
-                : undefined
-            }
-          >
-            {badgeData.icon || 'Γÿà'}
+          <span style={badgeShape === 'diamond' ? { transform: 'rotate(-45deg)' } : undefined}>
+            {badgeData.icon || '✓'}
           </span>
         </span>
       )}
-      <span className={effectKey === 'rainbow' ? 'veritas-username-effect-rainbow' : ''}>{username}</span>
     </span>
   )
 }
+
+
+
+
 
 

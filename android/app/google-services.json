@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "285099683495",
+    "project_id": "veritas-534a0",
+    "storage_bucket": "veritas-534a0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:285099683495:android:1f123bc332653fbe807582",
+        "android_client_info": {
+          "package_name": "com.veritas.esports"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC8LWYTAASykdQ4piB3SF9mPqDZzC9ak-4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

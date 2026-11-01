@@ -30,9 +30,14 @@ function remainingTime(deadline) {
   const ms = new Date(deadline).getTime() - Date.now()
   if (!Number.isFinite(ms)) return ''
   if (ms <= 0) return 'Time expired'
-  const minutes = Math.floor(ms / 60000)
-  const seconds = Math.floor((ms % 60000) / 1000)
-  return `${minutes}m ${String(seconds).padStart(2, '0')}s remaining`
+
+  const totalSeconds = Math.floor(ms / 1000)
+  const hours = Math.floor(totalSeconds / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const seconds = totalSeconds % 60
+
+  if (hours > 0) return `${hours}h ${minutes}m left`
+  return `${minutes}m ${String(seconds).padStart(2, '0')}s left`
 }
 
 export default function Matches() {
@@ -53,6 +58,8 @@ export default function Matches() {
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [filter, setFilter] = useState('pending')
+  const [matchSection, setMatchSection] = useState('my')
+  const [expandedTournamentIds, setExpandedTournamentIds] = useState({})
 
   useEffect(() => {
     const timer = setInterval(() => setClocks(Date.now()), 1000)
@@ -182,14 +189,32 @@ export default function Matches() {
       setResults(latest)
 
       const urls = {}
+      const evidenceErrors = []
+
       await Promise.all(Object.values(latest).map(async row => {
         if (!row.evidence_url) return
-        const { data } = await supabase.storage
+
+        const { data, error: signedUrlError } = await supabase.storage
           .from(BUCKET)
-          .createSignedUrl(row.evidence_url, 300)
-        if (data?.signedUrl) urls[row.id] = data.signedUrl
+          .createSignedUrl(row.evidence_url, 3600)
+
+        if (signedUrlError) {
+          console.error(
+            `Screenshot URL failed for match ${row.match_id}:`,
+            signedUrlError.message
+          )
+          evidenceErrors.push(signedUrlError.message)
+          return
+        }
+
+        if (data?.signedUrl) urls[row.match_id] = data.signedUrl
       }))
+
       setEvidenceUrls(urls)
+
+      if (evidenceErrors.length) {
+        console.error('Some match screenshots could not be opened:', evidenceErrors)
+      }
     } catch (err) {
       setError(err?.message || 'Could not load matches.')
       setMatches([])
@@ -368,7 +393,29 @@ export default function Matches() {
     return !['completed', 'confirmed', 'cancelled', 'forfeit'].includes(normalize(match.status))
   }
 
-  const visibleMatches = matches.filter(match => {
+  const myMatches = matches.filter(match =>
+    match.player_one_id === userId || match.player_two_id === userId
+  )
+
+  const tournamentMatches = matches.filter(match =>
+    match.tournaments?.creator_id === userId
+  )
+
+  const tournamentGroups = Object.values(tournamentMatches.reduce((groups, match) => {
+    const key = match.tournament_id || 'unknown'
+    if (!groups[key]) groups[key] = { id: key, matches: [] }
+    groups[key].matches.push(match)
+    return groups
+  }, {}))
+
+  const ongoingTournamentCount = tournamentGroups.filter(group =>
+    !group.matches.every(match => getStatus(match) === 'completed')
+  ).length
+
+  const sectionMatches = matchSection === 'my' ? myMatches : tournamentMatches
+
+  const visibleMatches = sectionMatches.filter(match => {
+    if (matchSection === 'tournaments') return true
     const status = getStatus(match)
     if (filter === 'pending') return status === 'pending' || status === 'disputed'
     if (filter === 'completed') return status === 'completed'
@@ -383,6 +430,9 @@ export default function Matches() {
     .mt-title{font-size:clamp(27px,4vw,38px);font-weight:900;margin:24px 0 6px}
     .mt-muted{color:#a7b1c0;font-size:13px;line-height:1.65;overflow-wrap:anywhere}
     .mt-card{background:#111721;border:1px solid #303a49;border-radius:15px;padding:17px;margin-top:14px}
+    .mt-tournament-toggle{width:100%;text-align:left;background:transparent;border:0;color:inherit;cursor:pointer;font:inherit;padding:0}
+    .mt-tournament-toggle:focus-visible{outline:2px solid #d7b56d;outline-offset:5px;border-radius:5px}
+    .mt-match-group-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:16px 0 8px;padding:10px 12px;background:#0b111a;border:1px solid #303a49;border-radius:9px;color:#e7cb8c}
     .mt-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
     .mt-badge{display:inline-block;border:1px solid #485365;border-radius:99px;padding:5px 10px;font-size:11px}
     .mt-pending{border-color:#a58a50;color:#e7cb8c}
@@ -401,6 +451,7 @@ export default function Matches() {
     .mt-success{padding:12px;background:#14291f;border:1px solid #2d6a49;color:#b7f2ce;border-radius:9px;margin-top:12px}
     .mt-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
     .mt-tabs button[aria-pressed="true"]{background:#d7b56d;color:#11151b;border-color:#d7b56d}
+    .mt-count{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;margin-left:5px;border-radius:50px;background:#d7b56d;color:#11151b;font-size:11px;font-weight:900}
     @media(max-width:580px){.mt-grid{grid-template-columns:1fr}}
   `
 
@@ -411,7 +462,7 @@ export default function Matches() {
         <button className="mt-back" onClick={() => navigate('/')}>← Dashboard</button>
         <div className="mt-row">
           <div>
-            <h1 className="mt-title">My Matches</h1>
+            <h1 className="mt-title">{matchSection === 'my' ? 'My Matches' : 'Tournament Matches'}</h1>
             <div className="mt-muted">Your matches across every tournament you joined or created.</div>
           </div>
           <button className="mt-btn" onClick={loadMatches} disabled={loading}>
@@ -426,20 +477,104 @@ export default function Matches() {
         {!loading && !error && (
           <>
             <div className="mt-tabs">
-              <button className="mt-btn" aria-pressed={filter === 'pending'} onClick={() => setFilter('pending')}>Pending</button>
-              <button className="mt-btn" aria-pressed={filter === 'completed'} onClick={() => setFilter('completed')}>Completed</button>
-              <button className="mt-btn" aria-pressed={filter === 'all'} onClick={() => setFilter('all')}>All matches</button>
+              <button className="mt-btn" aria-pressed={matchSection === 'my'} onClick={() => { setMatchSection('my'); setFilter('pending') }}>My Matches</button>
+              <button className="mt-btn" aria-pressed={matchSection === 'tournaments'} onClick={() => setMatchSection('tournaments')}>Tournament Matches <span className="mt-count">{ongoingTournamentCount}</span></button>
             </div>
+
+            {matchSection === 'my' && (
+              <div className="mt-tabs">
+                <button className="mt-btn" aria-pressed={filter === 'pending'} onClick={() => setFilter('pending')}>Pending <span className="mt-count">{myMatches.filter(match => ['pending', 'disputed'].includes(getStatus(match))).length}</span></button>
+                <button className="mt-btn" aria-pressed={filter === 'completed'} onClick={() => setFilter('completed')}>Completed <span className="mt-count">{myMatches.filter(match => getStatus(match) === 'completed').length}</span></button>
+              </div>
+            )}
 
             {visibleMatches.length === 0 && (
               <div className="mt-card">
-                <h3>{filter === 'completed' ? 'No completed matches yet' : 'No matches to show'}</h3>
+                <h3>{matchSection === 'tournaments' ? 'No tournament matches yet' : filter === 'completed' ? 'No completed matches yet' : 'No pending matches to show'}</h3>
                 <p className="mt-muted">Once a tournament starts and fixtures are generated, your matches appear here.</p>
                 <button className="mt-btn mt-primary" onClick={() => navigate('/tournaments')}>Browse tournaments</button>
               </div>
             )}
 
-            {visibleMatches.map(match => {
+            {(matchSection === 'tournaments'
+              ? Object.values(visibleMatches.reduce((groups, match) => {
+                  const key = match.tournament_id || 'unknown'
+                  if (!groups[key]) {
+                    groups[key] = {
+                      id: key,
+                      name: match.tournaments?.name || 'Tournament match',
+                      game: match.tournaments?.game || 'Game',
+                      matches: []
+                    }
+                  }
+                  groups[key].matches.push(match)
+                  return groups
+                }, {}))
+                  .map(group => ({
+                    ...group,
+                    completed: group.matches.every(match => getStatus(match) === 'completed')
+                  }))
+                  .sort((a, b) =>
+                    Number(a.completed) - Number(b.completed) ||
+                    a.name.localeCompare(b.name)
+                  )
+                  .flatMap(group => {
+                    const pending = group.matches.filter(match => getStatus(match) !== 'completed')
+                    const completed = group.matches.filter(match => getStatus(match) === 'completed')
+
+                    return [
+                      { type: 'heading', group },
+                      ...(expandedTournamentIds[group.id]
+                        ? [
+                            { type: 'status-heading', id: `${group.id}-pending`, label: 'Pending Confirmation', count: pending.length },
+                            ...pending.map(match => ({ type: 'match', match })),
+                            { type: 'status-heading', id: `${group.id}-completed`, label: 'Completed', count: completed.length },
+                            ...completed.map(match => ({ type: 'match', match }))
+                          ]
+                        : [])
+                    ]
+                  })
+              : visibleMatches.map(match => ({ type: 'match', match }))
+            ).map((item, index) => {
+              if (item.type === 'status-heading') {
+                return (
+                  <div className="mt-match-group-title" key={item.id}>
+                    <strong>{item.label}</strong>
+                    <span className="mt-count">{item.count}</span>
+                  </div>
+                )
+              }
+
+              if (item.type === 'heading') {
+                return (
+                  <div className="mt-card" key={`tournament-${item.group.id}`}>
+                    <button
+                      type="button"
+                      className="mt-tournament-toggle"
+                      aria-expanded={Boolean(expandedTournamentIds[item.group.id])}
+                      onClick={() => setExpandedTournamentIds(prev => ({
+                        ...prev,
+                        [item.group.id]: !prev[item.group.id]
+                      }))}
+                    >
+                      <div className="mt-row">
+                        <div>
+                          <h3 style={{ margin: '0 0 5px' }}>{item.group.name}</h3>
+                          <div className="mt-muted">
+                            {item.group.game} · {item.group.completed ? 'Completed' : 'Ongoing'}
+                          </div>
+                        </div>
+                        <div className="mt-row">
+                          <span className="mt-count">{item.group.matches.length} matches</span>
+                          <span aria-hidden="true">{expandedTournamentIds[item.group.id] ? '▲' : '▼'}</span>
+                        </div>
+                      </div>
+                    </button>
+                  </div>
+                )
+              }
+
+              const match = item.match
               const result = results[match.id]
               const resultStatus = normalize(result?.result_status)
               const creator = match.tournaments?.creator_id === userId
@@ -463,9 +598,10 @@ export default function Matches() {
               const message = `Hi, I'm contacting you about ${match.tournaments?.name || 'our tournament'} on VERITAS.`
               const opponentLink = isPlayer ? phoneLink(opponentPhone, message) : ''
               const creatorLink = phoneLink(creatorPhone || match.tournaments?.creator_whatsapp || match.tournaments?.support_whatsapp, `Hi, I need help with ${match.tournaments?.name || 'a tournament'} on VERITAS.`)
-              const deadline = result?.submitted_at
-                ? new Date(new Date(result.submitted_at).getTime() + 30 * 60 * 1000).toISOString()
-                : match.confirmation_deadline
+              const deadline = match.confirmation_deadline ||
+                (result?.submitted_at
+                  ? new Date(new Date(result.submitted_at).getTime() + 24 * 60 * 60 * 1000).toISOString()
+                  : null)
 
               return (
                 <article className="mt-card" key={match.id}>
@@ -508,8 +644,8 @@ export default function Matches() {
                         <div className="mt-muted">Confirmation clock: {remainingTime(deadline, clocks)}</div>
                       )}
                       {result.dispute_reason && <p className="mt-muted">Dispute: {result.dispute_reason}</p>}
-                      {evidenceUrls[result.id] && (
-                        <a href={evidenceUrls[result.id]} target="_blank" rel="noreferrer" className="mt-btn" style={{ marginTop: 10 }}>
+                      {evidenceUrls[match.id] && (
+                        <a href={evidenceUrls[match.id]} target="_blank" rel="noreferrer" className="mt-btn" style={{ marginTop: 10 }}>
                           View screenshot proof
                         </a>
                       )}
@@ -582,4 +718,15 @@ export default function Matches() {
     </main>
   )
 }
+
+
+
+
+
+
+
+
+
+
+
 

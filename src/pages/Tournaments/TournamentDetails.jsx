@@ -1,4 +1,4 @@
-﻿import React, { useCallback, useEffect, useState } from 'react'
+﻿import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 
@@ -27,18 +27,39 @@ const styles = `
 .td-empty{padding:20px;text-align:center;color:#a7b1c0;border:1px dashed #414957;border-radius:12px}
 .td-prize{font-size:18px;font-weight:850;color:#e7cb8c}
 .td-logo{max-width:130px;max-height:100px;object-fit:contain}
-.td-bracket-scroll{overflow-x:auto;padding:8px 0 16px}
-.td-bracket{display:flex;align-items:stretch;gap:24px;min-width:max-content}
-.td-round{width:245px;display:flex;flex-direction:column;gap:14px}
-.td-round-title{color:#e7cb8c;font-size:12px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:2px}
-.td-match{background:linear-gradient(145deg,#151e2b,#0c1119);border:1px solid #344256;border-radius:12px;padding:12px;box-shadow:0 5px 18px #0005;break-inside:avoid}
-.td-match-top{display:flex;justify-content:space-between;gap:8px;color:#98a8bd;font-size:11px;margin-bottom:9px}
-.td-player{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:9px 8px;background:#0a1018;border:1px solid #273345;border-radius:7px;margin-top:5px;overflow-wrap:anywhere}
-.td-player.winner{border-color:#c4a45e;background:#292417}
-.td-player-name{font-weight:800;font-size:13px}
-.td-score{font-weight:900;color:#f3d68f;white-space:nowrap}
-.td-bracket-hint{font-size:12px;color:#9aa8ba;margin:8px 0 14px}
-@media(max-width:600px){.td-card{padding:13px}.td-round{width:220px}.td-section{font-size:19px}}
+.td-logo-open{display:flex;align-items:center;justify-content:center;padding:0;background:transparent;border:0;cursor:zoom-in;border-radius:8px}
+.td-logo-open:focus-visible{outline:2px solid #e7cb8c;outline-offset:4px}
+.td-image-modal{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:65px 18px 24px;box-sizing:border-box}
+.td-image-modal img{display:block;max-width:100%;max-height:calc(100vh - 160px);width:auto;height:auto;object-fit:contain}
+.td-image-modal-actions{position:absolute;top:16px;right:16px;display:flex;gap:10px;align-items:center}
+.td-image-modal-hint{color:#a7b1c0;font-size:12px;text-align:center}
+.td-bracket-scroll{overflow-x:auto;padding:18px 4px 24px;scrollbar-width:thin;scrollbar-color:#526982 #0a0f16}
+.td-bracket-scroll::-webkit-scrollbar{height:9px}
+.td-bracket-scroll::-webkit-scrollbar-track{background:#0a0f16;border-radius:10px}
+.td-bracket-scroll::-webkit-scrollbar-thumb{background:linear-gradient(90deg,#526982,#91a7bd);border-radius:10px}
+.td-bracket{position:relative;display:flex;align-items:stretch;gap:16px;min-width:max-content;padding:5px 2px 8px}
+.td-bracket-lines{position:absolute;left:0;top:0;pointer-events:none;z-index:0;overflow:visible}
+.td-bracket-lines path{fill:none;stroke:#5488b8;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;opacity:.8;filter:drop-shadow(0 0 3px #3989d066)}
+.td-round{z-index:1}
+.td-round{position:relative;width:220px;display:flex;flex-direction:column;gap:12px;padding:10px;background:linear-gradient(180deg,#111a26 0%,#0b1018 100%);border:1px solid #344457;border-radius:16px;box-shadow:inset 0 1px #ffffff0b,0 12px 28px #0005}
+.td-round-title{display:flex;align-items:center;gap:10px;color:#dce8f5;font-size:12px;font-weight:950;letter-spacing:2px;text-transform:uppercase;margin:0 0 3px;padding:11px 12px;background:linear-gradient(110deg,#202d3d,#111923);border:1px solid #465b70;border-radius:9px}
+.td-round-title:before{content:"";width:4px;height:19px;flex:0 0 4px;border-radius:5px;background:linear-gradient(180deg,#91c9ff,#397ed0);box-shadow:0 0 12px #3989e866}
+.td-match{position:relative;overflow:hidden;background:linear-gradient(145deg,#172333 0%,#0c121b 72%);border:1px solid #35485d;border-radius:12px;padding:12px;box-shadow:inset 0 1px #ffffff0a,0 7px 18px #0005;break-inside:avoid;transition:border-color .18s ease,transform .18s ease,box-shadow .18s ease}
+.td-match:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,#719fc9,#344b65);opacity:.85}
+.td-match:hover{border-color:#6387ac;box-shadow:0 0 0 1px #4779a322,0 10px 25px #0007}
+.td-match-top{display:flex;justify-content:space-between;align-items:center;gap:8px;color:#a7b9cd;font-size:10px;font-weight:850;letter-spacing:.8px;text-transform:uppercase;margin-bottom:11px;padding-bottom:9px;border-bottom:1px solid #29384a}
+.td-player{display:flex;justify-content:space-between;gap:5px;align-items:center;min-height:29px;padding:4px 6px;background:linear-gradient(100deg,#0a111a,#101925);border:1px solid #2b3a4d;border-radius:8px;margin-top:7px;overflow-wrap:anywhere;transition:background .18s ease,border-color .18s ease}
+.td-player.winner{border-color:#36e58c;background:linear-gradient(100deg,#103b2a,#10231d);box-shadow:inset 3px 0 #36e58c,0 0 16px #21db7a24}
+.td-player-name{font-weight:800;font-size:10px;line-height:1.3;min-width:0}
+.td-score{font-size:12px;font-weight:950;color:#d9e9fa;white-space:nowrap;font-variant-numeric:tabular-nums}
+.td-player.winner .td-score{color:#62ffad}
+.td-bracket-hint{font-size:12px;color:#aab9ca;margin:12px 0 6px;line-height:1.7}
+.td-input{width:100%;min-width:0;box-sizing:border-box;background:#090f17;color:#f3f5f8;border:1px solid #3c5067;border-radius:8px;padding:10px 11px;font:inherit;font-size:13px;outline:none}
+.td-input:focus{border-color:#78a9dc;box-shadow:0 0 0 3px #4e8ac52b}
+.td-input option{background:#111923;color:#f3f5f8}
+.td-match .td-success{border-color:#8f7742!important;background:linear-gradient(100deg,#302817,#171b20)!important;color:#f7d994!important;font-size:11px;line-height:1.6}
+.td-bracket-scroll{border-radius:12px;background:radial-gradient(ellipse at top,#18233370,transparent 65%)}
+@media(max-width:600px){.td-card{padding:13px}.td-round{width:245px;padding:12px;gap:15px}.td-bracket{gap:18px}.td-section{font-size:19px}.td-match{padding:11px}.td-player-name{font-size:11px}}
 `
 
 function money(value) {
@@ -68,7 +89,28 @@ export default function TournamentDetails() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
+  const [showSponsorImage, setShowSponsorImage] = useState(false)
+  const [showJoinForm, setShowJoinForm] = useState(false)
+  const [joinWhatsapp, setJoinWhatsapp] = useState('')
 
+  const [pairingDrafts, setPairingDrafts] = useState({})
+  const [winnerDrafts, setWinnerDrafts] = useState({})
+  const [scoreDrafts, setScoreDrafts] = useState({})
+  const bracketRef = useRef(null)
+  const matchElements = useRef({})
+  const [bracketConnectors, setBracketConnectors] = useState([])
+  const [bracketSize, setBracketSize] = useState({ width: 0, height: 0 })
+  useEffect(() => {
+    setPairingDrafts(Object.fromEntries(matches.map((m) => [
+      m.id,
+      {
+        player_one_id: m.player_one_id || '',
+        player_two_id: m.player_two_id || ''
+      }
+    ])))
+    setWinnerDrafts({})
+  }, [matches])
+  
   const loadDetails = useCallback(async () => {
     setLoading(true)
     setError('')
@@ -185,6 +227,53 @@ export default function TournamentDetails() {
     )
   }
 
+  async function joinTournamentFromDetails(event) {
+    event.preventDefault()
+    setError('')
+    setNotice('')
+
+    if (!user) {
+      setError('Please log in before joining this tournament.')
+      return
+    }
+
+    if (tournament?.room_type === 'Private') {
+      setError('Private tournaments must be joined using their private code.')
+      return
+    }
+
+    if (!joinWhatsapp.trim()) {
+      setError('Enter your WhatsApp number to join.')
+      return
+    }
+
+    setBusy(true)
+
+    try {
+      const { data, error: rpcError } = await supabase.rpc(
+        'veritas_v2_join_tournament',
+        {
+          p_tournament_code: tournament.tournament_code,
+          p_whatsapp: joinWhatsapp.trim(),
+        }
+      )
+
+      if (rpcError) throw rpcError
+
+      if (data?.success === false) {
+        throw new Error(data.message || data.error || 'Could not join tournament.')
+      }
+
+      setShowJoinForm(false)
+      setJoinWhatsapp('')
+      setNotice('You joined the tournament successfully.')
+      await loadDetails()
+    } catch (err) {
+      setError(err?.message || 'Could not join tournament.')
+    } finally {
+      setBusy(false)
+    }
+  }
   async function copyText(value, label) {
     if (!value) return
     try {
@@ -195,6 +284,37 @@ export default function TournamentDetails() {
     }
   }
 
+  async function regeneratePrivateCode() {
+    if (!isCreator || !tournament || tournament.room_type !== 'Private') return
+
+    if (!window.confirm('Regenerate the private code? The previous code will stop working for new joins.')) return
+
+    setBusy(true)
+    setError('')
+    setNotice('')
+
+    try {
+      const { data, error: rpcError } = await supabase.rpc(
+        'veritas_v2_regenerate_private_code',
+        { p_tournament_id: tournament.id }
+      )
+
+      if (rpcError) throw rpcError
+      if (!data?.success || !data?.private_room_code) {
+        throw new Error('Supabase did not return a new private code.')
+      }
+
+      setTournament((previous) => ({
+        ...previous,
+        private_room_code: data.private_room_code,
+      }))
+      setNotice('Private code regenerated successfully. Share the new code with invited players.')
+    } catch (err) {
+      setError(err?.message || 'Could not regenerate the private code.')
+    } finally {
+      setBusy(false)
+    }
+  }
   async function startTournament() {
     if (!isCreator || !tournament) return
 
@@ -228,6 +348,130 @@ export default function TournamentDetails() {
     }
   }
 
+  async function completeTournament() {
+    if (!isCreator || !tournament || tournament.status === 'Completed') return
+
+    if (!matches.length || matches.some((m) => m.status !== 'Completed')) {
+      setError('Complete every match and record every winner before completing the tournament.')
+      return
+    }
+
+    const finalMatch = matches
+      .filter((m) => !m.next_match_id && m.winner_id)
+      .sort((a, b) => Number(b.round_number || b.round || 0) - Number(a.round_number || a.round || 0))[0]
+
+    if (!finalMatch) {
+      setError('The final match winner has not been recorded.')
+      return
+    }
+
+    if (!window.confirm('Mark this tournament as Completed? This records the champion and closes tournament management.')) return
+
+    setBusy(true)
+    setError('')
+    setNotice('')
+
+    try {
+      const { data, error: updateError } = await supabase
+        .from('tournaments')
+        .update({
+          status: 'Completed',
+          winner_id: finalMatch.winner_id,
+          completed_at: new Date().toISOString()
+        })
+        .eq('id', tournament.id)
+        .eq('creator_id', user.id)
+        .neq('status', 'Completed')
+        .select('id')
+        .maybeSingle()
+
+      if (updateError) throw updateError
+      if (!data) throw new Error('Tournament was not updated. Check creator permissions and database policies.')
+
+      setNotice('Tournament completed successfully. Champion recorded.')
+      await loadDetails()
+    } catch (err) {
+      setError(err?.message || 'Could not complete the tournament.')
+    } finally {
+      setBusy(false)
+    }
+  }
+  const advanceBracketWinner = async (match) => {
+    if (!isCreator) {
+      setError('Only the tournament creator can advance a winner.')
+      return
+    }
+
+    const winnerId = winnerDrafts[match.id]
+
+    if (!winnerId || ![match.player_one_id, match.player_two_id].includes(winnerId)) {
+      setError('Choose one of the players in this match.')
+      return
+    }
+
+    const scoreDraft = scoreDrafts[match.id] || {}
+    const playerOneGoals = scoreDraft.player_one_score ?? match.player_one_score ?? ''
+    const playerTwoGoals = scoreDraft.player_two_score ?? match.player_two_score ?? ''
+
+    if (
+      playerOneGoals === undefined || playerOneGoals === '' ||
+      playerTwoGoals === undefined || playerTwoGoals === '' ||
+      !Number.isInteger(Number(playerOneGoals)) ||
+      !Number.isInteger(Number(playerTwoGoals)) ||
+      Number(playerOneGoals) < 0 || Number(playerTwoGoals) < 0
+    ) {
+      setError('Enter a valid non-negative goal score for both players.')
+      return
+    }
+
+    if (match.status === 'Completed') {
+      setError('This match is already completed.')
+      return
+    }
+
+    if (!window.confirm('Advance this player to the next bracket round and complete this match?')) {
+      return
+    }
+
+    setBusy(true)
+    setError('')
+    setNotice('')
+
+    try {
+      const { error: rpcError } = await supabase.rpc(
+        'veritas_creator_manage_match',
+        {
+          p_match_id: match.id,
+          p_action: 'advance_winner',
+          p_player_one_id: null,
+          p_player_two_id: null,
+          p_winner_id: winnerId,
+          p_player_one_score: Number(playerOneGoals),
+          p_player_two_score: Number(playerTwoGoals)
+        }
+      )
+
+      if (rpcError) throw rpcError
+
+      setWinnerDrafts((old) => {
+        const updated = { ...old }
+        delete updated[match.id]
+        return updated
+      })
+
+      setNotice(
+        match.next_match_id
+          ? 'Winner advanced to the next bracket round successfully.'
+          : 'Final match completed successfully. The winner is recorded.'
+      )
+
+      await loadDetails()
+    } catch (err) {
+      setError(err?.message || 'Could not advance this winner.')
+    } finally {
+      setBusy(false)
+    }
+  }
   function downloadBracket() {
     if (!tournament || matches.length === 0) {
       setError('There are no generated matches to download yet.')
@@ -255,7 +499,7 @@ export default function TournamentDetails() {
     let content = `
       <rect width="100%" height="100%" fill="#080c13"/>
       <text x="${margin}" y="35" fill="#e7cb8c" font-family="Arial" font-size="23" font-weight="bold">${esc(tournament.name)}</text>
-      <text x="${margin}" y="58" fill="#9aa8ba" font-family="Arial" font-size="12">${esc(formatName(tournament.format))} · VERITAS ESPORTS</text>
+      <text x="${margin}" y="58" fill="#9aa8ba" font-family="Arial" font-size="12">${esc(formatName(tournament.format))}   VERITAS ESPORTS</text>
     `
 
     grouped.forEach((round, column) => {
@@ -277,7 +521,7 @@ export default function TournamentDetails() {
 
         content += `
           <rect x="${x}" y="${y}" width="${cardWidth}" height="${cardHeight}" rx="10" fill="#111721" stroke="#465164"/>
-          <text x="${x + 12}" y="${y + 19}" fill="#9aa8ba" font-family="Arial" font-size="10">MATCH ${esc(match.match_number || index + 1)} · ${esc(match.status || 'Pending')}</text>
+          <text x="${x + 12}" y="${y + 19}" fill="#9aa8ba" font-family="Arial" font-size="10">MATCH ${esc(match.match_number || index + 1)}   ${esc(match.status || 'Pending')}</text>
           <text x="${x + 12}" y="${y + 43}" fill="${winner === match.player_one_id ? '#e7cb8c' : '#f3f5f8'}" font-family="Arial" font-size="12" font-weight="bold">${esc(p1)}</text>
           <text x="${x + cardWidth - 12}" y="${y + 43}" fill="#e7cb8c" font-family="Arial" font-size="12" text-anchor="end">${esc(score)}</text>
           <text x="${x + 12}" y="${y + 68}" fill="${winner === match.player_two_id ? '#e7cb8c' : '#f3f5f8'}" font-family="Arial" font-size="12" font-weight="bold">${esc(p2)}</text>
@@ -306,20 +550,137 @@ export default function TournamentDetails() {
 
   const rounds = [...new Set(matches.map((m) => Number(m.round_number || 1)))].sort((a, b) => a - b)
 
+  useEffect(() => {
+    const bracket = bracketRef.current
+    if (!bracket) return
+
+    let observer
+
+    const measure = () => {
+      const root = bracketRef.current
+      if (!root) return
+
+      const rootRect = root.getBoundingClientRect()
+      const width = Math.max(root.scrollWidth, rootRect.width)
+      const height = Math.max(root.scrollHeight, rootRect.height)
+      const elements = matchElements.current
+      const byId = new Map(matches.map((match) => [String(match.id), match]))
+
+      const paths = matches.flatMap((match) => {
+        const source = elements[String(match.id)]
+        if (!source) return []
+
+        let next = match.next_match_id
+          ? byId.get(String(match.next_match_id))
+          : null
+
+        if (!next) {
+          const nextRound = Number(match.round_number || 1) + 1
+          const nextMatchNumber = Math.ceil(Number(match.match_number || 1) / 2)
+          next = matches.find((candidate) =>
+            Number(candidate.round_number || 1) === nextRound &&
+            Number(candidate.match_number || 1) === nextMatchNumber
+          )
+        }
+
+        if (!next) return []
+        const target = elements[String(next.id)]
+        if (!target) return []
+
+        const sourceRect = source.getBoundingClientRect()
+        const targetRect = target.getBoundingClientRect()
+
+        const x1 = sourceRect.right - rootRect.left
+        const y1 = sourceRect.top + sourceRect.height / 2 - rootRect.top
+        const x2 = targetRect.left - rootRect.left
+        const y2 = targetRect.top + targetRect.height / 2 - rootRect.top
+        const middle = x1 + Math.max(12, (x2 - x1) / 2)
+
+        return [{
+          id: `${match.id}-${next.id}`,
+          d: `M ${x1} ${y1} H ${middle} V ${y2} H ${x2}`
+        }]
+      })
+
+      setBracketSize({ width, height })
+      setBracketConnectors(paths)
+    }
+
+    measure()
+    observer = typeof ResizeObserver !== 'undefined'
+      ? new ResizeObserver(measure)
+      : null
+
+    if (observer) {
+      observer.observe(bracket)
+      Object.values(matchElements.current).forEach((element) => {
+        if (element) observer.observe(element)
+      })
+    }
+
+    window.addEventListener('resize', measure)
+    return () => {
+      observer?.disconnect()
+      window.removeEventListener('resize', measure)
+    }
+  }, [matches, isCreator, tournament?.status, loading, pairingDrafts, scoreDrafts, busy])
+
   if (loading) {
     return <div className="td-page"><style>{styles}</style><div className="td-wrap"><div className="td-card">Loading tournament...</div></div></div>
   }
 
   if (!tournament) {
-    return <div className="td-page"><style>{styles}</style><div className="td-wrap"><button className="td-btn" onClick={() => navigate('/tournaments')}>← Tournaments</button>{error && <div className="td-error">{error}</div>}</div></div>
+    return <div className="td-page"><style>{styles}</style><div className="td-wrap"><button className="td-btn" onClick={() => navigate('/tournaments')}>Back to Tournaments</button>{error && <div className="td-error">{error}</div>}</div></div>
   }
 
   return (
     <div className="td-page">
       <style>{styles}</style>
+      {showSponsorImage && tournament.sponsor_logo_url && (
+        <div
+          className="td-image-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Sponsor logo full-size viewer"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setShowSponsorImage(false)
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") setShowSponsorImage(false)
+          }}
+        >
+          <div className="td-image-modal-actions">
+            <a
+              className="td-btn td-primary"
+              href={tournament.sponsor_logo_url}
+              download
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{textDecoration:"none"}}
+            >
+              Download Image
+            </a>
+            <button
+              type="button"
+              className="td-btn"
+              onClick={() => setShowSponsorImage(false)}
+              aria-label="Close image viewer"
+            >
+              Close ✕
+            </button>
+          </div>
+          <img
+            src={tournament.sponsor_logo_url}
+            alt={`${tournament.sponsor_name || "Sponsor"} logo full size`}
+          />
+          <div className="td-image-modal-hint">
+            Click outside the image or press Escape to close.
+          </div>
+        </div>
+      )}
       <div className="td-wrap">
         <div className="td-row">
-          <button className="td-btn" onClick={() => navigate('/tournaments')}>← Tournaments</button>
+          <button className="td-btn" onClick={() => navigate('/tournaments')}>Back to Tournaments</button>
           <div className="td-row">
             <button className="td-btn" onClick={loadDetails}>Refresh</button>
             {matches.length > 0 && <button className="td-btn td-primary" onClick={downloadBracket}>Download Bracket</button>}
@@ -334,20 +695,27 @@ export default function TournamentDetails() {
           <span className="td-tag">{tournament.status || 'Open'}</span>
           <h1 className="td-title">{tournament.name}</h1>
           <p className="td-muted">
-            Created by <strong>{creator?.username ? `@${creator.username}` : 'VERITAS player'}</strong>
-            {creator?.veritas_user_id ? ` · User ID ${creator.veritas_user_id}` : ''}
+            Created by <strong>
+              {tournament?.creator_id ? (
+                <TournamentUsername
+                  userId={tournament.creator_id}
+                  username={creator?.username ? `@${creator.username}` : 'VERITAS player'}
+                />
+              ) : 'VERITAS player'}
+            </strong>
+            {creator?.veritas_user_id ? `   User ID ${creator.veritas_user_id}` : ''}
           </p>
 
           {tournament.status !== 'Open' && (
             <div className="td-success">
-              <strong>🔒 TOURNAMENT LOCKED</strong>
+              <strong>  TOURNAMENT LOCKED</strong>
               <div>Joining is closed because this tournament has started or is no longer open.</div>
             </div>
           )}
 
           {tournament.status === 'Completed' && (
             <div className="td-success" style={{ borderColor: '#c4a45e', background: '#292417', color: '#ffe6a6' }}>
-              <div style={{ fontSize: 12, fontWeight: 900, letterSpacing: 2 }}>🏆 TOURNAMENT WINNER</div>
+              <div style={{ fontSize: 12, fontWeight: 900, letterSpacing: 2 }}>{'\u{1F3C6}'} TOURNAMENT WINNER</div>
               <div style={{ fontSize: 24, fontWeight: 950, marginTop: 8 }}>
                 {tournament.winner_id
                   ? playerName(tournament.winner_id)
@@ -366,6 +734,35 @@ export default function TournamentDetails() {
             </div>
           )}
 
+          {tournament.status === 'Completed' && (
+            <section className="td-card" style={{ borderColor: '#c4a45e', background: 'linear-gradient(145deg,#191c23,#10151e)' }}>
+              <h2 className="td-section">Tournament Disputes</h2>
+              {tournament.completed_at && Date.now() - new Date(tournament.completed_at).getTime() < 24 * 60 * 60 * 1000 ? (
+                <>
+                  <p className="td-muted">
+                    You have 24 hours from tournament completion to report a disputed result or payout.
+                  </p>
+                  <a
+                    className="td-btn td-primary"
+                    href="https://t.me/TheeL3G3ND"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none', marginTop: 8 }}
+                  >
+                    Report Dispute / Contact Customer Care
+                  </a>
+                  <p className="td-muted" style={{ marginTop: 10 }}>
+                    Include tournament code {tournament.tournament_code || tournament.id}, your username, and the reason for your dispute.
+                  </p>
+                </>
+              ) : (
+                <p className="td-muted">
+                  The 24-hour dispute window has closed. Contact customer care if you need assistance with an existing issue.
+                  {' '}<a href="https://t.me/TheeL3G3ND" target="_blank" rel="noopener noreferrer">Contact Customer Care</a>
+                </p>
+              )}
+            </section>
+          )}
           {sponsored && (
             <div className="td-card">
               <div className="td-row">
@@ -377,19 +774,109 @@ export default function TournamentDetails() {
                     {tournament.prize_pool_funded ? 'Prize pool verified' : 'Awaiting platform funding verification'}
                   </div>
                 </div>
-                {tournament.sponsor_logo_url && <img className="td-logo" src={tournament.sponsor_logo_url} alt="Sponsor logo" />}
+                {tournament.sponsor_logo_url && (
+                  <button
+                    type="button"
+                    className="td-logo-open"
+                    onClick={() => setShowSponsorImage(true)}
+                    aria-label="Open sponsor logo full size"
+                    title="Click to view full size"
+                  >
+                    <img className="td-logo" src={tournament.sponsor_logo_url} alt="Sponsor logo" />
+                  </button>
+                )}
               </div>
               {prizes.length > 0 && <div className="td-grid">{prizes.map(([label, amount]) => <div className="td-stat" key={label}><span className="td-muted">{label}</span><strong>{money(amount)}</strong></div>)}</div>}
             </div>
           )}
 
           <div className="td-grid">
-            <div className="td-stat"><span className="td-muted">Players</span><strong>{activeParticipants.length}/{maxPlayers || '—'}</strong></div>
+            <div className="td-stat"><span className="td-muted">Players</span><strong>{activeParticipants.length}/{maxPlayers || ' '}</strong></div>
             <div className="td-stat"><span className="td-muted">Format</span><strong>{formatName(tournament.format)}</strong></div>
             <div className="td-stat"><span className="td-muted">Match format</span><strong>{tournament.match_format || 'Bo1'}</strong></div>
             <div className="td-stat"><span className="td-muted">Match rule</span><strong>{tournament.match_rule || 'Full Time'}</strong></div>
           </div>
 
+          {isCreator && (
+            <section className="td-card" style={{ borderColor: '#a58a50', background: 'linear-gradient(145deg,#191c23,#10151e)' }}>
+              <div className="td-row">
+                <div>
+                  <span className="td-tag td-gold">CREATOR ACCESS</span>
+                  <h2 className="td-section" style={{ margin: '10px 0' }}>Manage Your Tournament</h2>
+                  <p className="td-muted">
+                    You are the creator of this tournament. Share the correct access code with your players.
+                  </p>
+                </div>
+                <span className="td-tag">{tournament.status || 'Open'}</span>
+              </div>
+
+              {tournament.room_type === 'Private' ? (
+                <div className="td-stat" style={{ marginTop: 12 }}>
+                  <div className="td-muted">PRIVATE ROOM CODE   share only with invited players</div>
+                  <div style={{ fontSize: 24, fontWeight: 900, letterSpacing: 2, overflowWrap: 'anywhere', margin: '10px 0' }}>
+                    {tournament.private_room_code || 'Private code unavailable'}
+                  </div>
+                  {tournament.private_room_code && (
+                    <button
+                      className="td-btn td-primary"
+                      onClick={() => copyText(tournament.private_room_code, 'Private room code')}
+                    >
+                      Copy Private Code
+                    </button>
+                  )}
+                  <button
+                    className="td-btn"
+                    style={{ marginTop: 10, borderColor: '#a58a50' }}
+                    disabled={busy}
+                    onClick={regeneratePrivateCode}
+                  >
+                    {busy ? 'Processing...' : 'Regenerate Private Code'}
+                  </button>
+                  <p className="td-muted" style={{ marginTop: 10 }}>
+                    Players must enter this private code using Join with Code.
+                  </p>
+                </div>
+              ) : (
+                <div className="td-stat" style={{ marginTop: 12 }}>
+                  <div className="td-muted">PUBLIC TOURNAMENT CODE</div>
+                  <strong>{tournament.tournament_code || 'Unavailable'}</strong>
+                  {tournament.tournament_code && (
+                    <div style={{ marginTop: 10 }}>
+                      <button
+                        className="td-btn td-primary"
+                        onClick={() => copyText(tournament.tournament_code, 'Tournament code')}
+                      >
+                        Copy Tournament Code
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="td-grid" style={{ marginTop: 12 }}>
+                <div className="td-stat">
+                  <span className="td-muted">Players joined</span>
+                  <strong>{activeParticipants.length}/{maxPlayers || ' '}</strong>
+                </div>
+                <div className="td-stat">
+                  <span className="td-muted">Match setup</span>
+                  <strong>{tournament.setup_mode || 'Automatic'}</strong>
+                </div>
+                <div className="td-stat">
+                  <span className="td-muted">Management</span>
+                  <strong>{tournament.management || 'Leader Managed'}</strong>
+                </div>
+              </div>
+
+              {tournament.status === 'Open' && (
+                <p className="td-muted" style={{ marginTop: 12 }}>
+                  {activeParticipants.length < 2
+                    ? 'Invite players before starting the tournament.'
+                    : 'Use Start Tournament below when your tournament is ready.'}
+                </p>
+              )}
+            </section>
+          )}
           <h2 className="td-section">Tournament code & link</h2>
           <div className="td-row">
             <div><strong>{tournament.tournament_code || 'Unavailable'}</strong><div className="td-muted">Share the code with players.</div></div>
@@ -403,8 +890,86 @@ export default function TournamentDetails() {
             <button className="td-btn" onClick={() => copyText(`${window.location.origin}/tournaments/${tournament.tournament_code || tournament.id}`, 'Tournament link')}>Copy Link</button>
           </div>
 
+          {tournament.status === 'Open' &&
+            tournament.room_type !== 'Private' &&
+            !isCreator &&
+            user &&
+            !activeParticipants.some((p) => p.user_id === user.id) &&
+            (!maxPlayers || activeParticipants.length < maxPlayers) && (
+              <div style={{ marginTop: 14 }}>
+                {!showJoinForm ? (
+                  <button
+                    className="td-btn td-primary"
+                    disabled={busy}
+                    onClick={() => setShowJoinForm(true)}
+                  >
+                    Join Tournament
+                  </button>
+                ) : (
+                  <form
+                    onSubmit={joinTournamentFromDetails}
+                    className="td-card"
+                    style={{ marginTop: 10 }}
+                  >
+                    <h3 className="td-section">Join Tournament</h3>
+                    <label htmlFor="details-join-whatsapp" className="td-muted">
+                      WhatsApp number
+                    </label>
+                    <input
+                      id="details-join-whatsapp"
+                      type="tel"
+                      value={joinWhatsapp}
+                      onChange={(event) => setJoinWhatsapp(event.target.value)}
+                      placeholder="e.g. 254712345678"
+                      required
+                      style={{
+                        display: 'block',
+                        width: '100%',
+                        boxSizing: 'border-box',
+                        marginTop: 8,
+                        marginBottom: 12,
+                        padding: 12,
+                        borderRadius: 9,
+                        border: '1px solid #465164',
+                        background: '#111722',
+                        color: '#f4f6f9',
+                      }}
+                    />
+                    <p className="td-muted">
+                      Use a correct, reachable number so your opponent can contact you.
+                    </p>
+                    <div className="td-row">
+                      <button className="td-btn td-primary" type="submit" disabled={busy}>
+                        {busy ? 'Joining...' : 'Confirm & Join'}
+                      </button>
+                      <button
+                        className="td-btn"
+                        type="button"
+                        disabled={busy}
+                        onClick={() => setShowJoinForm(false)}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+            )}
           {tournament.rules && <><h2 className="td-section">Rules</h2><p style={{ whiteSpace: 'pre-wrap', lineHeight: 1.8 }}>{tournament.rules}</p></>}
 
+          {isCreator && tournament.status !== 'Open' && tournament.status !== 'Completed' && (
+            <section className="td-card" style={{ borderColor: '#c4a45e' }}>
+              <h2 className="td-section">Complete Tournament</h2>
+              <p className="td-muted">Available after every match has been completed and the final winner recorded.</p>
+              <button
+                className="td-btn td-primary"
+                disabled={busy || !matches.length || matches.some((m) => m.status !== 'Completed')}
+                onClick={completeTournament}
+              >
+                {busy ? 'Processing...' : '🏆 Mark Tournament Complete'}
+              </button>
+            </section>
+          )}
           {isCreator && tournament.status === 'Open' && (
             <div className="td-row" style={{ marginTop: 18 }}>
               <div className="td-muted">
@@ -425,56 +990,236 @@ export default function TournamentDetails() {
         <section className="td-card">
           {activeParticipants.length === 0 ? <div className="td-empty">No players have joined yet.</div> : activeParticipants.map((p, index) => (
             <div className="td-person" key={p.id || p.user_id || index}>
-              <div><strong>{index + 1}. <TournamentUsername userId={p.user_id} username={profiles[p.user_id]?.username || (p.user_id === tournament?.creator_id ? creator?.username : null) || "Player"} /></strong><div className="td-muted">{p.user_id === tournament.creator_id ? 'Tournament creator' : 'Participant'}</div></div>
+              <div><strong>{index + 1}. <TournamentUsername userId={p.user_id} username={profiles[p.user_id]?.username || (p.user_id === tournament?.creator_id ? creator?.username : null) || "Player"} /></strong><div className="td-muted">{p.user_id === tournament.creator_id ? 'Tournament creator' : 'Participant'}</div>{isCreator && p.whatsapp_number && <div className="td-muted">WhatsApp: <a href={`https://wa.me/${String(p.whatsapp_number).replace(/\D/g, '')}`} target="_blank" rel="noreferrer" style={{ color: "#25D366", textDecoration: "underline", fontWeight: 700 }}>{p.whatsapp_number}</a><span style={{ color: "#a1a1aa", fontSize: "0.85em", marginLeft: 6 }}>— Tap to contact player on WhatsApp for match delays or issues.</span></div>}</div>
               <span className="td-tag">{p.status || 'Joined'}</span>
             </div>
           ))}
         </section>
 
         <h2 className="td-section">Tournament Bracket</h2>
-        <section className="td-card">
-          <div className="td-row">
-            <div><strong>{formatName(tournament.format)}</strong><div className="td-muted">Player pairings and results update when match records change.</div></div>
-            {matches.length > 0 && <button className="td-btn" onClick={downloadBracket}>Download SVG</button>}
-          </div>
+<section className="td-card">
+  <div className="td-row">
+    <div>
+      <strong>{formatName(tournament.format)}</strong>
+      <div className="td-muted">Results confirmed by players advance automatically. The creator can also edit pairings or manually advance a winner.</div>
+    </div>
+    {matches.length > 0 && <button className="td-btn" onClick={downloadBracket}>Download SVG</button>}
+  </div>
 
-          {matches.length === 0 ? (
-            <div className="td-empty" style={{ marginTop: 14 }}>
-              {tournament.status === 'Open' ? 'The bracket appears after the creator starts the tournament.' : 'No fixture records are available yet.'}
-            </div>
-          ) : (
-            <>
-              <div className="td-bracket-hint">Scroll horizontally to view every round. Download the bracket to save or print it.</div>
-              <div className="td-bracket-scroll">
-                <div className="td-bracket">
-                  {rounds.map((round) => (
-                    <div className="td-round" key={round}>
-                      <div className="td-round-title">Round {round}</div>
-                      {matches.filter((m) => Number(m.round_number || 1) === round).map((match, index) => (
-                        <div className="td-match" key={match.id}>
-                          <div className="td-match-top"><span>Match {match.match_number || index + 1}</span><span>{match.status || 'Pending'}</span></div>
-                          <div className={`td-player ${match.winner_id === match.player_one_id ? 'winner' : ''}`}>
-                            <span className="td-player-name">{playerName(match.player_one_id)}</span>
-                            <span className="td-score">{match.player_one_score ?? '—'}</span>
-                          </div>
-                          <div className={`td-player ${match.winner_id === match.player_two_id ? 'winner' : ''}`}>
-                            <span className="td-player-name">{playerName(match.player_two_id)}</span>
-                            <span className="td-score">{match.player_two_score ?? '—'}</span>
-                          </div>
-                          {match.winner_id && <div className="td-success" style={{ marginTop: 8, padding: 8 }}>🏆 <strong>WINNER: {playerName(match.winner_id)}</strong></div>}
-                        </div>
-                      ))}
+  {matches.length === 0 ? (
+    <div className="td-empty" style={{ marginTop: 14 }}>
+      {tournament.status === 'Open' ? 'The bracket appears after the creator starts the tournament.' : 'No fixture records are available yet.'}
+    </div>
+  ) : (
+    <>
+      <div className="td-bracket-hint">Scroll horizontally to view every round. Download the bracket to save or print it.</div>
+      <div className="td-bracket-scroll">
+        <div className="td-bracket" ref={bracketRef}>
+          <svg
+            className="td-bracket-lines"
+            width={bracketSize.width}
+            height={bracketSize.height}
+            viewBox={`0 0 ${bracketSize.width || 1} ${bracketSize.height || 1}`}
+            aria-hidden="true"
+          >
+            {bracketConnectors.map((connector) => (
+              <path key={connector.id} d={connector.d} />
+            ))}
+          </svg>
+          {rounds.map((round) => (
+            <div className="td-round" key={round}>
+              <div className="td-round-title">Round {round}</div>
+              {matches.filter((m) => Number(m.round_number || 1) === round).map((match, index) => {
+                const draft = pairingDrafts[match.id] || {
+                  player_one_id: match.player_one_id || '',
+                  player_two_id: match.player_two_id || ''
+                }
+                const availablePlayers = participants
+                  .filter((p) => !['Withdrawn', 'Disqualified', 'Removed'].includes(p.status))
+                  .filter((p) => {
+                    const uid = p.user_id || p.profile_id
+                    if (!uid) return false
+                    return !matches.some((other) =>
+                      other.id !== match.id &&
+                      (other.player_one_id === uid || other.player_two_id === uid)
+                    )
+                  })
+                const playerLabel = (uid) => {
+                  if (!uid) return 'Empty slot'
+                  const profile = profiles[uid]
+                  return profile?.username ? `@${profile.username}` : 'Tournament player'
+                }
+                return (
+                  <div className="td-match" key={match.id} ref={(element) => { if (element) matchElements.current[String(match.id)] = element; else delete matchElements.current[String(match.id)] }}>
+                    <div className="td-match-top">
+                      <span>Match {match.match_number || index + 1}</span>
+                      <span>{match.status || 'Pending'}</span>
                     </div>
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
-        </section>
+                    <div className={`td-player ${match.winner_id === match.player_one_id ? 'winner' : ''}`}>
+                      <span className="td-player-name">{playerName(match.player_one_id)}</span>
+                      <span className="td-score">{match.player_one_score ?? ' '}</span>
+                    </div>
+                    <div className={`td-player ${match.winner_id === match.player_two_id ? 'winner' : ''}`}>
+                      <span className="td-player-name">{playerName(match.player_two_id)}</span>
+                      <span className="td-score">{match.player_two_score ?? ' '}</span>
+                    </div>
+                    {match.winner_id && (
+                      <div className="td-success" style={{ marginTop: 8, padding: 8, borderColor: "#36e58c", background: "linear-gradient(100deg,#103b2a,#10231d)", color: "#7dffb7" }}>
+                         <div><strong>{'\u{1F3C6}'} WINNER: {playerName(match.winner_id)}</strong></div>
+                      </div>
+                    )}
+
+                    {isCreator && tournament.status !== 'Completed' && (
+                      <div style={{ marginTop: 12, display: 'grid', gap: 8 }}>
+                        <strong>Creator: Edit player slots</strong>
+                        <select
+                          className="td-input"
+                          aria-label="Player one"
+                          disabled={busy || match.status === 'Completed'}
+                          value={draft.player_one_id}
+                          onChange={(e) => setPairingDrafts((old) => ({
+                            ...old,
+                            [match.id]: { ...draft, player_one_id: e.target.value }
+                          }))}
+                        >
+                          <option value="">Empty slot</option>
+                          {availablePlayers.map((p) => {
+                            const uid = p.user_id || p.profile_id
+                            return <option key={uid} value={uid}>{playerLabel(uid)}</option>
+                          })}
+                          {draft.player_one_id && !availablePlayers.some((p) => (p.user_id || p.profile_id) === draft.player_one_id) &&
+                            <option value={draft.player_one_id}>{playerLabel(draft.player_one_id)}</option>}
+                        </select>
+                        <select
+                          className="td-input"
+                          aria-label="Player two"
+                          disabled={busy || match.status === 'Completed'}
+                          value={draft.player_two_id}
+                          onChange={(e) => setPairingDrafts((old) => ({
+                            ...old,
+                            [match.id]: { ...draft, player_two_id: e.target.value }
+                          }))}
+                        >
+                          <option value="">Empty slot</option>
+                          {availablePlayers.map((p) => {
+                            const uid = p.user_id || p.profile_id
+                            return <option key={uid} value={uid}>{playerLabel(uid)}</option>
+                          })}
+                          {draft.player_two_id && !availablePlayers.some((p) => (p.user_id || p.profile_id) === draft.player_two_id) &&
+                            <option value={draft.player_two_id}>{playerLabel(draft.player_two_id)}</option>}
+                        </select>
+                        <button
+                          className="td-btn td-primary"
+                          disabled={busy || match.status === 'Completed'}
+                          onClick={() => saveBracketPairing(match)}
+                        >
+                          Save Pairing
+                        </button>
+
+                        {match.player_one_id && match.player_two_id && match.status !== 'Completed' && (
+                          <>
+                            <strong>Enter match goals</strong>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                              <label style={{ display: 'grid', gap: 6, fontSize: 12, color: '#c4cfdd' }}>
+                                {playerLabel(match.player_one_id)}
+                                <input
+                                  className="td-input"
+                                  type="number"
+                                  min="0"
+                                  step="1"
+                                  inputMode="numeric"
+                                  aria-label="Player one goals"
+                                  placeholder="Goals"
+                                  value={scoreDrafts[match.id]?.player_one_score ?? match.player_one_score ?? ''}
+                                  disabled={busy}
+                                  onChange={(e) => setScoreDrafts((old) => ({
+                                    ...old,
+                                    [match.id]: {
+                                      ...(old[match.id] || {}),
+                                      player_one_score: e.target.value
+                                    }
+                                  }))}
+                                />
+                              </label>
+                              <label style={{ display: 'grid', gap: 6, fontSize: 12, color: '#c4cfdd' }}>
+                                {playerLabel(match.player_two_id)}
+                                <input
+                                  className="td-input"
+                                  type="number"
+                                  min="0"
+                                  step="1"
+                                  inputMode="numeric"
+                                  aria-label="Player two goals"
+                                  placeholder="Goals"
+                                  value={scoreDrafts[match.id]?.player_two_score ?? match.player_two_score ?? ''}
+                                  disabled={busy}
+                                  onChange={(e) => setScoreDrafts((old) => ({
+                                    ...old,
+                                    [match.id]: {
+                                      ...(old[match.id] || {}),
+                                      player_two_score: e.target.value
+                                    }
+                                  }))}
+                                />
+                              </label>
+                            </div>
+                            <strong>Choose winner to advance</strong>
+                            <select
+                              className="td-input"
+                              aria-label="Select winner to advance"
+                              value={winnerDrafts[match.id] || ''}
+                              onChange={(e) => setWinnerDrafts((old) => ({
+                                ...old,
+                                [match.id]: e.target.value
+                              }))}
+                            >
+                              <option value="">Choose winner</option>
+                              <option value={match.player_one_id}>{playerLabel(match.player_one_id)}</option>
+                              <option value={match.player_two_id}>{playerLabel(match.player_two_id)}</option>
+                            </select>
+                            <button
+                              type="button"
+                              className="td-btn"
+                              style={{ position: 'relative', zIndex: 10, pointerEvents: 'auto', width: '100%' }}
+                              disabled={busy || !winnerDrafts[match.id]}
+                              onClick={() => advanceBracketWinner(match)}
+                            >
+                              {busy ? 'Advancing Winner...' : 'Advance Selected Winner - Next Round'}
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
+  )}
+</section>
       </div>
     </div>
   )
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

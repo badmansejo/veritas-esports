@@ -1,4 +1,4 @@
-﻿.admin-finance-settings {
+.admin-finance-settings {
   padding: 24px;
   color: #fff;
   max-width: 950px;
@@ -115,14 +115,34 @@
 .admin-finance-save {
   width: 100%;
   margin-top: 20px;
-  border: 0;
+  border: 1px solid #69c8ff;
   border-radius: 11px;
-  padding: 13px;
-  background: #fff;
-  color: #000;
-  font-size: 13px;
+  padding: 15px;
+  background: #0878d1 !important;
+  color: #fff;
+  font-size: 14px;
   font-weight: 950;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  box-shadow: 0 0 18px rgba(56, 170, 255, 0.25);
   cursor: pointer;
+  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.admin-finance-save:hover:not(:disabled) {
+  background: #168ee8 !important;
+  box-shadow: 0 0 24px rgba(56, 170, 255, 0.45);
+  transform: translateY(-1px);
+}
+
+.admin-finance-save:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.admin-finance-save:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
 }
 
 .admin-finance-save:disabled {

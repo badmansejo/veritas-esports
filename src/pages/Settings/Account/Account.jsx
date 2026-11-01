@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../../context/AuthContext'
 import { supabase } from '../../../lib/supabaseClient'
@@ -146,7 +146,7 @@ export default function Account() {
       return
     }
 
-    const digits = whatsappPhone.replace(/\D/g, '')
+    const digits = whatsappPhone.replace(/\D/g, '').slice(-9)
 
     if (digits && !/^(7|1)\d{8}$/.test(digits)) {
       setPhoneError('Enter a valid Kenyan mobile number: 9 digits after +254.')
@@ -154,8 +154,12 @@ export default function Account() {
     }
 
     const cleanPhone = digits ? `+254${digits}` : ''
+    const cleanPhoneDigits = digits
+    const savedPhoneDigits = String(profile?.whatsapp_phone || '')
+      .replace(/\D/g, '')
+      .slice(-9)
 
-    if (cleanPhone === (profile?.whatsapp_phone || '')) {
+    if (cleanPhoneDigits === savedPhoneDigits) {
       setPhoneMessage('WhatsApp number is already saved.')
       return
     }
@@ -163,14 +167,28 @@ export default function Account() {
     setSavingPhone(true)
 
     try {
-      const { error: saveError } = await supabase
-        .from('profiles')
-        .update({ whatsapp_phone: cleanPhone || null })
-        .eq('id', user.id)
+      const { data: rpcData, error: saveError } = await supabase.rpc(
+        'update_my_whatsapp_phone',
+        { p_whatsapp_phone: cleanPhone || null }
+      )
 
       if (saveError) throw saveError
 
-      await refreshProfile()
+      const returnedDigits = String(rpcData || '').replace(/\D/g, '').slice(-9)
+
+      if (returnedDigits !== cleanPhoneDigits) {
+        throw new Error('The database did not confirm your WhatsApp number.')
+      }
+
+      const refreshedProfile = await refreshProfile()
+      const refreshedDigits = String(
+        refreshedProfile?.whatsapp_phone || ''
+      ).replace(/\D/g, '').slice(-9)
+
+      if (refreshedDigits !== cleanPhoneDigits) {
+        throw new Error('The number was saved, but the profile could not be refreshed. Reload the page.')
+      }
+
       setPhoneMessage(
         cleanPhone
           ? 'WhatsApp number saved successfully.'
@@ -178,15 +196,9 @@ export default function Account() {
       )
     } catch (err) {
       console.error('WhatsApp number save error:', err)
-
-      if (
-        err?.code === '23505' ||
-        (err?.message || '').toLowerCase().includes('unique')
-      ) {
-        setPhoneError('This WhatsApp number is already registered to another account.')
-      } else {
-        setPhoneError(err?.message || 'Unable to save your WhatsApp number. Please try again.')
-      }
+      setPhoneError(
+        err?.message || 'Unable to save your WhatsApp number. Please try again.'
+      )
     } finally {
       setSavingPhone(false)
     }
@@ -377,7 +389,7 @@ export default function Account() {
                   whiteSpace: 'nowrap',
                 }}
               >
-                {copied ? 'Copied ✓' : 'Copy'}
+                {copied ? 'Copied âœ“' : 'Copy'}
               </button>
             </div>
 
@@ -395,7 +407,7 @@ export default function Account() {
                   border: '1px solid #263248',
                 }}
               >
-                {phoneCopied ? 'WhatsApp Number Copied ✓' : 'Copy My WhatsApp Number'}
+                {phoneCopied ? 'WhatsApp Number Copied âœ“' : 'Copy My WhatsApp Number'}
               </button>
             )}
           </div>
@@ -404,5 +416,9 @@ export default function Account() {
     </div>
   )
 }
+
+
+
+
 
 

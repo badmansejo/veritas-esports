@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabaseClient";
 
@@ -13,6 +13,8 @@ export default function Register() {
   });
 
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
@@ -131,28 +133,58 @@ export default function Register() {
 
           <label>
             Password
-            <input
-              type="password"
-              name="password"
-              value={form.password}
-              onChange={handleChange}
-              placeholder="Minimum 6 characters"
-              autoComplete="new-password"
-              disabled={loading}
-            />
+            <div style={{ position: "relative", width: "100%" }}>
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                value={form.password}
+                onChange={handleChange}
+                placeholder="Create a password (6+ characters)"
+                autoComplete="new-password"
+                disabled={loading}
+                style={{ width: "100%", boxSizing: "border-box", paddingRight: "48px" }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((visible) => !visible)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                title={showPassword ? "Hide password" : "Show password"}
+                style={{ position: "absolute", right: "8px", top: "50%", transform: "translateY(-50%)", width: "36px", height: "36px", display: "flex", alignItems: "center", justifyContent: "center", padding: 0, border: "none", background: "transparent", color: "#ffffff", cursor: "pointer", zIndex: 2 }}
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              </button>
+            </div>
           </label>
 
           <label>
             Confirm Password
-            <input
-              type="password"
-              name="confirmPassword"
-              value={form.confirmPassword}
-              onChange={handleChange}
-              placeholder="Repeat your password"
-              autoComplete="new-password"
-              disabled={loading}
-            />
+            <div style={{ position: "relative", width: "100%" }}>
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                name="confirmPassword"
+                value={form.confirmPassword}
+                onChange={handleChange}
+                placeholder="Repeat your password"
+                autoComplete="new-password"
+                disabled={loading}
+                style={{ width: "100%", boxSizing: "border-box", paddingRight: "48px" }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword((visible) => !visible)}
+                aria-label={showConfirmPassword ? "Hide confirmed password" : "Show confirmed password"}
+                title={showConfirmPassword ? "Hide password" : "Show password"}
+                style={{ position: "absolute", right: "8px", top: "50%", transform: "translateY(-50%)", width: "36px", height: "36px", display: "flex", alignItems: "center", justifyContent: "center", padding: 0, border: "none", background: "transparent", color: "#ffffff", cursor: "pointer", zIndex: 2 }}
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              </button>
+            </div>
           </label>
 
           {referralCode && (
@@ -177,7 +209,52 @@ export default function Register() {
         <div className="security-note">
           Your VERITAS User ID is generated automatically after registration.
         </div>
+        {/* VERITAS-CONTACT-BUTTONS */}
+        <div style={{
+          display: "flex",
+          justifyContent: "center",
+          flexWrap: "wrap",
+          gap: "10px",
+          marginTop: "18px"
+        }}>
+          <a
+            href="https://t.me/TheeL3G3ND"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "inline-block",
+              padding: "10px 15px",
+              border: "1px solid #3b82f6",
+              borderRadius: "8px",
+              color: "#ffffff",
+              textDecoration: "none",
+              fontSize: "13px",
+              fontWeight: 700
+            }}
+          >
+            Contact Admin on Telegram
+          </a>
+          <a
+            href="https://wa.me/254103439638?text=I%27m%20inquiring%20about%20VERITAS"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "inline-block",
+              padding: "10px 15px",
+              border: "1px solid #25D366",
+              borderRadius: "8px",
+              color: "#ffffff",
+              textDecoration: "none",
+              fontSize: "13px",
+              fontWeight: 700
+            }}
+          >
+            WhatsApp Us
+          </a>
+        </div>
       </div>
     </div>
   );
 }
+
+

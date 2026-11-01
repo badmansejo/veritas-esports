@@ -1,4 +1,4 @@
-﻿import { Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import "./tournaments.css";
 
 export default function SponsorTournament() {
@@ -8,7 +8,7 @@ export default function SponsorTournament() {
 
         <div className="page-back-row">
           <Link to="/tournaments" className="back-link">
-            â† Back to Tournaments
+            ← Back to Tournaments
           </Link>
         </div>
 

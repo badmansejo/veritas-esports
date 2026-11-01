@@ -5,7 +5,8 @@ import './AdminDepositMethods.css'
 const emptyForm = {
   name: '',
   method_code: '',
-  description: '',
+  account_details: '',
+  instructions: '',
   sort_order: 0,
   is_active: true,
 }
@@ -60,17 +61,13 @@ export default function AdminDepositMethods() {
       return
     }
 
-    if (!form.method_code.trim()) {
-      setError('Enter a method code.')
-      return
-    }
 
     setSaving(true)
 
     const payload = {
       name: form.name.trim(),
-      method_code: form.method_code.trim().toLowerCase().replace(/\s+/g, '_'),
-      description: form.description.trim() || null,
+      account_details: form.account_details.trim() || null,
+      instructions: form.instructions.trim() || null,
       sort_order: Number(form.sort_order) || 0,
       is_active: Boolean(form.is_active),
     }
@@ -248,38 +245,31 @@ export default function AdminDepositMethods() {
             </div>
 
             <div className="admin-deposit-methods-field">
-              <label>Method Code</label>
-
-              <input
-                type="text"
-                value={form.method_code}
+              <label>Account Details</label>
+              <textarea
+                value={form.account_details}
                 onChange={(event) =>
                   setForm((current) => ({
                     ...current,
-                    method_code: event.target.value,
+                    account_details: event.target.value,
                   }))
                 }
-                placeholder="e.g. mpesa"
+                placeholder="Paybill, account number, phone number, or payment details."
+                rows="3"
               />
-
-              <small>
-                Use a unique simple code such as mpesa,
-                airtel_money or bank.
-              </small>
             </div>
 
             <div className="admin-deposit-methods-field">
-              <label>Description</label>
-
+              <label>Payment Instructions</label>
               <textarea
-                value={form.description}
+                value={form.instructions}
                 onChange={(event) =>
                   setForm((current) => ({
                     ...current,
-                    description: event.target.value,
+                    instructions: event.target.value,
                   }))
                 }
-                placeholder="Short description shown to users."
+                placeholder="Explain how users should make this deposit."
                 rows="4"
               />
             </div>
@@ -397,12 +387,12 @@ export default function AdminDepositMethods() {
                       </span>
                     </div>
 
-                    <span className="admin-deposit-method-code">
-                      {method.method_code}
-                    </span>
+                    {method.account_details ? (
+                      <p>Account: {method.account_details}</p>
+                    ) : null}
 
-                    {method.description ? (
-                      <p>{method.description}</p>
+                    {method.instructions ? (
+                      <p>{method.instructions}</p>
                     ) : null}
 
                     <small>
@@ -444,3 +434,4 @@ export default function AdminDepositMethods() {
     </div>
   )
 }
+

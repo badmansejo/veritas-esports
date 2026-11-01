@@ -420,3 +420,14 @@
     padding: 18px;
   }
 }
+
+/* Clickable URLs in notification messages */
+.notification-content p a {
+  color: #4da3ff;
+  text-decoration: underline;
+  overflow-wrap: anywhere;
+}
+
+.notification-content p a:hover {
+  color: #80bdff;
+}

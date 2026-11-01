@@ -1,7 +1,8 @@
-﻿
+
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
+import StyledUsername from '../../components/StyledUsername'
 
 const PLAYER_COUNTS = [4, 8, 12, 16, 20, 24, 28, 32]
 
@@ -166,6 +167,7 @@ export default function Tournaments() {
   const [profile, setProfile] = useState(null)
   const [tournaments, setTournaments] = useState([])
   const [creators, setCreators] = useState({})
+  const [equippedItemsByUser, setEquippedItemsByUser] = useState({})
   const [counts, setCounts] = useState({})
   const [loading, setLoading] = useState(true)
 
@@ -182,6 +184,7 @@ export default function Tournaments() {
 
   const [joinCode, setJoinCode] = useState('')
   const [joinWhatsapp, setJoinWhatsapp] = useState('')
+  const [whatsappConfirmed, setWhatsappConfirmed] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
@@ -241,9 +244,45 @@ export default function Tournaments() {
             map[row.id] = row
           })
           setCreators(map)
+
+          const { data: equippedRows, error: equippedError } = await supabase
+            .from('equipped_items')
+            .select('user_id,item_id,slot_type')
+            .in('user_id', creatorIds)
+
+          if (!equippedError && equippedRows?.length) {
+            const itemIds = [...new Set(equippedRows.map((row) => row.item_id).filter(Boolean))]
+            const { data: marketplaceRows, error: marketplaceError } = await supabase
+              .from('marketplace_items')
+              .select('id,name,item_type,preview_data,image_url')
+              .in('id', itemIds)
+
+            if (!marketplaceError) {
+              const itemsById = Object.fromEntries((marketplaceRows || []).map((item) => [item.id, item]))
+              const equippedMap = {}
+
+              equippedRows.forEach((row) => {
+                const item = itemsById[row.item_id]
+                if (!item) return
+
+                equippedMap[row.user_id] ||= []
+                equippedMap[row.user_id].push({
+                  ...item,
+                  slot_type: row.slot_type,
+                })
+              })
+
+              setEquippedItemsByUser(equippedMap)
+            } else {
+              setEquippedItemsByUser({})
+            }
+          } else {
+            setEquippedItemsByUser({})
+          }
         }
       } else {
         setCreators({})
+        setEquippedItemsByUser({})
       }
 
       const ids = rows.map((item) => item.id)
@@ -280,14 +319,7 @@ export default function Tournaments() {
   const visibleTournaments = useMemo(() => {
     const query = search.trim().toLowerCase()
 
-    return tournaments.filter((item) => {
-      if (
-        item.status === 'Completed' &&
-        item.expires_at &&
-        new Date(item.expires_at).getTime() <= Date.now()
-      ) return false
-
-      const sponsored = Boolean(item.is_sponsored)
+    return tournaments.filter((item) => {const sponsored = Boolean(item.is_sponsored)
 
       if (tab === 'normal' && sponsored) return false
       if (tab === 'sponsored' && !sponsored) return false
@@ -544,6 +576,7 @@ export default function Tournaments() {
       setShowJoin(false)
       setJoinCode('')
       setJoinWhatsapp('')
+      setWhatsappConfirmed(false)
 
       setMessage('You joined the tournament successfully.')
       await loadData()
@@ -668,7 +701,7 @@ export default function Tournaments() {
             <div className="vt-grid">
               {visibleTournaments.map((item) => {
                 const creator = creators[item.creator_id]
-                const mine = item.creator_id === profile?.id
+                const mine = item.creator_id === user?.id
                 const sponsored = Boolean(item.is_sponsored)
                 const displayFormat =
                   item.format === 'Group+Knockout' ? 'Groups' : item.format
@@ -686,7 +719,13 @@ export default function Tournaments() {
                     <h3>{item.name}</h3>
 
                     <p className="vt-muted">
-                      Created by <strong>{creator?.username ? `@${creator.username}` : 'VERITAS player'}</strong>
+                      Created by{' '}
+                      <strong>
+                        <StyledUsername
+                          profile={{ ...(creator || {}), username: creator?.username ? `@${creator.username}` : 'VERITAS player' }}
+                          equippedItems={equippedItemsByUser[item.creator_id] || []}
+                        />
+                      </strong>
                       {creator?.veritas_user_id ? ` · ID ${creator.veritas_user_id}` : ''}
                     </p>
 
@@ -696,9 +735,15 @@ export default function Tournaments() {
                         <p style={{ margin: '7px 0 0' }}>
                           Champion:{' '}
                           <strong>
-                            {creators[item.winner_id]?.username
-                              ? `@${creators[item.winner_id].username}`
-                              : 'Winner recorded'}
+                            <StyledUsername
+                              profile={{
+                                ...(creators[item.winner_id] || {}),
+                                username: creators[item.winner_id]?.username
+                                  ? `@${creators[item.winner_id].username}`
+                                  : 'Winner recorded',
+                              }}
+                              equippedItems={equippedItemsByUser[item.winner_id] || []}
+                            />
                           </strong>
                         </p>
                         {item.completed_at && (
@@ -859,7 +904,6 @@ export default function Tournaments() {
                       <option>Knockout</option>
                       {creationType === 'normal' && (
                         <>
-                          <option>League</option>
                           <option>Groups</option>
                         </>
                       )}
@@ -1096,7 +1140,7 @@ export default function Tournaments() {
                 </div>
 
                 <div className="vt-field" style={{ marginTop: 12 }}>
-                  <label htmlFor="vt-join-whatsapp">Your WhatsApp number (optional)</label>
+                  <label htmlFor="vt-join-whatsapp">Your WhatsApp number (required)</label>
                   <input
                     id="vt-join-whatsapp"
                     value={joinWhatsapp}
@@ -1106,8 +1150,7 @@ export default function Tournaments() {
                 </div>
 
                 <div className="vt-notice">
-                  By joining, you agree to follow the tournament rules. Match results must be honest,
-                  and disputes for normal tournaments are handled through the tournament's own process.
+                  Your WhatsApp number is required so your opponent can contact you. Make sure it is correct. An incorrect or unreachable number may result in a loss.
                 </div>
 
                 <div className="vt-actions">
@@ -1126,5 +1169,11 @@ export default function Tournaments() {
     </>
   )
 }
+
+
+
+
+
+
 
 

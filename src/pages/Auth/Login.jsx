@@ -11,6 +11,7 @@ export default function Login() {
   });
 
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
   function handleChange(e) {
@@ -80,15 +81,46 @@ export default function Login() {
 
           <label>
             Password
-            <input
-              type="password"
-              name="password"
-              value={form.password}
-              onChange={handleChange}
-              placeholder="Your password"
-              autoComplete="current-password"
-              disabled={loading}
-            />
+            <div style={{ position: "relative", width: "100%" }}>
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                value={form.password}
+                onChange={handleChange}
+                placeholder="Enter your 6-digit password"
+                autoComplete="current-password"
+                disabled={loading}
+                style={{ width: "100%", boxSizing: "border-box", paddingRight: "48px" }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((visible) => !visible)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                title={showPassword ? "Hide password" : "Show password"}
+                style={{
+                  position: "absolute",
+                  right: "8px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  width: "36px",
+                  height: "36px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: 0,
+                  border: "none",
+                  background: "transparent",
+                  color: "#ffffff",
+                  cursor: "pointer",
+                  zIndex: 2
+                }}
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              </button>
+            </div>
           </label>
 
           <div className="forgot-row">
@@ -102,9 +134,23 @@ export default function Login() {
           </button>
         </form>
 
-        <div className="auth-footer">
+        <div className="auth-footer" style={{ fontSize: "14px", marginTop: "16px", lineHeight: 1.5 }}>
           Don't have a VERITAS account?
-          <Link to="/register">Create Account</Link>
+          <Link
+            to="/register"
+            style={{ display: "inline-block", marginLeft: "5px", fontSize: "15px", fontWeight: 700 }}
+          >
+            Create Account
+          </Link>
+               {/* VERITAS-CONTACT-BUTTONS */}
+        <div style={{ display: "flex", justifyContent: "center", flexWrap: "wrap", gap: "10px", marginTop: "18px" }}>
+          <a href="https://t.me/TheeL3G3ND" target="_blank" rel="noopener noreferrer" style={{ display: "inline-block", padding: "10px 15px", border: "1px solid #3b82f6", borderRadius: "8px", color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 700 }}>
+            Contact Admin on Telegram
+          </a>
+          <a href="https://wa.me/254103439638?text=I%27m%20inquiring%20about%20VERITAS" target="_blank" rel="noopener noreferrer" style={{ display: "inline-block", padding: "10px 15px", border: "1px solid #25D366", borderRadius: "8px", color: "#ffffff", textDecoration: "none", fontSize: "13px", fontWeight: 700 }}>
+            WhatsApp Us
+          </a>
+        </div>
         </div>
       </div>
     </div>

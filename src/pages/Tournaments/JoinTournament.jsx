@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { supabase } from "../../lib/supabaseClient";
 import "./tournaments.css";
@@ -78,7 +78,7 @@ export default function JoinTournament() {
 
         <div className="page-back-row">
           <Link to="/tournaments" className="back-link">
-            â† Back to Tournaments
+            ← Back to Tournaments
           </Link>
         </div>
 

@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import './AdminWithdrawals.css'
@@ -816,6 +816,14 @@ export default function AdminWithdrawals() {
             payout methods and
             disbursement batches.
           </p>
+          <button
+            type="button"
+            onClick={loadData}
+            disabled={loading}
+            className="withdrawal-secondary-button"
+          >
+            {loading ? 'Refreshing...' : 'Refresh'}
+          </button>
         </div>
       </div>
 
@@ -1488,7 +1496,7 @@ export default function AdminWithdrawals() {
                                     >
                                       {isProcessing
                                         ? 'Processing...'
-                                        : '✓ Paid'}
+                                        : '? Paid'}
                                     </button>
                                   )}
 
@@ -1525,7 +1533,7 @@ export default function AdminWithdrawals() {
                                     >
                                       {isProcessing
                                         ? 'Processing...'
-                                        : '✕ Decline & Return'}
+                                        : '? Decline & Return'}
                                     </button>
                                   )}
 

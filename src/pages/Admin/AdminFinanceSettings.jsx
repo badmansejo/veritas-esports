@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabaseClient'
 import './AdminFinanceSettings.css'
 
@@ -76,7 +76,7 @@ export default function AdminFinanceSettings() {
       'admin_save_withdrawal_settings',
       {
         p_minimum_withdrawal: minimum,
-        p_withdrawal_fee_percent: fee,
+        p_fee_percent: fee,
       }
     )
 

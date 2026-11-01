@@ -1,4 +1,4 @@
-﻿import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabaseClient'
@@ -262,9 +262,9 @@ export default function Inventory() {
         <button
           type="button"
           className="inventory-back-button"
-          onClick={() => navigate('/marketplace')}
+          onClick={() => navigate('/')}
         >
-          ← Marketplace
+← Home
         </button>
       </div>
 

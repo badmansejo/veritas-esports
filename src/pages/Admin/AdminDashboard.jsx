@@ -15,9 +15,7 @@ const sections = [
   {
     title: 'Finance',
     items: [
-      ['💰', 'Deposits', 'Review and manage manual deposit requests.', '/admin/deposits', true],
       ['🏦', 'Deposit Methods', 'Manage deposit methods, instructions and QR codes.', '/admin/deposit-methods', true],
-      ['💸', 'Withdrawals', 'Manage fees, payout methods and disbursement batches.', '/admin/withdrawals', true],
       ['💳', 'Payout Methods', 'Manage M-Pesa, Airtel Money, Binance, Cash and other providers.', '/admin/payout-methods', true],
       ['🛡️', 'Manage Tournament Agents', 'Add or remove registered users who review tournament disputes.', '/admin/manage-agents', true],
       ['🧑‍⚖️', 'Assign Match Review', 'Assign unresolved disputes to designated agents.', '/admin/agent-assignments', true],
@@ -95,6 +93,7 @@ const sections = [
       ['📋', 'Referral History', 'View referral activity and rewards.', '/admin/referrals/history', true],
       ['🏅', 'Top Referrers', 'Rank successful referrers.', '/admin/referrals/top', true],
       ['🛡️', 'Fraud / Abuse', 'Review suspicious referral activity.', '/admin/referrals/fraud', true],
+      ['💸', 'Referral Earnings & Withdrawals', 'Review withdrawal requests, create batches and approve referral payouts.', '/admin/referrals/earnings', true],
     ],
   },
   {
@@ -122,26 +121,15 @@ const sections = [
   {
     title: 'System Settings',
     items: [
-      ['🟢', 'App Active / Inactive', 'Control platform availability.'],
-      ['🔧', 'Maintenance Mode', 'Lock the user app while retaining admin access.'],
-      ['👤', 'Registrations', 'Enable or disable registrations.'],
-      ['🏆', 'Tournament Creation', 'Control tournament creation.'],
-      ['🎮', 'Tournament Joining', 'Control tournament joining.'],
-      ['💰', 'Deposits', 'Enable or disable deposits.'],
-      ['💸', 'Withdrawals', 'Enable or disable withdrawals.'],
-      ['💳', 'Paystack', 'Control Paystack availability.'],
-      ['🏦', 'Manual Deposits', 'Control manual deposits.'],
-      ['🪙', 'V Coins', 'Enable or disable V Coins.'],
-      ['🛒', 'Marketplace', 'Enable or disable marketplace purchases.'],
-      ['🤝', 'Referrals', 'Enable or disable referrals.'],
+      ['⚙️', 'System Settings', 'Manage platform switches and feature availability.', '/admin/system-settings', true],
     ],
   },
   {
     title: 'Audit & Reports',
     items: [
-      ['📝', 'Audit Log', 'Record administrator actions and changes.'],
-      ['📦', 'Exports / Reports', 'Export finance, users and tournament reports.'],
-      ['🔄', 'Version History', 'Preview and restore previous configurations.'],
+      ['📝', 'Audit Log', 'Review recorded administrator actions.', '/admin/audit-reports?tab=audit', true],
+      ['📦', 'Exports / Reports', 'Export finance, users and tournament reports.', '/admin/audit-reports?tab=exports', true],
+      ['🔄', 'Version History', 'Review configuration version history.', '/admin/audit-reports?tab=versions', true],
     ],
   },
 ]
@@ -517,6 +505,11 @@ const styles = {
     letterSpacing: '3px',
   },
 }
+
+
+
+
+
 
 
 

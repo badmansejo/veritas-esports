@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabaseClient";
 import "./tournaments.css";
@@ -18,7 +18,6 @@ export default function CreateTournament() {
     format: "Knockout",
     match_format: "Bo1",
     match_rule: "Extra Time",
-    management: "Leader Managed",
     start_time: "",
     rules: "",
   });
@@ -80,9 +79,8 @@ export default function CreateTournament() {
         game: form.game,
         players: Number(form.players),
         format: form.format,
-        match_format: form.match_format,
-        match_rule: form.match_rule,
-        management: form.management,
+        match_format: form.format === "Knockout" ? "Bo1" : form.match_format,
+        match_rule: form.format === "Knockout" ? "Extra Time + Penalties" : form.match_rule,
         entry_type: "FREE",
         start_time: new Date(form.start_time).toISOString(),
         round_deadline: "22:00",
@@ -116,7 +114,7 @@ export default function CreateTournament() {
 
         <div className="page-back-row">
           <Link to="/tournaments" className="back-link">
-            â† Back to Tournaments
+            ← Back to Tournaments
           </Link>
         </div>
 
@@ -227,19 +225,6 @@ export default function CreateTournament() {
               </label>
 
               <label className="choice-card">
-                <input
-                  type="radio"
-                  name="format"
-                  value="League"
-                  checked={form.format === "League"}
-                  onChange={handleChange}
-                />
-
-                <strong>League</strong>
-                <span>
-                  Players compete through a league table.
-                </span>
-              </label>
 
               <label className="choice-card">
                 <input
@@ -270,66 +255,10 @@ export default function CreateTournament() {
               </div>
             </div>
 
-            <label>
-              Match Format
+            {form.format !== "Knockout" && (<label>Match Format<select name="match_format" value={form.match_format} onChange={handleChange}><option value="Bo1">Best of 1</option><option value="Bo3">Best of 3</option><option value="Bo5">Best of 5</option></select></label>)}
 
-              <select
-                name="match_format"
-                value={form.match_format}
-                onChange={handleChange}
-              >
-                <option value="Bo1">Best of 1</option>
-                <option value="Bo3">Best of 3</option>
-                <option value="Bo5">Best of 5</option>
-              </select>
-
-              <small className="field-help">
-                Bo1 = one match. Bo3 = first player to win two.
-                Bo5 = first player to win three.
-              </small>
-            </label>
-
-            <label>
-              Match Rule
-
-              <select
-                name="match_rule"
-                value={form.match_rule}
-                onChange={handleChange}
-              >
-                <option value="Extra Time">Extra Time</option>
-                <option value="Penalties">Penalties</option>
-              </select>
-
-              <small className="field-help">
-                Choose what happens when a match ends level.
-              </small>
-            </label>
-
-            <label>
-              Tournament Management
-
-              <select
-                name="management"
-                value={form.management}
-                onChange={handleChange}
-              >
-                <option value="Leader Managed">
-                  Leader Managed
-                </option>
-
-                <option value="VERITAS Managed">
-                  VERITAS Managed
-                </option>
-              </select>
-
-              <small className="field-help">
-                Leader Managed lets the tournament creator coordinate
-                the competition. VERITAS Managed is controlled by the
-                VERITAS system.
-              </small>
-            </label>
-          </section>
+            {form.format !== "Knockout" && (<label>Match Rule<select name="match_rule" value={form.match_rule} onChange={handleChange}><option value="Extra Time + Penalties">Extra Time + Penalties</option><option value="Extra Time">Extra Time</option><option value="Penalties">Penalties</option></select></label>)}
+</section>
 
           <section className="form-section">
             <div className="form-section-heading">
@@ -417,5 +346,7 @@ export default function CreateTournament() {
     </div>
   );
 }
+
+
 
 

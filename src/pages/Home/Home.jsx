@@ -1,4 +1,5 @@
 ﻿import React, { useEffect, useState } from 'react'
+import StyledUsername from '../../components/StyledUsername'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabaseClient'
@@ -23,12 +24,58 @@ export default function Home() {
   const [loadingMyTournaments, setLoadingMyTournaments] = useState(true)
 
   const [menuOpen, setMenuOpen] = useState(false)
+  const [hideKesBalance, setHideKesBalance] = useState(false)
+  const [hideVCoins, setHideVCoins] = useState(false)
   const [equippedItems, setEquippedItems] = useState([])
 
   const [unreadNotifications, setUnreadNotifications] = useState(0)
+  const [pendingMatchesCount, setPendingMatchesCount] = useState(0)
   const [pushStatus, setPushStatus] = useState(typeof Notification !== 'undefined' ? Notification.permission : 'unsupported')
   const [notificationToast, setNotificationToast] = useState(null)
 
+  useEffect(() => {
+    if (!user?.id) {
+      setPendingMatchesCount(0)
+      return
+    }
+
+    let active = true
+
+    async function loadPendingMatchesCount() {
+      const { data, error } = await supabase
+        .from('matches')
+        .select('id, status')
+        .or(`player_one_id.eq.${user.id},player_two_id.eq.${user.id}`)
+
+      if (error) {
+        console.error('Match count loading error:', error)
+        return
+      }
+
+      const completedStatuses = ['completed', 'confirmed', 'cancelled', 'forfeit']
+      const count = (data || []).filter((match) =>
+        !completedStatuses.includes(String(match.status || '').trim().toLowerCase())
+      ).length
+
+      if (active) setPendingMatchesCount(count)
+    }
+
+    loadPendingMatchesCount()
+
+    const channel = supabase
+      .channel(`home-match-count-${user.id}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'matches',
+      }, () => loadPendingMatchesCount())
+      .subscribe()
+
+    return () => {
+      active = false
+      supabase.removeChannel(channel)
+    }
+  }, [user?.id])
   useEffect(() => {
     loadHomeData()
   }, [user])
@@ -226,6 +273,7 @@ export default function Home() {
           'Starting Soon',
           'Live',
         ])
+        .eq('is_archived', false)
         .order('start_time', {
           ascending: true,
         })
@@ -293,7 +341,11 @@ export default function Home() {
       } else {
         setMyTournaments(
           (participantData || [])
-            .filter((item) => item.tournaments)
+            .filter(
+              (item) =>
+                item.tournaments &&
+                item.tournaments.is_archived !== true
+            )
             .map((item) => ({
               ...item.tournaments,
               participant_status: item.status,
@@ -528,9 +580,15 @@ export default function Home() {
                 .toUpperCase()}
             </div>
 
-            <span style={usernameStyle}>
-              {displayName}
-            </span>
+            <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+  <StyledUsername
+    profile={{ ...profile, username: displayName }}
+    equippedItems={equippedItems.map((item) => ({
+      ...(item.marketplace_items || item),
+      slot_type: item.slot_type,
+    }))}
+  />
+</span>
 
             <span>&#x25BC;</span>
           </button>
@@ -594,6 +652,11 @@ export default function Home() {
           >
             <span>&#x2694;&#xFE0F;</span>
             <span>My Matches</span>
+            {pendingMatchesCount > 0 && (
+              <span className="sidebar-notification-count">
+                {pendingMatchesCount > 99 ? '99+' : pendingMatchesCount}
+              </span>
+            )}
           </button>
 
           <button
@@ -671,7 +734,7 @@ export default function Home() {
               }
             }}
           >
-            <span className="sidebar-link-icon">🎁</span>
+            <span className="sidebar-link-icon">&#127873;</span>
             <span>Referrals</span>
           </div>
 <div className="sidebar-divider" />
@@ -721,9 +784,15 @@ export default function Home() {
                 WELCOME BACK
               </p>
 
-              <h1 style={usernameStyle}>
-                {displayName}
-              </h1>
+              <h1 style={{ ...usernameStyle, display: 'flex', alignItems: 'center' }}>
+  <StyledUsername
+    profile={{ ...profile, username: displayName }}
+    equippedItems={equippedItems.map((item) => ({
+      ...(item.marketplace_items || item),
+      slot_type: item.slot_type,
+    }))}
+  />
+</h1>
 
               <p className="user-id-line">
                 VERITAS ID:
@@ -742,51 +811,75 @@ export default function Home() {
           <section className="balance-grid">
 
             <div className="balance-card kes-card">
-
               <div>
-                <span className="balance-label">
-                  KES BALANCE
-                </span>
-
-                <strong>
-                  KES {kesBalance}
-                </strong>
+                <span className="balance-label">KES BALANCE</span>
+                <button
+                  type="button"
+                  onClick={() => setHideKesBalance((prev) => !prev)}
+                  aria-label={hideKesBalance ? 'Show KES balance' : 'Hide KES balance'}
+                  aria-pressed={hideKesBalance}
+                  title={hideKesBalance ? 'Show balance' : 'Hide balance'}
+                  style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px 6px', marginLeft: '8px', color: 'inherit', verticalAlign: 'middle' }}
+                >
+                  {hideKesBalance ? (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M3 3l18 18" />
+                      <path d="M10.6 10.6a2 2 0 0 0 2.8 2.8" />
+                      <path d="M9.9 5.2A11 11 0 0 1 12 5c5 0 8.3 4.5 9 7-.3 1.1-1.1 2.4-2.2 3.5" />
+                      <path d="M6.2 6.2C3.8 7.7 2.4 10 2 12c.7 2.5 4 7 10 7 1.4 0 2.7-.3 3.8-.8" />
+                    </svg>
+                  ) : (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  )}
+                </button>
+                <strong>{hideKesBalance ? 'KES ••••••' : `KES ${kesBalance}`}</strong>
               </div>
-
               <button
                 type="button"
-                onClick={() =>
-                  navigate('/wallet')
-                }
+                onClick={() => navigate('/wallet')}
                 aria-label="Open wallet"
               >
                 +
               </button>
-
             </div>
 
             <div className="balance-card coin-card">
-
               <div>
-                <span className="balance-label">
-                  V COINS
-                </span>
-
-                <strong>
-                  {vcoins}
-                </strong>
+                <span className="balance-label">V COINS</span>
+                <button
+                  type="button"
+                  onClick={() => setHideVCoins((prev) => !prev)}
+                  aria-label={hideVCoins ? 'Show V Coins' : 'Hide V Coins'}
+                  aria-pressed={hideVCoins}
+                  title={hideVCoins ? 'Show V Coins' : 'Hide V Coins'}
+                  style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px 6px', marginLeft: '8px', color: 'inherit', verticalAlign: 'middle' }}
+                >
+                  {hideVCoins ? (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M3 3l18 18" />
+                      <path d="M10.6 10.6a2 2 0 0 0 2.8 2.8" />
+                      <path d="M9.9 5.2A11 11 0 0 1 12 5c5 0 8.3 4.5 9 7-.3 1.1-1.1 2.4-2.2 3.5" />
+                      <path d="M6.2 6.2C3.8 7.7 2.4 10 2 12c.7 2.5 4 7 10 7 1.4 0 2.7-.3 3.8-.8" />
+                    </svg>
+                  ) : (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  )}
+                </button>
+                <strong>{hideVCoins ? '••••' : vcoins}</strong>
               </div>
-
               <button
                 type="button"
-                onClick={() =>
-                  navigate('/vcoins')
-                }
+                onClick={() => navigate('/vcoins')}
                 aria-label="Open V Coins"
               >
                 +
               </button>
-
             </div>
 
           </section>
@@ -915,6 +1008,15 @@ export default function Home() {
                 <small>
                   See your upcoming matches
                 </small>
+              </button>
+              <button
+                type="button"
+                onClick={() => window.open('https://t.me/TheeL3G3ND', '_blank', 'noopener,noreferrer')}
+                className="action-card"
+              >
+                <span>&#128172;</span>
+                <strong>Contact Admin</strong>
+                <small>Get help from VERITAS support on Telegram</small>
               </button>
 
             </div>
@@ -1220,6 +1322,14 @@ export default function Home() {
     </div>
   )
 }
+
+
+
+
+
+
+
+
 
 
 

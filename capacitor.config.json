@@ -1,0 +1,8 @@
+﻿{
+  "appId": "com.veritas.esports",
+  "appName": "VERITAS",
+  "webDir": "dist/client",
+  "server": {
+    "androidScheme": "https"
+  }
+}

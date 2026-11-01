@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">VERITAS</string>
+    <string name="title_activity_main">VERITAS</string>
+    <string name="package_name">com.veritas.esports</string>
+    <string name="custom_url_scheme">com.veritas.esports</string>
+</resources>

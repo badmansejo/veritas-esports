@@ -4,56 +4,54 @@ import { supabase } from '../lib/supabaseClient'
 export default function UserHeartbeat() {
   useEffect(() => {
     let stopped = false
-    let activeUserId = null
     let busy = false
 
     const updateActivity = async () => {
       if (stopped || busy) return
-
       busy = true
 
       try {
         const { data, error } = await supabase.auth.getSession()
 
-        if (error || stopped) return
-
-        const userId = data?.session?.user?.id
-
-        if (!userId) {
-          activeUserId = null
+        if (error) {
+          console.error('VERITAS Last Seen: session error:', error.message)
           return
         }
 
-        activeUserId = userId
+        if (stopped) return
 
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({ last_seen_at: new Date().toISOString() })
-          .eq('id', userId)
+        const user = data?.session?.user
+
+        if (!user?.id) {
+          console.log('VERITAS Last Seen: no logged-in user')
+          return
+        }
+
+        console.log('VERITAS Last Seen: updating account', user.email)
+
+        const { error: updateError } = await supabase.rpc(
+          'update_my_last_seen'
+        )
 
         if (updateError) {
-          console.error('VERITAS activity update failed:', updateError.message)
+          console.error('VERITAS Last Seen: RPC failed:', updateError)
+          return
         }
+
+        console.log('VERITAS Last Seen: RPC succeeded for', user.email)
       } catch (error) {
-        console.error('VERITAS activity tracking error:', error)
+        console.error('VERITAS Last Seen: unexpected error:', error)
       } finally {
         busy = false
       }
     }
 
     updateActivity()
-
     const interval = window.setInterval(updateActivity, 30000)
 
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (event === 'SIGNED_OUT' || !session?.user?.id) {
-          activeUserId = null
-        } else if (session.user.id !== activeUserId) {
-          window.setTimeout(updateActivity, 0)
-        }
-      }
-    )
+    const { data: authListener } = supabase.auth.onAuthStateChange(() => {
+      window.setTimeout(updateActivity, 0)
+    })
 
     return () => {
       stopped = true
