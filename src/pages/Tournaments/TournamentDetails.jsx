@@ -1,4 +1,4 @@
-﻿import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 
@@ -121,21 +121,14 @@ export default function TournamentDetails() {
       const currentUser = authData?.user || null
       setUser(currentUser)
 
-      let query = supabase.from('tournaments').select('*')
-      query = query.eq('id', id)
+      // Direct links may contain either the public tournament code or database UUID.
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id || '')
 
-      let { data: tournamentData, error: tournamentError } = await query.maybeSingle()
-
-      // Support links that use the tournament code instead of the UUID.
-      if (!tournamentData && !tournamentError) {
-        const result = await supabase
-          .from('tournaments')
-          .select('*')
-          .eq('tournament_code', id)
-          .maybeSingle()
-        tournamentData = result.data
-        tournamentError = result.error
-      }
+      const { data: tournamentData, error: tournamentError } = await supabase
+        .from('tournaments')
+        .select('*')
+        .eq(isUuid ? 'id' : 'tournament_code', id)
+        .maybeSingle()
 
       if (tournamentError) throw tournamentError
       if (!tournamentData) throw new Error('Tournament not found or access is unavailable.')

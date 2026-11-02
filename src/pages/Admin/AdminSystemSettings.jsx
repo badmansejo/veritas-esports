@@ -9,7 +9,9 @@ const settingGroups = [
     description: 'Core platform availability and access.',
     settings: [
       { key: 'app_active', label: 'App Active', description: 'Allow normal user access.', type: 'boolean', defaultValue: true },
-      { key: 'maintenance_mode', label: 'Maintenance Mode', description: 'Maintenance lock. Admin access must remain available.', type: 'boolean', defaultValue: false },
+      { key: 'maintenance_mode', label: 'Maintenance Mode', description: 'Block player access while maintenance is active. Administrators retain access.', type: 'boolean', defaultValue: false },
+      { key: 'maintenance_return_time', label: 'Expected Return Time', description: 'Date and time players should expect VERITAS to return. This does not automatically disable maintenance.', type: 'datetime', defaultValue: '' },
+      { key: 'maintenance_message', label: 'Maintenance Announcement', description: 'Additional message displayed below the expected return time on the player maintenance screen.', type: 'textarea', defaultValue: '' },
       { key: 'registrations_enabled', label: 'Registrations', description: 'Allow new users to register.', type: 'boolean', defaultValue: true },
       { key: 'new_user_welcome_title', label: 'Welcome Notification Title', description: 'Title shown to newly registered users.', type: 'text', defaultValue: 'Welcome to VERITAS!' },
       { key: 'new_user_welcome_message', label: 'Welcome Notification Message', description: 'Message shown to newly registered users.', type: 'textarea', defaultValue: 'Welcome to VERITAS! Your account is ready. Good luck and enjoy competing!' },
@@ -185,6 +187,14 @@ export default function AdminSystemSettings() {
             onChange={event => setValues(previous => ({ ...previous, [setting.key]: event.target.value }))}
             style={{ width: '100%', maxWidth: '420px', padding: '12px', marginTop: '10px', background: '#111827', color: '#fff', border: '1px solid #374151', borderRadius: '8px' }}
           />
+        ) : setting.type === 'datetime' ? (
+          <input
+            type="datetime-local"
+            value={values[setting.key] ?? ''}
+            disabled={loading || saving}
+            onChange={event => setValues(previous => ({ ...previous, [setting.key]: event.target.value }))}
+            style={{ width: '100%', maxWidth: '320px', padding: '12px', marginTop: '10px', background: '#111827', color: '#fff', border: '1px solid #374151', borderRadius: '8px' }}
+          />
         ) : setting.type === 'textarea' ? (
           <textarea
             value={values[setting.key] ?? ''}
@@ -273,6 +283,9 @@ export default function AdminSystemSettings() {
     </main>
   )
 }
+
+
+
 
 
 

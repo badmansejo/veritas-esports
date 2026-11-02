@@ -105,6 +105,7 @@ export default function App() {
         <Route path="/settings/profile" element={<Profile />} />
         <Route path="/settings/security" element={<Security />} />
         <Route path="/settings/telegram" element={<Telegram />} />
+        <Route path="/referrals" element={<Referrals />} />
       </Route>
 
       <Route element={<AdminRoute />}>
@@ -176,7 +177,7 @@ export default function App() {
 
       <Route path="*" element={<Navigate to="/" replace />} />
     
-        <Route path="/referrals" element={<Referrals />} />
+
       </Routes>
   )
 }
@@ -208,6 +209,7 @@ import Matches from './pages/Matches/Matches'
 
 
 import Referrals from './pages/Referrals/Referrals'
+
 
 
 
